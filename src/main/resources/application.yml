@@ -1,0 +1,22 @@
+application:
+  name: Spring DDD Starter
+  version: 0.0.1-SNAPSHOT
+security:
+  frontend-success: /api
+  users:
+  # define users through env variables, giving name, password, roles
+spring:
+  application:
+    name: repertoire-backend
+  data:
+    rest:
+      base-path: /api
+  jpa:
+    properties:
+      hibernate:
+        globally_quoted_identifiers: true
+springdoc:
+  swagger-ui:
+    csrf:
+      enabled: true
+      use-local-storage: true

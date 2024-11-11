@@ -1,0 +1,30 @@
+<%
+    AggregateType = Name
+    aggregateName = name
+
+    RepositoryType = h.inflection.pluralize(Name)
+    repositoryName = h.changeCase.camel(RepositoryType)
+
+    ControllerType = Name + "Controller";
+    controllerName = h.changeCase.camel(ControllerType)
+
+    IdType = AggregateType + "Id"
+    IdName = h.changeCase.pascal(IdType)
+    idName = h.changeCase.camel(IdType)
+
+    StateType = AggregateType + "State"
+
+    CommandType = AggregateType + "Command"
+
+    CreateCommandType = "Create" + AggregateType
+    UpdateNameCommandType = "Update" + AggregateType + "Name"
+
+    EventType = AggregateType + "Event"
+    CreatedEventType = AggregateType + "Created"
+    NameUpdatedEventType = AggregateType + "NameUpdated"
+
+    RootPackage = "com.example.app";
+    PackageDir = h.changeCase.lower(name)
+    FeaturePackage = RootPackage + "." + h.changeCase.lower(name)
+    FeatureWebPackage = FeaturePackage + ".web"
+-%>
