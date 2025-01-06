@@ -8,6 +8,8 @@ import org.jmolecules.archunit.JMoleculesDddRules;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.modulith.core.ApplicationModules;
+import org.springframework.modulith.docs.Documenter;
 import org.springframework.security.test.context.support.WithMockUser;
 
 @Slf4j
@@ -23,6 +25,16 @@ class SampleApplicationTests {
 
     @Test
     void contextLoads() {
+    }
+
+    @Test
+    void writeDocumentationSnippets() {
+        /* TODO: correctly configure modules and module dependencies
+        var modules = ApplicationModules.of(SampleApplication.class).verify();
+        new Documenter(modules)
+                .writeModulesAsPlantUml()
+                .writeIndividualModulesAsPlantUml();
+         */
     }
 
 }

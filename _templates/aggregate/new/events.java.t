@@ -1,5 +1,5 @@
 ---
-to: src/main/java/com/example/app/<%= h.changeCase.lower(name) %>/<%= Name %>Event.java
+to: src/main/java/com/example/app/domain/<%= h.changeCase.lower(name) %>/<%= Name %>Event.java
 ---
 <%
    include(`${templates}/variables.ejs`)
@@ -28,10 +28,6 @@ public sealed interface <%= EventType %> extends DomainEvent {
     record <%= NameUpdatedEventType %>(
         @NotNull <%= IdType %> <%= idName %>,
         @NotNull String name) implements <%= EventType %> {
-
-        static <%= CreatedEventType %> of(<%= IdType %> <%= idName %>) {
-            return new <%= CreatedEventType %>(<%= idName %>);
-        }
     }
 
 }

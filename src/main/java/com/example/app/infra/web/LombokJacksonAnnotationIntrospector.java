@@ -1,4 +1,4 @@
-package com.example.app.infra.restapi;
+package com.example.app.infra.web;
 
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;

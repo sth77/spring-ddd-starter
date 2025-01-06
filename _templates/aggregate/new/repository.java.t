@@ -1,5 +1,5 @@
 ---
-to: src/main/java/com/example/app/<%= h.changeCase.lower(name) %>/<%= h.inflection.pluralize(Name) %>.java
+to: src/main/java/com/example/app/domain/<%= h.changeCase.lower(name) %>/<%= h.inflection.pluralize(Name) %>.java
 ---
 <%
    include(`${templates}/variables.ejs`)
@@ -9,6 +9,7 @@ package <%= FeaturePackage %>;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import com.example.app.common.execption.AggregateNotFoundException;
 import org.jmolecules.ddd.types.Repository;
 import org.jmolecules.ddd.integration.AssociationResolver;
 import org.springframework.data.util.Streamable;
@@ -21,6 +22,11 @@ public interface <%= RepositoryType %> extends Repository<<%= AggregateType %>, 
     <%= AggregateType %> save(<%= AggregateType %> <%= aggregateName %>);
 
     Optional<<%= AggregateType %>> findById(<%= IdType %> id);
+
+    default <%= AggregateType %> getRequired(<%= IdType %> id) {
+        return findById(id)
+                .orElseThrow(() -> new AggregateNotFoundException(<%= AggregateType %>.class, id));
+    }
 
     Streamable<<%= AggregateType %>> findAll();
     

@@ -1,4 +1,4 @@
-package com.example.app.infra.restapi;
+package com.example.app.infra.web;
 
 import com.example.app.application.ApplicationProperties;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -18,7 +18,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 
 @Configuration
-public class RestApiConfiguration implements RepositoryRestConfigurer {
+public class WebConfiguration implements RepositoryRestConfigurer {
 
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer jsonCustomizer() {

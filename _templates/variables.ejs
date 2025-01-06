@@ -1,11 +1,11 @@
 <%
-    AggregateType = Name
-    aggregateName = name
+    AggregateType = h.changeCase.pascal(Name)
+    aggregateName = h.changeCase.camel(name)
 
     RepositoryType = h.inflection.pluralize(Name)
     repositoryName = h.changeCase.camel(RepositoryType)
 
-    ControllerType = Name + "Controller";
+    ControllerType = Name + "OperationsController";
     controllerName = h.changeCase.camel(ControllerType)
 
     IdType = AggregateType + "Id"
@@ -25,6 +25,8 @@
 
     RootPackage = "com.example.app";
     PackageDir = h.changeCase.lower(name)
-    FeaturePackage = RootPackage + "." + h.changeCase.lower(name)
+    FeaturePackage = RootPackage + ".domain." + h.changeCase.lower(name)
     FeatureWebPackage = FeaturePackage + ".web"
+
+    collectionRel = h.inflection.pluralize(aggregateName)
 -%>

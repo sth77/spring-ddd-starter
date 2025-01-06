@@ -7,7 +7,7 @@ security:
   # define users through env variables, giving name, password, roles
 spring:
   application:
-    name: repertoire-backend
+    name: Spring DDD Starter
   data:
     rest:
       base-path: /api
@@ -20,3 +20,21 @@ springdoc:
     csrf:
       enabled: true
       use-local-storage: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: [health,actuator,info]
+---
+spring:
+  profiles:
+    active: dev
+security:
+  frontend-success: /api
+  users:
+    - name: user
+      password: 1234
+      roles: USER
+    - name: admin
+      password: 1234
+      roles: [USER, ADMIN]

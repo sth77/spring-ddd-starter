@@ -1,5 +1,6 @@
 package com.example.app.common;
 
+import com.example.app.common.logging.LogPrefix;
 import com.example.app.common.model.Command;
 import org.jmolecules.ddd.annotation.Service;
 import org.slf4j.LoggerFactory;
@@ -16,7 +17,7 @@ class CommandPublisherImpl implements CommandPublisher {
 
     public void publishCommand(Command command) {
         val caller = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).getCallerClass();
-        LoggerFactory.getLogger(caller).info("{} {}", LogPrefix.ON_COMMAND, command);
+        LoggerFactory.getLogger(caller).info(LogPrefix.COMMAND.withText("" + command));
         applicationEventPublisher.publishEvent(command);
     }
 

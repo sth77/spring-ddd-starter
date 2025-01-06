@@ -1,5 +1,5 @@
 ---
-to: src/main/java/com/example/app/<%= h.changeCase.lower(name) %>/<%= Name %>.java
+to: src/main/java/com/example/app/domain/<%= h.changeCase.lower(name) %>/<%= Name %>.java
 ---
 <%
    include(`${templates}/variables.ejs`)
@@ -40,7 +40,10 @@ public class <%= AggregateType %> extends AbstractAggregate<<%= Name %>, <%= IdT
     public <%= AggregateType %> updateName(<%= UpdateNameCommandType %> data) {
         if (!Objects.equals(this.name, data.name())) {
             this.name = data.name();
-            registerEvent(<%= NameUpdatedEventType %>.of(id));
+            registerEvent(<%= NameUpdatedEventType %>.builder()
+                      .<%= idName %>(id)
+                      .name(name)
+                      .build());
         }
         return this;
     }

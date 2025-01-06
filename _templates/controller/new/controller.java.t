@@ -1,5 +1,5 @@
 ---
-to: src/main/java/com/example/app/<%= h.changeCase.lower(name) %>/web/<%= Name + "Controller" %>.java
+to: src/main/java/com/example/app/domain/<%= h.changeCase.lower(name) %>/web/<%= Name + "Controller" %>.java
 ---
 <%
    include(`${templates}/variables.ejs`)
@@ -41,13 +41,13 @@ public class <%= ControllerType %> implements RepresentationModelProcessor<Colle
 	private final <%= RepositoryType %> <%= repositoryName %>;
 	private final EntityLinks entityLinks;
 
-    @PostMapping
+    @PostMapping("/<%= collectionRel %>")
     public ResponseEntity<EntityModel<<%= AggregateType %>>> create(@RequestBody <%= CreateCommandType %> data) {
         val result = <%= repositoryName %>.save(<%= AggregateType %>.create(data));
         return ResponseEntity.ok(EntityModel.of(result));
     }
 
-	@PostMapping(path = "/{<%= idName %>}/updateName")
+	@PostMapping(path = "/<%= collectionRel %>/{<%= idName %>}/updateName")
 	public ResponseEntity<EntityModel<<%= AggregateType %>>> updateName(@PathVariable <%= IdType %> <%= idName %>, @RequestBody <%= UpdateNameCommandType %> data) {
 		return doWith<%= AggregateType %>(<%= idName %>, it -> it.updateName(data));
 	}

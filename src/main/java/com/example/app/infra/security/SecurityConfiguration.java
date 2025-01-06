@@ -11,8 +11,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -21,11 +19,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
 import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -33,8 +32,8 @@ import java.io.IOException;
 import java.util.function.Supplier;
 
 @Slf4j
-@Configuration
 @RequiredArgsConstructor
+@Configuration(proxyBeanMethods = false)
 public class SecurityConfiguration {
 
     private final SecurityProperties securityProperties;
@@ -44,49 +43,22 @@ public class SecurityConfiguration {
         return new BCryptPasswordEncoder();
     }
 
-    /*
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .httpBasic(Customizer.withDefaults())
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(getOpenedResources()).permitAll()
-                        .anyRequest().authenticated())
-                .formLogin(Customizer.withDefaults())
-                .formLogin(loginConfigurer -> loginConfigurer
-                        .loginProcessingUrl("/api/login")
-                        .defaultSuccessUrl(securityProperties.getFrontendSuccess(),true)
-                        .permitAll())
-                .logout(logoutCustomizer -> logoutCustomizer
-                        .logoutUrl("/api/logout")
-                        .logoutSuccessHandler(new CustomLogoutSuccessHandler())
-                        .permitAll())
-
-                .csrf(Customizer.withDefaults());
-        return http.build();
-    }
-    */
-
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(AbstractHttpConfigurer::disable)
-                /*
-                        TODO: enable CSRF without breaking swagger-ui
-                        // see https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html#csrf-integration-javascript
-                http
-                        .csrf((csrf) -> csrf
-                                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                                .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
-                                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
-                 */
+                .csrf((csrf) -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
+                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth.requestMatchers(
+                                "/actuator/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "index.html",
+                                "/index.html",
                                 "/login",
-                                "/logout")
+                                "/logout",
+                                "/h2-console/**")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
@@ -104,11 +76,6 @@ public class SecurityConfiguration {
                         .build())
                 .toList();
         return new InMemoryUserDetailsManager(userDetails);
-    }
-
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> web.ignoring().requestMatchers(new AntPathRequestMatcher("/h2-console/**"));
     }
 
     static class CustomLogoutSuccessHandler implements LogoutSuccessHandler {
@@ -154,7 +121,7 @@ public class SecurityConfiguration {
         }
     }
 
-    final class CsrfCookieFilter extends OncePerRequestFilter {
+    static final class CsrfCookieFilter extends OncePerRequestFilter {
 
         @Override
         protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)

@@ -6,10 +6,12 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.hateoas.config.EnableHypermediaSupport;
 import org.springframework.modulith.Modulith;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 import static org.springframework.hateoas.config.EnableHypermediaSupport.HypermediaType.HAL;
 
 @Modulith
+@EnableAsync
 @EnableHypermediaSupport(type = HAL)
 @EnableConfigurationProperties({ApplicationProperties.class, SecurityProperties.class})
 public class SampleApplication {

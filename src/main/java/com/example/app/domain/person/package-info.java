@@ -1,14 +1,9 @@
----
-to: src/main/java/com/example/app/domain/<%= h.changeCase.lower(name) %>/package-info.java
----
-<%
-   include(`${templates}/variables.ejs`)
--%>
 
 @NonNullApi
 @NonNullFields
 @DomainRing
-package <%= FeaturePackage %>;
+@org.springframework.modulith.NamedInterface("person")
+package com.example.app.domain.person;
 
 import org.jmolecules.architecture.onion.simplified.DomainRing;
 import org.springframework.lang.NonNullApi;
