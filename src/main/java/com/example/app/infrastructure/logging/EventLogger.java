@@ -8,18 +8,18 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 @Slf4j
-//@Aspect
+// @Aspect see comment below
 @Component
 public class EventLogger {
 
     @EventListener
     void on(DomainEvent event) {
-        log.info(LogPrefix.EVENT.withText("! " + event));
+        log.info(LogPrefix.EVENT.withText("" + event));
     }
 
     @EventListener
     void on(Command command) {
-        log.info(LogPrefix.COMMAND.withText("! " + command));
+        log.info(LogPrefix.COMMAND.withText("" + command));
     }
 
     /*
