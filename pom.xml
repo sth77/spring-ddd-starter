@@ -32,6 +32,7 @@
         <jmolecules-bom.version>2023.2.1</jmolecules-bom.version>
         <springdoc-openapi.version>2.8.0</springdoc-openapi.version>
         <archunit.version>1.3.0</archunit.version>
+        <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -236,6 +237,22 @@
                     </annotationProcessorPaths>
                     <encoding>UTF-8</encoding>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>properties</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <!-- picks up the argLine property -->
             </plugin>
         </plugins>
     </build>
