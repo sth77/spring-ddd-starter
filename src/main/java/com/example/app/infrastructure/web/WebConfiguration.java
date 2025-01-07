@@ -1,4 +1,4 @@
-package com.example.app.infra.web;
+package com.example.app.infrastructure.web;
 
 import com.example.app.application.ApplicationProperties;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;

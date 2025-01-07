@@ -1,5 +1,5 @@
 ---
-to: src/main/java/com/example/app/domain/<%= h.changeCase.lower(name) %>/web/package-info.java
+to: src/main/java/com/example/app/infrastructure/web/<%= h.changeCase.lower(feature) %>api/package-info.java
 ---
 <%
    include(`${templates}/variables.ejs`)
@@ -8,7 +8,7 @@ to: src/main/java/com/example/app/domain/<%= h.changeCase.lower(name) %>/web/pac
 @NonNullApi
 @NonNullFields
 @InfrastructureRing
-package <%= FeaturePackage %>;
+package <%= FeatureWebPackage %>;
 
 import org.jmolecules.architecture.onion.simplified.InfrastructureRing;
 import org.springframework.lang.NonNullApi;

@@ -1,4 +1,4 @@
-package com.example.app.common;
+package com.example.app.common.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.MappedSuperclass;

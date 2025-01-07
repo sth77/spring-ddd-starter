@@ -1,4 +1,4 @@
-package com.example.app.common;
+package com.example.app.common.model;
 
 public final class Constants {
 

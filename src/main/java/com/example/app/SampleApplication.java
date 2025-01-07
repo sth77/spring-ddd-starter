@@ -1,9 +1,7 @@
 package com.example.app;
 
-import com.example.app.application.ApplicationProperties;
-import com.example.app.infra.security.SecurityProperties;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.hateoas.config.EnableHypermediaSupport;
 import org.springframework.modulith.Modulith;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -13,7 +11,7 @@ import static org.springframework.hateoas.config.EnableHypermediaSupport.Hyperme
 @Modulith
 @EnableAsync
 @EnableHypermediaSupport(type = HAL)
-@EnableConfigurationProperties({ApplicationProperties.class, SecurityProperties.class})
+@ConfigurationPropertiesScan
 public class SampleApplication {
 
 	public static void main(String[] args) {

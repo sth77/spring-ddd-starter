@@ -1,6 +1,6 @@
 package com.example.app.common.execption;
 
-import com.example.app.common.AbstractAggregate;
+import com.example.app.common.model.AbstractAggregate;
 import org.jmolecules.ddd.types.Identifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

@@ -1,4 +1,4 @@
-package com.example.app.infra.demo;
+package com.example.app.infrastructure.demo;
 
 import com.example.app.common.logging.LogPrefix;
 import com.example.app.domain.person.People;

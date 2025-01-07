@@ -1,4 +1,4 @@
-package com.example.app.infra.logging;
+package com.example.app.infrastructure.logging;
 
 import com.example.app.common.logging.LogPrefix;
 import com.example.app.common.model.Command;

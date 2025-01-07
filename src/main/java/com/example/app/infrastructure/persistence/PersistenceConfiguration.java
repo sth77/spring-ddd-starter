@@ -1,4 +1,4 @@
-package com.example.app.infra.persistence;
+package com.example.app.infrastructure.persistence;
 
 import com.example.app.common.model.Email;
 import lombok.AllArgsConstructor;

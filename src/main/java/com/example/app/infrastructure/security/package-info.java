@@ -1,7 +1,7 @@
 @NonNullApi
 @NonNullFields
 @InfrastructureRing
-package com.example.app.infra.persistence;
+package com.example.app.infrastructure.security;
 
 import org.jmolecules.architecture.onion.simplified.InfrastructureRing;
 import org.springframework.lang.NonNullApi;

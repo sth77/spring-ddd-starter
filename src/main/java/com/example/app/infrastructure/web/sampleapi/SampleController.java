@@ -1,4 +1,4 @@
-package com.example.app.domain.sample.web;
+package com.example.app.infrastructure.web.sampleapi;
 
 import com.example.app.domain.sample.Sample;
 import com.example.app.domain.sample.Sample.SampleId;

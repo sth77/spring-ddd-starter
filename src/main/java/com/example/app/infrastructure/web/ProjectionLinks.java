@@ -1,4 +1,4 @@
-package com.example.app.infra.web;
+package com.example.app.infrastructure.web;
 
 import lombok.RequiredArgsConstructor;
 import lombok.val;

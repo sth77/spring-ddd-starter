@@ -29,12 +29,10 @@ class SampleApplicationTests {
 
     @Test
     void writeDocumentationSnippets() {
-        /* TODO: correctly configure modules and module dependencies
         var modules = ApplicationModules.of(SampleApplication.class).verify();
         new Documenter(modules)
                 .writeModulesAsPlantUml()
                 .writeIndividualModulesAsPlantUml();
-         */
     }
 
 }

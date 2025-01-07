@@ -1,11 +1,9 @@
-package com.example.app.domain.sample.web;
+package com.example.app.infrastructure.web.sampleapi;
 
 import com.example.app.domain.sample.Sample;
-import com.example.app.infra.web.ProjectionLinks;
+import com.example.app.infrastructure.web.ProjectionLinks;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.onion.simplified.InfrastructureRing;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.server.RepresentationModelProcessor;

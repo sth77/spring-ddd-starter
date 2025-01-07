@@ -1,12 +1,12 @@
 ---
-to: src/main/java/com/example/app/domain/<%= h.changeCase.lower(name) %>/<%= Name %>.java
+to: src/main/java/com/example/app/domain/<%= h.changeCase.lower(feature) %>/<%= Name %>.java
 ---
 <%
    include(`${templates}/variables.ejs`)
 -%>
 package <%= FeaturePackage %>;
 
-import <%= RootPackage %>.common.AbstractAggregate;
+import <%= RootPackage %>.common.model.AbstractAggregate;
 import <%= FeaturePackage %>.<%= AggregateType %>.<%= IdType %>;
 import <%= FeaturePackage %>.<%= CommandType %>.<%= CreateCommandType %>;
 import <%= FeaturePackage %>.<%= CommandType %>.<%= UpdateNameCommandType %>;

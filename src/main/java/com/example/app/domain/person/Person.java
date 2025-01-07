@@ -1,6 +1,6 @@
 package com.example.app.domain.person;
 
-import com.example.app.common.AbstractAggregate;
+import com.example.app.common.model.AbstractAggregate;
 import com.example.app.domain.person.Person.PersonId;
 import com.example.app.domain.person.PersonCommand.CreatePerson;
 import com.example.app.domain.person.PersonCommand.UpdatePersonName;
