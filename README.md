@@ -34,24 +34,59 @@ The scaffolding implies a package design where toplevel packages form modules of
 
 To create a new feature module, type this command:
 
-> $ hygen feature new Todo
+> $ hygen feature new todo
 
 Next, create an aggregate root with a repository and some first commands and events by typing:
 
-> $ hygen aggregate new Todo
+> $ hygen aggregate new Todo --feature=todo
 
 If you want to make your aggregate available through the REST API, type:
 
-> $ hygen controller new Todo
+> $ hygen controller new Todo --feature=todo
 
 ## Baked-in concepts
 
 This project follows a highly opinionated approach to building DDD-style applications in Java. 
 It is highly inspired by Oliver Drotbohm's [Spring Restbucks](https://github.com/odrotbohm/spring-restbucks) sample 
 application. The approach implemented here more strictly separates different layers of the onion architecture, 
-placing for example every controller in a `web` package, avoiding in the domain package dependencies to 
-Jackson and other concepts related to the REST API, and explicitly introducing a package for application and 
-infrastructure rings of the onion.
+placing for example every controller in a package in the infrastructure layer, avoiding in the domain package 
+dependencies to Jackson and other concepts related to the REST API, and explicitly introducing a package for application
+and infrastructure rings of the onion.
+
+### Package structure
+
+The generator adheres to the following package structure, which is largely governed by the name of 
+features and of aggregates:
+<pre>
+&lt;root-package&gt;/
+  common/                                Root package for common functionality
+    exception/                           Basic exception types
+    logging/                             Helpers to work with log prefixes
+    model/                               Basic types that can be used everywhere
+  domain/                                Domain ring of the applicataion
+    &lt;feature1&gt;/                    Root package of a featute
+      Sample.java                        An aggregate, here with name "Sample"
+      SampleCommand.java                 Commands to change the aggregate
+      SampleEvent.java                   Domain events produced by the aggregate
+      Samples.java                       Repository to work with the aggregate
+    &lt;feature2&gt;/                    Root package of another feature
+      ...
+  application/                           Application ring of the application
+  infrastructure/                        Infrastructure ring of the application
+    &lt;api1&gt;/                        Implementation of an API to another system
+    &lt;api2&gt;/                        Implementation of another API to another system
+    demo/                                Demo data creation suitable for development
+    logging/                             Logging configuration 
+    persistence/                         Persistence configuration
+    security/                            Security configuration
+    web/                                 REST API of the application
+      &lt;feature1&gt;api                Root package of the feature's REST API
+        SampleOperationsController.java  Controller exposing operations of the aggregate
+        SampleSummary.java               Projection with reduced data suitable to render lists
+        SampleDetail.java                Projection with detailed data to render detail views
+        SampleLinks.java                 Factory for HAL links of the aggregate
+      ...
+</pre>
 
 ### Persistence
 
@@ -64,12 +99,34 @@ The REST API is largely provided out of the box by Spring Data REST. Its convert
 
 Through configuration, http methods to create, update or patch an aggregate are disabled in favor of using well-defined operations for creating and changing aggregates, forcing them to go through the business logic implemented in the domain layer. 
 
+### Architecture verification
+
+The setup comes with several architecture verifications which ensure that new code does not violate the architecture.
+
+#### Module Architecture
+
+The module architecture is verified through Spring Modulith. It ensures that modules do not form cycles and that only allowed dependencies are present.
+
+#### Onion architecture
+
+The Onion architecture is verified through jMolecules, using the simplified onion architecture as a basis, having the three rings
+* domain
+* application
+* infrastructure
+
+Dependencies are only allowed in this direction: infrastructure -> application -> domain
+
+#### DDD architecture
+
+jMolecules also ensures that the elements of tactical domain-driven design are used correctly. There is both a Unit test and the jMolecules annotation processor (jmolecules-atp) which can detect breaches already at compile time.
+
 ## Open Issues
 
 * Generate test classes 
 * Generate initial DB schema for new aggregates
 * Add documentation to generated artifacts
 * Allow adding operations with related commands and events one by one
+* Log domain events _before_ they are published
 
 ## References
 
