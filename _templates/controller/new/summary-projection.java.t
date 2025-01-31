@@ -1,5 +1,5 @@
 ---
-to: src/main/java/com/example/app/infrastructure/web/<%= h.changeCase.lower(feature) %>api/<%= Name + "Summary" %>.java
+to: src/main/java/com/example/app/domain/<%= name %>/web/<%= Name + "Summary" %>.java
 ---
 <%
    include(`${templates}/variables.ejs`)
@@ -7,7 +7,6 @@ to: src/main/java/com/example/app/infrastructure/web/<%= h.changeCase.lower(feat
 package <%= FeatureWebPackage %>;
 
 import <%= FeaturePackage %>.<%= AggregateType %>;
-import org.jmolecules.architecture.onion.simplified.InfrastructureRing;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.rest.core.config.Projection;
 
@@ -15,7 +14,6 @@ import org.springframework.data.rest.core.config.Projection;
  * Summary projection of a {@link <%= AggregateType %>}. Can be used by clients of the API to get a compact
  * representation of the aggregate suitable for rendering it in a list view.
  */
-@InfrastructureRing
 @Projection(name = "summary", types = {<%= AggregateType %>.class})
 public interface <%= AggregateType %>Summary {
 

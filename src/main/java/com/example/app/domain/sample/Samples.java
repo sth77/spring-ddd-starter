@@ -3,7 +3,7 @@ package com.example.app.domain.sample;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import com.example.app.common.execption.AggregateNotFoundException;
+import com.example.app.domain.common.execption.AggregateNotFoundException;
 import org.jmolecules.ddd.types.Repository;
 import org.jmolecules.ddd.integration.AssociationResolver;
 import org.springframework.data.util.Streamable;

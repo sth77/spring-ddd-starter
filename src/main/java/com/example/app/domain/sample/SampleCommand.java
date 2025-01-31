@@ -1,6 +1,6 @@
 package com.example.app.domain.sample;
 
-import com.example.app.common.model.Command;
+import com.example.app.domain.common.model.Command;
 import com.example.app.domain.person.Person;
 import lombok.Builder;
 import org.jmolecules.architecture.onion.simplified.DomainRing;

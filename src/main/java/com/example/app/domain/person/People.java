@@ -3,14 +3,18 @@ package com.example.app.domain.person;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import com.example.app.common.execption.AggregateNotFoundException;
+import com.example.app.domain.common.execption.AggregateNotFoundException;
 import org.jmolecules.ddd.types.Repository;
 import org.jmolecules.ddd.integration.AssociationResolver;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.util.Streamable;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.app.domain.person.Person.PersonId;
 
+@RepositoryRestResource(collectionResourceRel = "people", path = "people")
 public interface People extends Repository<Person, PersonId>, AssociationResolver<Person, PersonId> {
     
     Person save(Person person);

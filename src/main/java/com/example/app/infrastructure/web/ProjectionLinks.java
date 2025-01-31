@@ -1,6 +1,7 @@
 package com.example.app.infrastructure.web;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.jmolecules.ddd.types.AggregateRoot;
 import org.springframework.data.projection.TargetAware;
@@ -8,24 +9,25 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
 
 /**
- * Projections need their own representation model processors in spring-data-rest.
- * To avoid code duplication the ProjectionLinks delegates the link creation to
+ * In spring-data-rest, projections need their own representation model processors.
+ * To avoid code duplication, the {@link ProjectionLinks} delegates the link creation to
  * the representation model processor of the underlying entity.
  *
- * @param <E> entity type the projection is associated with
- * @param <T> the projection type that this processor handles
+ * @param <T> entity type the projection is associated with
  */
+@Slf4j
 @RequiredArgsConstructor
-public abstract class ProjectionLinks<E extends AggregateRoot<?, ?>, T> implements RepresentationModelProcessor<EntityModel<T>> {
+public class ProjectionLinks<T extends AggregateRoot<?, ?>> implements RepresentationModelProcessor<EntityModel<TargetAware>> {
 
-    private final RepresentationModelProcessor<EntityModel<E>> delegate;
+    private final RepresentationModelProcessor<EntityModel<T>> delegate;
+    private final Class<T> aggregateType;
 
-    @SuppressWarnings("unchecked")
     @Override
-    public EntityModel<T> process(EntityModel<T> model) {
+    public EntityModel<TargetAware> process(EntityModel<TargetAware> model) {
         if (model.getContent() instanceof TargetAware targetAware
-                && targetAware.getTarget() instanceof AggregateRoot<?, ?>) {
-            val target = (E) targetAware.getTarget();
+                && aggregateType.isInstance(targetAware.getTarget())) {
+            val target = aggregateType.cast(targetAware.getTarget());
+            log.info("Creating links for " + target + " with input " + model.getContent());
             model.add(delegate.process(EntityModel.of(target)).getLinks());
         }
         return model;

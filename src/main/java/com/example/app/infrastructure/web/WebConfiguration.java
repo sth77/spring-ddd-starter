@@ -20,6 +20,8 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 @Configuration
 public class WebConfiguration implements RepositoryRestConfigurer {
 
+    public static final String BASE_PATH = "/api";
+
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer jsonCustomizer() {
         return builder -> builder
@@ -42,6 +44,7 @@ public class WebConfiguration implements RepositoryRestConfigurer {
                 -> AggregateRoot.class.isAssignableFrom(metadata.getDomainType())
                 ? httpMethods.disable(HttpMethod.POST, HttpMethod.PATCH, HttpMethod.PUT)
                 : httpMethods);
+        config.setBasePath(BASE_PATH);
     }
 
     @Bean

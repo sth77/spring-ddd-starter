@@ -1,6 +1,6 @@
 package com.example.app.infrastructure.persistence;
 
-import com.example.app.common.model.Email;
+import com.example.app.domain.common.model.Email;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.context.annotation.Configuration;

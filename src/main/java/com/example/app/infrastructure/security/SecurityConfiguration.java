@@ -46,10 +46,13 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                /* TODO: Fix CSRF config for Swagger UI
                 .csrf((csrf) -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+                 */
+                .csrf().disable()
                 .authorizeHttpRequests(auth -> auth.requestMatchers(
                                 "/actuator/**",
                                 "/v3/api-docs/**",

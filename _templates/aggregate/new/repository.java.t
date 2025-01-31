@@ -9,7 +9,7 @@ package <%= FeaturePackage %>;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import com.example.app.common.execption.AggregateNotFoundException;
+import <%= RootPackage %>.domain.common.execption.AggregateNotFoundException;
 import org.jmolecules.ddd.types.Repository;
 import org.jmolecules.ddd.integration.AssociationResolver;
 import org.springframework.data.util.Streamable;

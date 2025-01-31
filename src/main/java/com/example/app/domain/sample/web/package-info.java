@@ -1,15 +1,9 @@
----
-to: src/main/java/com/example/app/domain/<%= name %>/web/package-info.java
----
-<%
-   include(`${templates}/variables.ejs`)
--%>
 
 @NonNullApi
 @NonNullFields
 @InfrastructureRing
 @NamedInterface("web")
-package <%= FeatureWebPackage %>;
+package com.example.app.domain.sample.web;
 
 import org.jmolecules.architecture.onion.simplified.InfrastructureRing;
 import org.springframework.lang.NonNullApi;

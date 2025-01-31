@@ -1,5 +1,5 @@
 ---
-to: src/main/java/com/example/app/infrastructure/web/<%= h.changeCase.lower(feature) %>api/<%= Name + "OperationsController" %>.java
+to: src/main/java/com/example/app/domain/<%= name %>/web/<%= Name %>OperationsController.java
 ---
 <%
    include(`${templates}/variables.ejs`)

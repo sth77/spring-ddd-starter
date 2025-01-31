@@ -8,9 +8,6 @@ security:
 spring:
   application:
     name: Spring DDD Starter
-  data:
-    rest:
-      base-path: /api
   jpa:
     properties:
       hibernate:

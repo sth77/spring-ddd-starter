@@ -1,6 +1,6 @@
 package com.example.app.domain.person;
 
-import com.example.app.common.model.Command;
+import com.example.app.domain.common.model.Command;
 import lombok.Builder;
 
 public sealed interface PersonCommand extends Command {

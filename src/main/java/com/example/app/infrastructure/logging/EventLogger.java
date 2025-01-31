@@ -1,7 +1,7 @@
 package com.example.app.infrastructure.logging;
 
-import com.example.app.common.logging.LogPrefix;
-import com.example.app.common.model.Command;
+import com.example.app.domain.common.logging.LogPrefix;
+import com.example.app.domain.common.model.Command;
 import lombok.extern.slf4j.Slf4j;
 import org.jmolecules.event.types.DomainEvent;
 import org.springframework.context.event.EventListener;

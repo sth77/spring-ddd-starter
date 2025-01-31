@@ -6,7 +6,7 @@ to: src/main/java/com/example/app/domain/<%= h.changeCase.lower(feature) %>/<%= 
 -%>
 package <%= FeaturePackage %>;
 
-import <%= RootPackage %>.common.model.Command;
+import <%= RootPackage %>.domain.common.model.Command;
 import lombok.Builder;
 
 public sealed interface <%= CommandType %> extends Command {

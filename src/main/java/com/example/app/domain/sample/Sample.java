@@ -1,7 +1,7 @@
 package com.example.app.domain.sample;
 
-import com.example.app.common.model.AbstractAggregate;
-import com.example.app.common.execption.DomainException;
+import com.example.app.domain.common.model.AbstractAggregate;
+import com.example.app.domain.common.execption.DomainException;
 import com.example.app.domain.person.Person;
 import com.example.app.domain.person.Person.PersonId;
 import com.example.app.domain.sample.Sample.SampleId;

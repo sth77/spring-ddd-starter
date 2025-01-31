@@ -6,7 +6,7 @@ to: src/main/java/com/example/app/domain/<%= h.changeCase.lower(feature) %>/<%= 
 -%>
 package <%= FeaturePackage %>;
 
-import <%= RootPackage %>.common.model.AbstractAggregate;
+import <%= RootPackage %>.domain.common.model.AbstractAggregate;
 import <%= FeaturePackage %>.<%= AggregateType %>.<%= IdType %>;
 import <%= FeaturePackage %>.<%= CommandType %>.<%= CreateCommandType %>;
 import <%= FeaturePackage %>.<%= CommandType %>.<%= UpdateNameCommandType %>;
@@ -61,19 +61,19 @@ public class <%= AggregateType %> extends AbstractAggregate<<%= Name %>, <%= IdT
         public final String rel;
     }
 
-    public record <%= IdType %>(UUID uuidValue) implements Identifier {
+    public record <%= IdType %>(UUID id) implements Identifier {
 
         public static <%= IdType %> random() {
             return <%= IdType %>.of(UUID.randomUUID());
         }
 
-        public static <%= IdType %> of(UUID uuidValue) {
-            return new <%= IdType %>(uuidValue);
+        public static <%= IdType %> of(UUID id) {
+            return new <%= IdType %>(id);
         }
 
         @Override
         public String toString() {
-            return uuidValue.toString();
+            return id.toString();
         }
     }
 

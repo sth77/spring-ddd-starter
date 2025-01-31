@@ -1,6 +1,6 @@
 package com.example.app.infrastructure.demo;
 
-import com.example.app.common.logging.LogPrefix;
+import com.example.app.domain.common.logging.LogPrefix;
 import com.example.app.domain.person.People;
 import com.example.app.domain.person.Person;
 import com.example.app.domain.person.PersonCommand;
