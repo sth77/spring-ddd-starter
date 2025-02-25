@@ -1,5 +1,5 @@
 ---
-to: src/main/java/com/example/app/domain/<%= name %>/web/<%= Name + "Detail" %>.java
+to: src/main/java/com/example/app/domain/<%= feature %>/web/<%= Name + "Detail" %>.java
 ---
 <%
    include(`${templates}/variables.ejs`)

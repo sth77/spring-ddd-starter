@@ -1,5 +1,5 @@
 ---
-to: src/main/java/com/example/app/domain/<%= name %>/web/<%= Name %>Links.java
+to: src/main/java/com/example/app/domain/<%= feature %>/web/<%= Name %>Links.java
 ---
 <%
    include(`${templates}/variables.ejs`)
@@ -33,7 +33,7 @@ public class <%= AggregateType %>Links implements RepresentationModelProcessor<E
 
     private void addOperationLink(EntityModel<<%= AggregateType %>> model, <%= AggregateType %> <%= aggregateName %>, <%= AggregateType %>.Operation operation) {
         model.addIf(!model.hasLink(operation.rel) && <%= aggregateName %>.can(<%= AggregateType %>.Operation.UPDATE_NAME), () -> entityLinks
-                .linkFor(<%= AggregateType %>.class).slash(operation.rel)
+                .linkForItemResource(<%= AggregateType %>.class, <%= aggregateName %>.getId()).slash(operation.rel)
                 .withRel(operation.rel));
     }
 

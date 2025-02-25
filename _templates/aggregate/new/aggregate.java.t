@@ -12,6 +12,7 @@ import <%= FeaturePackage %>.<%= CommandType %>.<%= CreateCommandType %>;
 import <%= FeaturePackage %>.<%= CommandType %>.<%= UpdateNameCommandType %>;
 import <%= FeaturePackage %>.<%= EventType %>.<%= CreatedEventType %>;
 import <%= FeaturePackage %>.<%= EventType %>.<%= NameUpdatedEventType %>;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -61,7 +62,7 @@ public class <%= AggregateType %> extends AbstractAggregate<<%= Name %>, <%= IdT
         public final String rel;
     }
 
-    public record <%= IdType %>(UUID id) implements Identifier {
+    public record <%= IdType %>(@JsonValue UUID id) implements Identifier {
 
         public static <%= IdType %> random() {
             return <%= IdType %>.of(UUID.randomUUID());
