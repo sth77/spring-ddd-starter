@@ -7,11 +7,12 @@ to: src/main/java/com/example/app/domain/<%= h.changeCase.lower(feature) %>/<%= 
 package <%= FeaturePackage %>;
 
 import <%= RootPackage %>.domain.common.model.AbstractAggregate;
+import <%= RootPackage %>.domain.common.model.DomainException;
 import <%= FeaturePackage %>.<%= AggregateType %>.<%= IdType %>;
 import <%= FeaturePackage %>.<%= CommandType %>.<%= CreateCommandType %>;
-import <%= FeaturePackage %>.<%= CommandType %>.<%= UpdateNameCommandType %>;
+import <%= FeaturePackage %>.<%= CommandType %>.<%= UpdateCommandType %>;
 import <%= FeaturePackage %>.<%= EventType %>.<%= CreatedEventType %>;
-import <%= FeaturePackage %>.<%= EventType %>.<%= NameUpdatedEventType %>;
+import <%= FeaturePackage %>.<%= EventType %>.<%= UpdatedEventType %>;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -28,38 +29,50 @@ import java.util.UUID;
 public class <%= AggregateType %> extends AbstractAggregate<<%= Name %>, <%= IdType %>> implements AggregateRoot<<%= AggregateType %>, <%= IdType %>>{
 
     private final <%= IdType %> id;
-    private <%= StateType %> state = <%= StateType %>.DRAFT;
     private String name;
+    private <%= StateType %> state = <%= StateType %>.DRAFT;
 
     public static <%= AggregateType %> create(<%= CreateCommandType %> data) {
         val result = new <%= AggregateType %>(<%= IdType %>.random());
         result.name = data.name();
-        result.registerEvent(<%= CreatedEventType %>.of(result.getId()));
+        result.registerEvent(new <%= CreatedEventType %>(result.id));
         return result;
     }
 
-    public <%= AggregateType %> updateName(<%= UpdateNameCommandType %> data) {
+    public <%= AggregateType %> updateName(<%= UpdateCommandType %> data) {
+        assertCan(Operation.UPDATE_NAME);
         if (!Objects.equals(this.name, data.name())) {
             this.name = data.name();
-            registerEvent(<%= NameUpdatedEventType %>.builder()
-                      .<%= idName %>(id)
-                      .name(name)
-                      .build());
+            registerEvent(new <%= UpdatedEventType %>(id, name));
         }
         return this;
     }
 
+    public Talk publish() {
+        assertCan(Operation.PUBLISH);
+        state = TalkState.PUBLISHED;
+        registerEvent(new <%= UpdatedEventType %>(id, name));
+        return this;
+    }
+
+    private void assertCan(Operation operation) {
+        if (!can(operation)) {
+            throw new DomainException("Cannot do operation %s on aggregate in state %s"
+                    .formatted(operation.key, state));
+        }
+    }
+
     public boolean can(Operation operation) {
-        return true;
+        return state != TalkState.PUBLISHED;
     }
 
     @Getter
     @RequiredArgsConstructor
     public enum Operation {
-        CREATE("create"),
-        UPDATE_NAME("updateName");
+        UPDATE_NAME("updateName"),
+        PUBLISH("publish");
 
-        public final String rel;
+        public final String key;
     }
 
     public record <%= IdType %>(@JsonValue UUID id) implements Identifier {
@@ -79,7 +92,8 @@ public class <%= AggregateType %> extends AbstractAggregate<<%= Name %>, <%= IdT
     }
 
     public enum <%= StateType %> {
-        DRAFT
+        DRAFT,
+        PUBLISHED
     }
 
 }

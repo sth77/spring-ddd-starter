@@ -17,17 +17,17 @@ public sealed interface <%= EventType %> extends DomainEvent {
 
     @Builder
     record <%= CreatedEventType %>(
-        @NotNull <%= IdType %> <%= idName %>) implements <%= EventType %> {
-
-        static <%= CreatedEventType %> of(<%= IdType %> <%= idName %>) {
-            return new <%= CreatedEventType %>(<%= idName %>);
-        }
+        <%= IdType %> <%= idName %>) implements <%= EventType %> {
     }
 
-    @Builder
-    record <%= NameUpdatedEventType %>(
-        @NotNull <%= IdType %> <%= idName %>,
-        @NotNull String name) implements <%= EventType %> {
+    record <%= UpdatedEventType %>(
+        <%= IdType %> <%= idName %>,
+        String name) implements <%= EventType %> {
+    }
+
+    record <%= PublishedEventType %>(
+        <%= IdType %> <%= idName %>,
+        String name) implements <%= EventType %> {
     }
 
 }

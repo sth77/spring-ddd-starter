@@ -10,7 +10,7 @@ import <%= FeaturePackage %>.<%= AggregateType %>;
 import <%= FeaturePackage %>.<%= AggregateType %>.<%= IdType %>;
 import <%= FeaturePackage %>.<%= RepositoryType %>;
 import <%= FeaturePackage %>.<%= CommandType %>.<%= CreateCommandType %>;
-import <%= FeaturePackage %>.<%= CommandType %>.<%= UpdateNameCommandType %>;
+import <%= FeaturePackage %>.<%= CommandType %>.<%= UpdateCommandType %>;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
@@ -48,8 +48,13 @@ public class <%= ControllerType %> implements RepresentationModelProcessor<Colle
     }
 
 	@PostMapping(path = "/<%= collectionRel %>/{<%= idName %>}/updateName")
-	public ResponseEntity<EntityModel<<%= AggregateType %>>> updateName(@PathVariable <%= IdType %> <%= idName %>, @RequestBody <%= UpdateNameCommandType %> data) {
+	public ResponseEntity<EntityModel<<%= AggregateType %>>> updateName(@PathVariable <%= IdType %> <%= idName %>, @RequestBody <%= UpdateCommandType %> data) {
 		return doWith<%= AggregateType %>(<%= idName %>, it -> it.updateName(data));
+	}
+
+	@PostMapping(path = "/<%= collectionRel %>/{<%= idName %>}/publish")
+	public ResponseEntity<EntityModel<<%= AggregateType %>>> publish(@PathVariable <%= IdType %> <%= idName %>) {
+		return doWithTalk(<%= idName %>, <%= AggregateType %>::publish);
 	}
 
 	private ResponseEntity<EntityModel<<%= AggregateType %>>> doWith<%= AggregateType %>(<%= IdType %> <%= idName %>, Consumer<<%= AggregateType %>> action) {
@@ -62,7 +67,7 @@ public class <%= ControllerType %> implements RepresentationModelProcessor<Colle
     @Nonnull
     @Override
     public CollectionModel<EntityModel<<%= AggregateType %>>> process(CollectionModel<EntityModel<<%= AggregateType %>>> model) {
-        return model.add(entityLinks.linkFor(<%= AggregateType %>.class).withRel(<%= AggregateType %>.Operation.CREATE.rel));
+        return model.add(entityLinks.linkFor(<%= AggregateType %>.class).withRel(<%= AggregateType %>Links.REL_CREATE));
     }
 
 }

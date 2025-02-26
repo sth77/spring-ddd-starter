@@ -5,7 +5,7 @@ import com.example.app.domain.person.Person.PersonId;
 import com.example.app.domain.person.PersonCommand.CreatePerson;
 import com.example.app.domain.person.PersonCommand.UpdatePersonName;
 import com.example.app.domain.person.PersonEvent.PersonCreated;
-import com.example.app.domain.person.PersonEvent.PersonNameUpdated;
+import com.example.app.domain.person.PersonEvent.PersonUpdated;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -33,7 +33,7 @@ public class Person extends AbstractAggregate<Person, PersonId> implements Aggre
     public Person updateName(UpdatePersonName data) {
         if (!Objects.equals(this.name, data.name())) {
             this.name = data.name();
-            registerEvent(PersonNameUpdated.builder()
+            registerEvent(PersonUpdated.builder()
                       .personId(id)
                       .name(name)
                       .build());

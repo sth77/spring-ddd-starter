@@ -19,7 +19,7 @@ public sealed interface PersonEvent extends DomainEvent {
     }
 
     @Builder
-    record PersonNameUpdated(
+    record PersonUpdated(
         @NotNull PersonId personId,
         @NotNull String name) implements PersonEvent {
     }

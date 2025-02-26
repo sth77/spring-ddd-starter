@@ -17,11 +17,13 @@
     CommandType = AggregateType + "Command"
 
     CreateCommandType = "Create" + AggregateType
-    UpdateNameCommandType = "Update" + AggregateType + "Name"
+    UpdateCommandType = "Update" + AggregateType
+    PublishCommandType = "Publish" + AggregateType
 
     EventType = AggregateType + "Event"
     CreatedEventType = AggregateType + "Created"
-    NameUpdatedEventType = AggregateType + "NameUpdated"
+    UpdatedEventType = AggregateType + "Updated"
+    PublishedEventType = AggregateType + "Published"
 
     RootPackage = "com.example.app";
     PackageDir = h.changeCase.lower(name)

@@ -11,14 +11,14 @@ import lombok.Builder;
 
 public sealed interface <%= CommandType %> extends Command {
 
-    @Builder
     record <%= CreateCommandType %>(
         String name
         // TODO add the fields required to create the aggregate
         ) implements <%= CommandType %> { }
 
-    @Builder
-    record <%= UpdateNameCommandType %>(
+    record <%= UpdateCommandType %>(
         String name) implements <%= CommandType %> { }
+
+    record <%= PublishCommandType %>() implements TalkCommand { }
 
 }

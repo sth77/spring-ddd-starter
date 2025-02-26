@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 public class SampleApiConfiguration {
 
     @Bean
-    ProjectionLinks<Sample> sampleSummaryLinks(SampleLinks delegate) {
+    ProjectionLinks<Sample> sampleProjectionLinks(SampleLinks delegate) {
         return new ProjectionLinks<>(delegate, Sample.class);
     }
 
