@@ -39,8 +39,8 @@ public class <%= AggregateType %> extends AbstractAggregate<<%= Name %>, <%= IdT
         return result;
     }
 
-    public <%= AggregateType %> updateName(<%= UpdateCommandType %> data) {
-        assertCan(Operation.UPDATE_NAME);
+    public <%= AggregateType %> update(<%= UpdateCommandType %> data) {
+        assertCan(Operation.UPDATE);
         if (!Objects.equals(this.name, data.name())) {
             this.name = data.name();
             registerEvent(new <%= UpdatedEventType %>(id, name));
@@ -48,9 +48,9 @@ public class <%= AggregateType %> extends AbstractAggregate<<%= Name %>, <%= IdT
         return this;
     }
 
-    public Talk publish() {
+    public <%= AggregateType %> publish() {
         assertCan(Operation.PUBLISH);
-        state = TalkState.PUBLISHED;
+        state = <%= StateType %>.PUBLISHED;
         registerEvent(new <%= UpdatedEventType %>(id, name));
         return this;
     }
@@ -63,13 +63,13 @@ public class <%= AggregateType %> extends AbstractAggregate<<%= Name %>, <%= IdT
     }
 
     public boolean can(Operation operation) {
-        return state != TalkState.PUBLISHED;
+        return state != <%= StateType %>.PUBLISHED;
     }
 
     @Getter
     @RequiredArgsConstructor
     public enum Operation {
-        UPDATE_NAME("updateName"),
+        UPDATE("update"),
         PUBLISH("publish");
 
         public final String key;

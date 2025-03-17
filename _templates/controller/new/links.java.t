@@ -40,7 +40,7 @@ public class <%= AggregateType %>Links implements RepresentationModelProcessor<E
     }
 
     private void addOperationLink(EntityModel<<%= AggregateType %>> model, <%= AggregateType %> <%= aggregateName %>, <%= AggregateType %>.Operation operation) {
-        model.addIf(!model.hasLink(operation.key) && <%= aggregateName %>.can(<%= AggregateType %>.Operation.UPDATE_NAME), () -> entityLinks
+        model.addIf(!model.hasLink(operation.key) && <%= aggregateName %>.can(operation), () -> entityLinks
                 .linkForItemResource(<%= AggregateType %>.class, <%= aggregateName %>.getId()).slash(operation.key)
                 .withRel(operation.key));
     }

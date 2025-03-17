@@ -19,6 +19,6 @@ public sealed interface <%= CommandType %> extends Command {
     record <%= UpdateCommandType %>(
         String name) implements <%= CommandType %> { }
 
-    record <%= PublishCommandType %>() implements TalkCommand { }
+    record <%= PublishCommandType %>() implements <%= CommandType %> { }
 
 }

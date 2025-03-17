@@ -47,14 +47,14 @@ public class <%= ControllerType %> implements RepresentationModelProcessor<Colle
         return ResponseEntity.ok(EntityModel.of(result));
     }
 
-	@PostMapping(path = "/<%= collectionRel %>/{<%= idName %>}/updateName")
-	public ResponseEntity<EntityModel<<%= AggregateType %>>> updateName(@PathVariable <%= IdType %> <%= idName %>, @RequestBody <%= UpdateCommandType %> data) {
-		return doWith<%= AggregateType %>(<%= idName %>, it -> it.updateName(data));
+	@PostMapping(path = "/<%= collectionRel %>/{<%= idName %>}/update")
+	public ResponseEntity<EntityModel<<%= AggregateType %>>> update(@PathVariable <%= IdType %> <%= idName %>, @RequestBody <%= UpdateCommandType %> data) {
+		return doWith<%= AggregateType %>(<%= idName %>, it -> it.update(data));
 	}
 
 	@PostMapping(path = "/<%= collectionRel %>/{<%= idName %>}/publish")
 	public ResponseEntity<EntityModel<<%= AggregateType %>>> publish(@PathVariable <%= IdType %> <%= idName %>) {
-		return doWithTalk(<%= idName %>, <%= AggregateType %>::publish);
+		return doWith<%= AggregateType %>(<%= idName %>, <%= AggregateType %>::publish);
 	}
 
 	private ResponseEntity<EntityModel<<%= AggregateType %>>> doWith<%= AggregateType %>(<%= IdType %> <%= idName %>, Consumer<<%= AggregateType %>> action) {
