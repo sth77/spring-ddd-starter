@@ -1,7 +1,9 @@
 package com.example.app.domain.sample.web;
 
+import com.example.app.domain.common.model.CommandHelper;
 import com.example.app.domain.sample.Sample;
 import com.example.app.domain.sample.Sample.SampleId;
+import com.example.app.domain.sample.SampleCommand;
 import com.example.app.domain.sample.SampleCommand.PublishSample;
 import com.example.app.domain.sample.Samples;
 import com.example.app.domain.sample.SampleCommand.CreateSample;
@@ -37,8 +39,9 @@ public class SampleOperationsController implements RepresentationModelProcessor<
 
 	private final Samples samples;
 	private final EntityLinks entityLinks;
+	private final CommandHelper<Sample, SampleCommand, SampleOperationsController> commandHelper = new CommandHelper<>(Sample.class, SampleCommand.class, SampleOperationsController.class);
 
-    @PostMapping("/samples")
+	@PostMapping("/samples")
     public ResponseEntity<EntityModel<Sample>> create(@RequestBody CreateSample data) {
         val result = samples.save(Sample.create(data));
         return ResponseEntity.ok(EntityModel.of(result));
@@ -64,7 +67,7 @@ public class SampleOperationsController implements RepresentationModelProcessor<
     @Nonnull
     @Override
     public CollectionModel<EntityModel<Sample>> process(CollectionModel<EntityModel<Sample>> model) {
-        return model.add(entityLinks.linkFor(Sample.class).withRel(Sample.Operation.CREATE.rel));
+        return model.add(entityLinks.linkFor(Sample.class).withRel(commandHelper.getRel(CreateSample.class)));
     }
 
 }

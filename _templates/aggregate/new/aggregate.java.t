@@ -14,6 +14,7 @@ import <%= FeaturePackage %>.<%= CommandType %>.<%= UpdateCommandType %>;
 import <%= FeaturePackage %>.<%= EventType %>.<%= CreatedEventType %>;
 import <%= FeaturePackage %>.<%= EventType %>.<%= UpdatedEventType %>;
 import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -25,7 +26,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Getter
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class <%= AggregateType %> extends AbstractAggregate<<%= Name %>, <%= IdType %>> implements AggregateRoot<<%= AggregateType %>, <%= IdType %>>{
 
     private final <%= IdType %> id;
@@ -33,8 +34,9 @@ public class <%= AggregateType %> extends AbstractAggregate<<%= Name %>, <%= IdT
     private <%= StateType %> state = <%= StateType %>.DRAFT;
 
     public static <%= AggregateType %> create(<%= CreateCommandType %> data) {
-        val result = new <%= AggregateType %>(<%= IdType %>.random());
-        result.name = data.name();
+        val result = new <%= AggregateType %>(
+            <%= IdType %>.random(),
+            data.name());
         result.registerEvent(new <%= CreatedEventType %>(result.id));
         return result;
     }

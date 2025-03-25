@@ -1,8 +1,10 @@
 package com.example.app.domain.sample.web;
 
+import com.example.app.domain.common.model.CommandHelper;
 import com.example.app.domain.sample.Sample;
-import com.example.app.infrastructure.web.ProjectionLinks;
+import com.example.app.domain.sample.SampleCommand;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
@@ -13,20 +15,24 @@ import org.springframework.stereotype.Component;
 public class SampleLinks implements RepresentationModelProcessor<EntityModel<Sample>> {
 
     private final EntityLinks entityLinks;
+    private final CommandHelper<Sample, SampleCommand, SampleOperationsController> commandHelper = new CommandHelper<>(Sample.class, SampleCommand.class, SampleOperationsController.class);
 
     @Override
     public EntityModel<Sample> process(EntityModel<Sample> model) {
         if (model.getContent() instanceof Sample sample) {
-            addOperationLink(model, sample, Sample.Operation.UPDATE);
-            addOperationLink(model, sample, Sample.Operation.PUBLISH);
+            commandHelper.getCommands().forEach(
+                    command -> addCommandLink(model, sample, command));
         }
         return model;
     }
 
-    private void addOperationLink(EntityModel<Sample> model, Sample sample, Sample.Operation operation) {
-        model.addIf(sample.can(Sample.Operation.UPDATE), () -> entityLinks
-                .linkFor(Sample.class).slash(operation.rel)
-                .withRel(operation.rel));
+    private void addCommandLink(
+            EntityModel<Sample> model,
+            Sample sample,
+            Class<? extends SampleCommand> commandType) {
+        val rel = commandHelper.getRel(commandType);
+        model.addIf(sample.can(commandType), () -> entityLinks
+                .linkFor(Sample.class).slash(rel)
+                .withRel(rel));
     }
-
 }
