@@ -1,13 +1,16 @@
 package com.example.app.domain.sample;
 
-import com.example.app.domain.common.model.AbstractAggregate;
 import com.example.app.domain.common.execption.DomainException;
+import com.example.app.domain.common.model.AbstractAggregate;
 import com.example.app.domain.person.Person;
 import com.example.app.domain.person.Person.PersonId;
 import com.example.app.domain.sample.Sample.SampleId;
 import com.example.app.domain.sample.SampleCommand.CreateSample;
 import com.example.app.domain.sample.SampleCommand.PublishSample;
 import com.example.app.domain.sample.SampleCommand.UpdateSample;
+import com.example.app.domain.sample.SampleEvent.SampleCreated;
+import com.example.app.domain.sample.SampleEvent.SamplePublished;
+import com.example.app.domain.sample.SampleEvent.SampleUpdated;
 import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -38,7 +41,7 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
                 data.name(),
                 data.description(),
                 SampleState.DRAFT);
-        result.registerEvent(SampleEvent.SampleCreated.of(result.getId()));
+        result.registerEvent(new SampleCreated(result.getId()));
         return result;
     }
 
@@ -48,11 +51,7 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
                 && Objects.equals(description, data.description()))) {
             name = data.name();
             description = data.description();
-            registerEvent(SampleEvent.SampleUpdated.builder()
-                    .sampleId(id)
-                    .name(name)
-                    .description(description)
-                    .build());
+            registerEvent(new SampleUpdated(id, name, description));
         }
         return this;
     }
@@ -60,9 +59,7 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
     public Sample publish(PublishSample data) {
         assertCan(data);
         state = SampleState.PUBLISHED;
-        registerEvent(SampleEvent.SamplePublished.builder()
-                .sampleId(id)
-                .build());
+        registerEvent(new SamplePublished(id));
         return this;
     }
 
@@ -73,7 +70,7 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
         }
     }
 
-    public <T extends SampleCommand> boolean can(Class<T> operation) {
+    public boolean can(Class<? extends SampleCommand> operation) {
         if (operation.equals(CreateSample.class)) {
             return false;
         }

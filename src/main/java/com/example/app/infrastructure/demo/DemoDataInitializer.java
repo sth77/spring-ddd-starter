@@ -42,27 +42,25 @@ public class DemoDataInitializer {
          */
         val personData = IntStream.range(1, 3)
                 .mapToObj(i -> Person.create(PersonCommand.CreatePerson.builder()
-                .name("Person " + i)
-                .build()))
+                        .name("Person " + i)
+                        .build()))
                 .map(people::save)
                 .toList();
         val sampleData = IntStream.range(1, 4)
-                .mapToObj(i -> Sample.create(CreateSample.builder()
-                        .name("Sample " + i)
-                        .description("Description of sample " + i)
-                        .owner(personData.get(i % personData.size()))
-                        .build()))
+                .mapToObj(i -> Sample.create(
+                        new CreateSample("Sample " + i,
+                                "Description of sample " + i,
+                                personData.get(i % personData.size()))))
                 .map(samples::save)
                 .toList();
 
         val sample2 = sampleData.get(1);
-        samples.save(sample2.update(UpdateSample.builder()
-                .name(sample2.getName())
-                .description("Updated description of sample 2")
-                .build()));
+        samples.save(sample2.update(new UpdateSample(
+                sample2.getName(),
+                "Updated description of sample 2")));
 
         val sample3 = sampleData.get(2);
-        samples.save(sample3.publish(PublishSample.create()));
+        samples.save(sample3.publish(new PublishSample()));
 
     }
 

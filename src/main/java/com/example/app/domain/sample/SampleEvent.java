@@ -9,28 +9,17 @@ public sealed interface SampleEvent extends DomainEvent {
 
     SampleId sampleId();
 
-    @Builder
     record SampleCreated(
-        @NotNull SampleId sampleId) implements SampleEvent {
-
-        static SampleCreated of(SampleId sampleId) {
-            return new SampleCreated(sampleId);
-        }
+            SampleId sampleId) implements SampleEvent {
     }
 
-    @Builder
     record SampleUpdated(
-        @NotNull
-        SampleId sampleId,
-        @NotNull
-        String name,
-        @NotNull
-        String description) implements SampleEvent {
+            SampleId sampleId,
+            String name,
+            String description) implements SampleEvent {
     }
 
-    @Builder
     record SamplePublished(
-            @NotNull
             SampleId sampleId) implements SampleEvent {
     }
 
