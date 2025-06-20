@@ -1,6 +1,7 @@
 package com.example.app;
 
 import com.tngtech.archunit.core.domain.JavaClasses;
+import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import lombok.val;
 import org.springframework.lang.NonNullApi;
@@ -11,6 +12,7 @@ import java.util.stream.Stream;
 import static java.util.function.Predicate.not;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@AnalyzeClasses(packages = "com.example.app")
 public class NullabilityAnnotationTests {
 
     @ArchTest
