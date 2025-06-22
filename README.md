@@ -202,28 +202,35 @@ When accessing a single aggregate, Spring shows the fields of the aggregate, plu
 We can now use the same mechanism to communicate to the client of the API which business operations (i.e. commands) are
 currently available depending on the aggregate state and the user role. The convention is to produce a HAL link for each
 available operation and let it point at the path served by the controller to execute the command. The logic
-to produce the links is placed in a class `<AggregateName>Links` in the web API package of the feature
+to produce the links is placed in a class `<AggregateName>Links` in the web API package of the feature.
 
 For the sample aggregate, this looks like this:
 ```java
+@Component
+@RequiredArgsConstructor
 public class SampleLinks implements RepresentationModelProcessor<EntityModel<Sample>> {
 
-    private final EntityLinks entityLinks;
+   private final EntityLinks entityLinks;
+   private final AggregateCommands<Sample, SampleCommand, SampleOperationsController> aggregateCommands = new AggregateCommands<>(Sample.class, SampleCommand.class, SampleOperationsController.class);
 
-    @Override
-    public EntityModel<Sample> process(EntityModel<Sample> model) {
-        if (model.getContent() instanceof Sample sample) {
-            addOperationLink(model, sample, Sample.Operation.UPDATE);
-            addOperationLink(model, sample, Sample.Operation.PUBLISH);
-        }
-        return model;
-    }
+   @Override
+   public EntityModel<Sample> process(EntityModel<Sample> model) {
+      if (model.getContent() instanceof Sample sample) {
+         aggregateCommands.getCommands().forEach(
+                 command -> addCommandLink(model, sample, command));
+      }
+      return model;
+   }
 
-    private void addOperationLink(EntityModel<Sample> model, Sample sample, Sample.Operation operation) {
-        model.addIf(sample.can(Sample.Operation.UPDATE), () -> entityLinks
-                .linkFor(Sample.class).slash(operation.rel)
-                .withRel(operation.rel));
-    }
+   private void addCommandLink(
+           EntityModel<Sample> model,
+           Sample sample,
+           Class<? extends SampleCommand> commandType) {
+      val rel = aggregateCommands.getRel(commandType);
+      model.addIf(sample.can(commandType), () -> entityLinks
+              .linkFor(Sample.class).slash(rel)
+              .withRel(rel));
+   }
 }
 ```
 Note how Spring's entity links comes in handy to resolve the path annotated on the `SampleOperationsController`. A link
@@ -270,8 +277,7 @@ jMolecules also ensures that the elements of tactical domain-driven design are u
 
 ## Open Issues
 
-* Generate test classes 
-* Generate initial DB schema for new aggregates
+* Generate test classes for controllers
 * Add documentation to generated artifacts
 * Allow adding operations with related commands and events one by one
 * Log domain events _before_ they are published

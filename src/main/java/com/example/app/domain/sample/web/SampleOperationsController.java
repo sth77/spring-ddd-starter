@@ -1,6 +1,6 @@
 package com.example.app.domain.sample.web;
 
-import com.example.app.domain.common.model.CommandHelper;
+import com.example.app.domain.common.model.AggregateCommands;
 import com.example.app.domain.sample.Sample;
 import com.example.app.domain.sample.Sample.SampleId;
 import com.example.app.domain.sample.SampleCommand;
@@ -35,11 +35,9 @@ import java.util.function.Consumer;
 @RepositoryRestController
 @ExposesResourceFor(Sample.class)
 @SecurityRequirement(name = "basicAuth")
-public class SampleOperationsController implements RepresentationModelProcessor<CollectionModel<EntityModel<Sample>>> {
+public class SampleOperationsController {
 
 	private final Samples samples;
-	private final EntityLinks entityLinks;
-	private final CommandHelper<Sample, SampleCommand, SampleOperationsController> commandHelper = new CommandHelper<>(Sample.class, SampleCommand.class, SampleOperationsController.class);
 
 	@PostMapping("/samples")
     public ResponseEntity<EntityModel<Sample>> create(@RequestBody CreateSample data) {
@@ -63,11 +61,5 @@ public class SampleOperationsController implements RepresentationModelProcessor<
 				.map(ResponseEntity::ok)
 				.orElse(ResponseEntity.notFound().build());
 	}
-
-    @Nonnull
-    @Override
-    public CollectionModel<EntityModel<Sample>> process(CollectionModel<EntityModel<Sample>> model) {
-        return model.add(entityLinks.linkFor(Sample.class).withRel(commandHelper.getRel(CreateSample.class)));
-    }
 
 }

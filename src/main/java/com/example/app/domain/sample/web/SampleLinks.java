@@ -1,6 +1,6 @@
 package com.example.app.domain.sample.web;
 
-import com.example.app.domain.common.model.CommandHelper;
+import com.example.app.domain.common.model.AggregateCommands;
 import com.example.app.domain.sample.Sample;
 import com.example.app.domain.sample.SampleCommand;
 import lombok.RequiredArgsConstructor;
@@ -15,12 +15,12 @@ import org.springframework.stereotype.Component;
 public class SampleLinks implements RepresentationModelProcessor<EntityModel<Sample>> {
 
     private final EntityLinks entityLinks;
-    private final CommandHelper<Sample, SampleCommand, SampleOperationsController> commandHelper = new CommandHelper<>(Sample.class, SampleCommand.class, SampleOperationsController.class);
+    private final AggregateCommands<Sample, SampleCommand> aggregateCommands = new AggregateCommands<>(Sample.class, SampleCommand.class);
 
     @Override
     public EntityModel<Sample> process(EntityModel<Sample> model) {
         if (model.getContent() instanceof Sample sample) {
-            commandHelper.getCommands().forEach(
+            aggregateCommands.getCommands().forEach(
                     command -> addCommandLink(model, sample, command));
         }
         return model;
@@ -30,7 +30,7 @@ public class SampleLinks implements RepresentationModelProcessor<EntityModel<Sam
             EntityModel<Sample> model,
             Sample sample,
             Class<? extends SampleCommand> commandType) {
-        val rel = commandHelper.getRel(commandType);
+        val rel = aggregateCommands.getRel(commandType);
         model.addIf(sample.can(commandType), () -> entityLinks
                 .linkFor(Sample.class).slash(rel)
                 .withRel(rel));

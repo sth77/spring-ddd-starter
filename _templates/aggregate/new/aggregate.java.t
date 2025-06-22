@@ -6,17 +6,19 @@ to: src/main/java/com/example/app/domain/<%= h.changeCase.lower(feature) %>/<%= 
 -%>
 package <%= FeaturePackage %>;
 
-import <%= RootPackage %>.domain.common.model.AbstractAggregate;
-import <%= RootPackage %>.domain.common.model.DomainException;
+import <%= CommonPackage %>.model.AbstractAggregate;
+import <%= CommonPackage %>.model.DomainException;
 import <%= FeaturePackage %>.<%= AggregateType %>.<%= IdType %>;
 import <%= FeaturePackage %>.<%= CommandType %>.<%= CreateCommandType %>;
 import <%= FeaturePackage %>.<%= CommandType %>.<%= UpdateCommandType %>;
+import <%= FeaturePackage %>.<%= CommandType %>.<%= PublishCommandType %>;
+import <%= FeaturePackage %>.<%= EventType %>.<%= PublishedEventType %>;
 import <%= FeaturePackage %>.<%= EventType %>.<%= CreatedEventType %>;
 import <%= FeaturePackage %>.<%= EventType %>.<%= UpdatedEventType %>;
 import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 import org.jmolecules.ddd.types.AggregateRoot;
@@ -26,23 +28,24 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Getter
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class <%= AggregateType %> extends AbstractAggregate<<%= Name %>, <%= IdType %>> implements AggregateRoot<<%= AggregateType %>, <%= IdType %>>{
 
     private final <%= IdType %> id;
     private String name;
-    private <%= StateType %> state = <%= StateType %>.DRAFT;
+    private <%= StateType %> state;
 
     public static <%= AggregateType %> create(<%= CreateCommandType %> data) {
         val result = new <%= AggregateType %>(
             <%= IdType %>.random(),
-            data.name());
+            data.name(),
+            <%= StateType %>.DRAFT);
         result.registerEvent(new <%= CreatedEventType %>(result.id));
         return result;
     }
 
     public <%= AggregateType %> update(<%= UpdateCommandType %> data) {
-        assertCan(Operation.UPDATE);
+        assertCan(data.getClass());
         if (!Objects.equals(this.name, data.name())) {
             this.name = data.name();
             registerEvent(new <%= UpdatedEventType %>(id, name));
@@ -51,30 +54,24 @@ public class <%= AggregateType %> extends AbstractAggregate<<%= Name %>, <%= IdT
     }
 
     public <%= AggregateType %> publish() {
-        assertCan(Operation.PUBLISH);
+        assertCan(<%= PublishCommandType %>.class);
         state = <%= StateType %>.PUBLISHED;
-        registerEvent(new <%= UpdatedEventType %>(id, name));
+        registerEvent(new <%= PublishedEventType %>(id, name));
         return this;
     }
 
-    private void assertCan(Operation operation) {
-        if (!can(operation)) {
-            throw new DomainException("Cannot do operation %s on aggregate in state %s"
-                    .formatted(operation.key, state));
+    private void assertCan(Class<? extends <%= CommandType %>> command) {
+        if (!can(command)) {
+            throw new DomainException("Command %s not allowed for <%= aggregateName %> in state %s"
+                    .formatted(command.getSimpleName(), state));
         }
     }
 
-    public boolean can(Operation operation) {
+    public boolean can(Class<? extends <%= CommandType %>> operation) {
+        if (operation.equals(<%= CreateCommandType %>.class)) {
+            return false;
+        }
         return state != <%= StateType %>.PUBLISHED;
-    }
-
-    @Getter
-    @RequiredArgsConstructor
-    public enum Operation {
-        UPDATE("update"),
-        PUBLISH("publish");
-
-        public final String key;
     }
 
     public record <%= IdType %>(@JsonValue UUID id) implements Identifier {

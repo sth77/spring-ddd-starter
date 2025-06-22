@@ -7,7 +7,6 @@ to: src/main/java/com/example/app/domain/<%= h.changeCase.lower(feature) %>/<%= 
 package <%= FeaturePackage %>;
 
 import <%= FeaturePackage %>.<%= AggregateType %>.<%= IdType %>;
-import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import org.jmolecules.event.types.DomainEvent;
 
@@ -20,11 +19,13 @@ public sealed interface <%= EventType %> extends DomainEvent {
         <%= IdType %> <%= idName %>) implements <%= EventType %> {
     }
 
+    @Builder
     record <%= UpdatedEventType %>(
         <%= IdType %> <%= idName %>,
         String name) implements <%= EventType %> {
     }
 
+    @Builder
     record <%= PublishedEventType %>(
         <%= IdType %> <%= idName %>,
         String name) implements <%= EventType %> {

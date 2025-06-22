@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.example</groupId>
-    <artifactId>ddd-starter</artifactId>
+    <artifactId>spring-ddd-starter</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>DDD Starter</name>
+    <name>Spring DDD Starter</name>
     <description>Seed project to easily get started implementing applications using patterns of tactical domain driven design.</description>
     <url/>
     <licenses>

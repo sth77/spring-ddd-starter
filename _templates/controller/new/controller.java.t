@@ -1,5 +1,5 @@
 ---
-to: src/main/java/com/example/app/domain/<%= feature %>/web/<%= Name %>OperationsController.java
+to: src/main/java/com/example/app/domain/<%= feature %>/web/<%= Name %>CommandController.java
 ---
 <%
    include(`${templates}/variables.ejs`)
@@ -36,10 +36,9 @@ import java.util.function.Consumer;
 @RepositoryRestController
 @ExposesResourceFor(<%= AggregateType %>.class)
 @SecurityRequirement(name = "basicAuth")
-public class <%= ControllerType %> implements RepresentationModelProcessor<CollectionModel<EntityModel<<%= AggregateType %>>>> {
+public class <%= ControllerType %> {
 
 	private final <%= RepositoryType %> <%= repositoryName %>;
-	private final EntityLinks entityLinks;
 
     @PostMapping("/<%= collectionRel %>")
     public ResponseEntity<EntityModel<<%= AggregateType %>>> create(@RequestBody <%= CreateCommandType %> data) {
@@ -63,11 +62,5 @@ public class <%= ControllerType %> implements RepresentationModelProcessor<Colle
 				.map(ResponseEntity::ok)
 				.orElse(ResponseEntity.notFound().build());
 	}
-
-    @Nonnull
-    @Override
-    public CollectionModel<EntityModel<<%= AggregateType %>>> process(CollectionModel<EntityModel<<%= AggregateType %>>> model) {
-        return model.add(entityLinks.linkFor(<%= AggregateType %>.class).withRel(<%= AggregateType %>Links.REL_CREATE));
-    }
 
 }

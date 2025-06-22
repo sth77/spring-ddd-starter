@@ -12,6 +12,7 @@ import com.example.app.domain.sample.SampleEvent.SampleCreated;
 import com.example.app.domain.sample.SampleEvent.SamplePublished;
 import com.example.app.domain.sample.SampleEvent.SampleUpdated;
 import jakarta.persistence.Column;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.val;
@@ -25,7 +26,7 @@ import java.util.UUID;
 
 @Getter
 @DomainRing
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Sample extends AbstractAggregate<Sample, SampleId> implements AggregateRoot<Sample, SampleId> {
 
     private final SampleId id;

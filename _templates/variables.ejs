@@ -5,7 +5,7 @@
     RepositoryType = h.inflection.pluralize(Name)
     repositoryName = h.changeCase.camel(RepositoryType)
 
-    ControllerType = Name + "OperationsController";
+    ControllerType = Name + "CommandController";
     controllerName = h.changeCase.camel(ControllerType)
 
     IdType = AggregateType + "Id"
@@ -31,6 +31,7 @@
     FeaturePackage = RootPackage + ".domain." + featureName
     FeatureWebPackage = FeaturePackage + ".web"
     InfrastructureWebPackage = RootPackage + ".infrastructure.web"
+    CommonPackage = RootPackage + ".domain.common";
 
     collectionRel = h.inflection.pluralize(aggregateName)
 -%>
