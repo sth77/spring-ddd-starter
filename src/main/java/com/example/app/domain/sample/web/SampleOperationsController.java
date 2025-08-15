@@ -2,22 +2,17 @@ package com.example.app.domain.sample.web;
 
 import com.example.app.domain.sample.Sample;
 import com.example.app.domain.sample.Sample.SampleId;
-import com.example.app.domain.sample.SampleCommand.PublishSample;
-import com.example.app.domain.sample.Samples;
 import com.example.app.domain.sample.SampleCommand.CreateSample;
+import com.example.app.domain.sample.SampleCommand.PublishSample;
 import com.example.app.domain.sample.SampleCommand.UpdateSample;
+import com.example.app.domain.sample.Samples;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-
 import org.jmolecules.architecture.onion.simplified.InfrastructureRing;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.server.ExposesResourceFor;
-import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,12 +28,11 @@ import java.util.function.Consumer;
 @RepositoryRestController
 @ExposesResourceFor(Sample.class)
 @SecurityRequirement(name = "basicAuth")
-public class SampleOperationsController implements RepresentationModelProcessor<CollectionModel<EntityModel<Sample>>> {
+public class SampleOperationsController {
 
 	private final Samples samples;
-	private final EntityLinks entityLinks;
 
-    @PostMapping("/samples")
+	@PostMapping("/samples")
     public ResponseEntity<EntityModel<Sample>> create(@RequestBody CreateSample data) {
         val result = samples.save(Sample.create(data));
         return ResponseEntity.ok(EntityModel.of(result));
@@ -60,11 +54,5 @@ public class SampleOperationsController implements RepresentationModelProcessor<
 				.map(ResponseEntity::ok)
 				.orElse(ResponseEntity.notFound().build());
 	}
-
-    @Nonnull
-    @Override
-    public CollectionModel<EntityModel<Sample>> process(CollectionModel<EntityModel<Sample>> model) {
-        return model.add(entityLinks.linkFor(Sample.class).withRel(Sample.Operation.CREATE.rel));
-    }
 
 }

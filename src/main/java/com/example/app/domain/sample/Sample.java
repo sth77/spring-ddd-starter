@@ -1,16 +1,20 @@
 package com.example.app.domain.sample;
 
-import com.example.app.domain.common.model.AbstractAggregate;
 import com.example.app.domain.common.execption.DomainException;
+import com.example.app.domain.common.model.AbstractAggregate;
 import com.example.app.domain.person.Person;
 import com.example.app.domain.person.Person.PersonId;
 import com.example.app.domain.sample.Sample.SampleId;
 import com.example.app.domain.sample.SampleCommand.CreateSample;
 import com.example.app.domain.sample.SampleCommand.PublishSample;
 import com.example.app.domain.sample.SampleCommand.UpdateSample;
+import com.example.app.domain.sample.SampleEvent.SampleCreated;
+import com.example.app.domain.sample.SampleEvent.SamplePublished;
+import com.example.app.domain.sample.SampleEvent.SampleUpdated;
 import jakarta.persistence.Column;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.jmolecules.architecture.onion.simplified.DomainRing;
 import org.jmolecules.ddd.types.AggregateRoot;
@@ -22,71 +26,56 @@ import java.util.UUID;
 
 @Getter
 @DomainRing
-@RequiredArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Sample extends AbstractAggregate<Sample, SampleId> implements AggregateRoot<Sample, SampleId> {
 
     private final SampleId id;
     private final Association<Person, PersonId> owner;
     private String name;
     private String description;
-    private SampleState state = SampleState.DRAFT;
+    private SampleState state;
 
     public static Sample create(CreateSample data) {
         val result = new Sample(
                 SampleId.random(),
-                Association.forAggregate(data.owner()));
-        result.name = data.name();
-        result.description = data.description();
-        result.registerEvent(SampleEvent.SampleCreated.of(result.getId()));
+                Association.forAggregate(data.owner()),
+                data.name(),
+                data.description(),
+                SampleState.DRAFT);
+        result.registerEvent(new SampleCreated(result.getId()));
         return result;
     }
 
     public Sample update(UpdateSample data) {
-        assertCan(Operation.UPDATE);
+        assertCan(data);
         if (!(Objects.equals(name, data.name())
                 && Objects.equals(description, data.description()))) {
             name = data.name();
             description = data.description();
-            registerEvent(SampleEvent.SampleUpdated.builder()
-                    .sampleId(id)
-                    .name(name)
-                    .description(description)
-                    .build());
+            registerEvent(new SampleUpdated(id, name, description));
         }
         return this;
     }
 
     public Sample publish(PublishSample data) {
-        assertCan(Operation.PUBLISH);
+        assertCan(data);
         state = SampleState.PUBLISHED;
-        registerEvent(SampleEvent.SamplePublished.builder()
-                .sampleId(id)
-                .build());
+        registerEvent(new SamplePublished(id));
         return this;
     }
 
-    private void assertCan(Operation operation) {
-        if (!can(operation)) {
+    private void assertCan(SampleCommand command) {
+        if (!can(command.getClass())) {
             throw new DomainException("Operation %s not allowed for sample in state %s"
-                    .formatted(operation.rel, state));
+                    .formatted(command.getClass().getSimpleName(), state));
         }
     }
 
-    public boolean can(Operation operation) {
-        return switch (operation) {
-            case CREATE -> false;
-            case UPDATE, PUBLISH -> state != SampleState.PUBLISHED;
-        };
-    }
-
-    @Getter
-    @RequiredArgsConstructor
-    public enum Operation {
-        CREATE("create"),
-        UPDATE("update"),
-        PUBLISH("publish");
-
-        public final String rel;
+    public boolean can(Class<? extends SampleCommand> operation) {
+        if (operation.equals(CreateSample.class)) {
+            return false;
+        }
+        return state != SampleState.PUBLISHED;
     }
 
     public record SampleId(@Column(name = "id") UUID uuidValue) implements Identifier {

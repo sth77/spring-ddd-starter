@@ -4,6 +4,7 @@ import com.example.app.domain.common.logging.LogPrefix;
 import com.example.app.domain.person.People;
 import com.example.app.domain.person.Person;
 import com.example.app.domain.person.PersonCommand;
+import com.example.app.domain.person.PersonCommand.CreatePerson;
 import com.example.app.domain.sample.Sample;
 import com.example.app.domain.sample.SampleCommand.CreateSample;
 import com.example.app.domain.sample.SampleCommand.PublishSample;
@@ -41,9 +42,9 @@ public class DemoDataInitializer {
          * 2) create some test data useful for developing the application
          */
         val personData = IntStream.range(1, 3)
-                .mapToObj(i -> Person.create(PersonCommand.CreatePerson.builder()
-                .name("Person " + i)
-                .build()))
+                .mapToObj(i -> Person.create(CreatePerson.builder()
+                        .name("Person " + i)
+                        .build()))
                 .map(people::save)
                 .toList();
         val sampleData = IntStream.range(1, 4)
