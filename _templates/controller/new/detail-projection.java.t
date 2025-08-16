@@ -1,5 +1,5 @@
 ---
-to: src/main/java/com/example/app/domain/<%= feature %>/web/<%= Name + "Detail" %>.java
+to: src/main/java/com/example/app/<%= feature %>/web/<%= Name + "Detail" %>.java
 ---
 <%
    include(`${templates}/variables.ejs`)
@@ -7,7 +7,6 @@ to: src/main/java/com/example/app/domain/<%= feature %>/web/<%= Name + "Detail" 
 package <%= FeatureWebPackage %>;
 
 import <%= FeaturePackage %>.<%= AggregateType %>;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.rest.core.config.Projection;
 
 /**

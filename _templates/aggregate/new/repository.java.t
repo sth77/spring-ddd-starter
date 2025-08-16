@@ -1,5 +1,5 @@
 ---
-to: src/main/java/com/example/app/domain/<%= h.changeCase.lower(feature) %>/<%= h.inflection.pluralize(Name) %>.java
+to: src/main/java/com/example/app/<%= h.changeCase.lower(feature) %>/<%= h.inflection.pluralize(Name) %>.java
 ---
 <%
    include(`${templates}/variables.ejs`)
@@ -9,7 +9,7 @@ package <%= FeaturePackage %>;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import <%= CommonPackage %>.execption.AggregateNotFoundException;
+import <%= CommonPackage %>.model.AggregateNotFoundException;
 import org.jmolecules.ddd.types.Repository;
 import org.jmolecules.ddd.integration.AssociationResolver;
 import org.springframework.data.util.Streamable;

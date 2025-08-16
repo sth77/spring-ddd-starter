@@ -1,12 +1,12 @@
 ---
-to: src/test/java/com/example/app/domain/<%= h.changeCase.lower(feature) %>/<%= Name %>Test.java
+to: src/test/java/com/example/app/<%= h.changeCase.lower(feature) %>/<%= Name %>Test.java
 ---
 <%
    include(`${templates}/variables.ejs`)
 -%>
 package <%= FeaturePackage %>;
 
-import com.example.app.domain.common.model.DomainException;
+import com.example.app.common.model.DomainException;
 import <%= FeaturePackage %>.<%= CommandType %>.<%= CreateCommandType %>;
 import <%= FeaturePackage %>.<%= CommandType %>.<%= UpdateCommandType %>;
 import <%= FeaturePackage %>.<%= CommandType %>.<%= PublishCommandType %>;
@@ -16,8 +16,8 @@ import <%= FeaturePackage %>.<%= EventType %>.<%= UpdatedEventType %>;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 
-import static com.example.app.domain.AggregateEvents.clearEvents;
-import static com.example.app.domain.AggregateEvents.getEvents;
+import static com.example.app.AggregateEvents.clearEvents;
+import static com.example.app.AggregateEvents.getEvents;
 import static <%= FeaturePackage %>.<%= AggregateType %>.<%= StateType %>.DRAFT;
 import static <%= FeaturePackage %>.<%= AggregateType %>.<%= StateType %>.PUBLISHED;
 import static org.assertj.core.api.Assertions.assertThat;

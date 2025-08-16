@@ -28,10 +28,10 @@
     RootPackage = "com.example.app";
     PackageDir = h.changeCase.lower(name)
     featureName = h.changeCase.lower(locals.feature ? locals.feature : name)
-    FeaturePackage = RootPackage + ".domain." + featureName
+    FeaturePackage = RootPackage + "." + featureName
     FeatureWebPackage = FeaturePackage + ".web"
-    InfrastructureWebPackage = RootPackage + ".infrastructure.web"
-    CommonPackage = RootPackage + ".domain.common";
+    InfrastructureWebPackage = RootPackage + "._infrastructure.web"
+    CommonPackage = RootPackage + ".common";
 
     collectionRel = h.inflection.pluralize(aggregateName)
 -%>

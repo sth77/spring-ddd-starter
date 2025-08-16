@@ -1,5 +1,5 @@
 ---
-to: src/main/java/com/example/app/domain/<%= feature %>/web/<%= Name %>CommandController.java
+to: src/main/java/com/example/app/<%= feature %>/web/<%= Name %>CommandController.java
 ---
 <%
    include(`${templates}/variables.ejs`)
@@ -12,16 +12,12 @@ import <%= FeaturePackage %>.<%= RepositoryType %>;
 import <%= FeaturePackage %>.<%= CommandType %>.<%= CreateCommandType %>;
 import <%= FeaturePackage %>.<%= CommandType %>.<%= UpdateCommandType %>;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 import org.springframework.data.rest.webmvc.RepositoryRestController;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.server.ExposesResourceFor;
-import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
