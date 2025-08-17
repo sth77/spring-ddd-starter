@@ -1,5 +1,6 @@
 package com.example.app.sample;
 
+import com.example.app.common.model.I18nText;
 import com.example.app.person.People;
 import com.example.app.person.Person;
 import com.example.app.person.PersonCommand;
@@ -55,7 +56,7 @@ class SamplesTest {
 
     private static Sample sample(Person person) {
         return Sample.create(CreateSample.builder()
-                .name("Sample 1")
+                .name(I18nText.en("Sample 1"))
                 .description("Sample description")
                 .owner(person)
                 .build());

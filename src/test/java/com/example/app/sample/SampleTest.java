@@ -1,6 +1,7 @@
 package com.example.app.sample;
 
 import com.example.app.common.model.DomainException;
+import com.example.app.common.model.I18nText;
 import com.example.app.person.Person;
 import com.example.app.person.PersonCommand;
 import com.example.app.sample.SampleCommand.CreateSample;
@@ -24,7 +25,7 @@ public class SampleTest {
     @Test
     void create_validDataGiven_created() {
         // arrange
-        val name = "Sample 1";
+        val name = I18nText.en("Sample 1");
 
         // act
         val sample = Sample.create(CreateSample.builder()
@@ -42,7 +43,7 @@ public class SampleTest {
     void update_validDataGiven_updated() {
         // arrange
         val sample = sample();
-        val updatedName = "Sample with updated name";
+        val updatedName = I18nText.en("Sample with updated name");
         val updatedDescription = "Sample with updated description";
 
         // act
@@ -106,7 +107,7 @@ public class SampleTest {
 
     private static Sample sample() {
         val result = Sample.create(CreateSample.builder()
-                .name("Sample X")
+                .name(I18nText.en("Sample X"))
                 .owner(person())
                 .build());
         clearEvents(result);

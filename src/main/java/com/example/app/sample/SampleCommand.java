@@ -1,6 +1,7 @@
 package com.example.app.sample;
 
 import com.example.app.common.model.Command;
+import com.example.app.common.model.I18nText;
 import com.example.app.person.Person;
 import lombok.Builder;
 import org.jmolecules.architecture.onion.simplified.DomainRing;
@@ -12,7 +13,7 @@ public sealed interface SampleCommand extends Command {
     @Builder
     @Relation("produce") // showcase override
     record CreateSample(
-            String name,
+            I18nText name,
             String description,
             Person owner
             // TODO add the fields required to create the aggregate
@@ -21,7 +22,7 @@ public sealed interface SampleCommand extends Command {
 
     @Builder
     record UpdateSample(
-            String name,
+            I18nText name,
             String description) implements SampleCommand {
     }
 

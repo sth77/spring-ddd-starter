@@ -1,5 +1,6 @@
 package com.example.app.sample;
 
+import com.example.app.common.model.I18nText;
 import com.example.app.sample.Sample.SampleId;
 import org.jmolecules.event.types.DomainEvent;
 
@@ -13,7 +14,7 @@ public sealed interface SampleEvent extends DomainEvent {
 
     record SampleUpdated(
             SampleId sampleId,
-            String name,
+            I18nText name,
             String description) implements SampleEvent {
     }
 

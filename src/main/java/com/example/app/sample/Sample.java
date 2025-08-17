@@ -2,6 +2,7 @@ package com.example.app.sample;
 
 import com.example.app.common.model.DomainException;
 import com.example.app.common.model.AbstractAggregate;
+import com.example.app.common.model.I18nText;
 import com.example.app.person.Person;
 import com.example.app.person.Person.PersonId;
 import com.example.app.sample.Sample.SampleId;
@@ -31,7 +32,8 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
 
     private final SampleId id;
     private final Association<Person, PersonId> owner;
-    private String name;
+
+    private I18nText name;
     private String description;
     private SampleState state;
 

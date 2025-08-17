@@ -20,7 +20,8 @@ CREATE TABLE IF NOT EXISTS "person" (
 CREATE TABLE IF NOT EXISTS "sample" (
     "id" UUID PRIMARY KEY,
     "version" INT NOT NULL,
-    "name" VARCHAR(255) NOT NULL,
+    "name_en" VARCHAR(255) NOT NULL,
+    "name_de" VARCHAR(255) NOT NULL,
     "description" VARCHAR(2048) NOT NULL,
     "state" VARCHAR(20) NOT nULL,
     "owner" VARCHAR(36) NOT NULL,
