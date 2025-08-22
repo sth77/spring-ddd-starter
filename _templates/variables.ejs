@@ -2,6 +2,9 @@
     AggregateType = h.changeCase.pascal(Name)
     aggregateName = h.changeCase.camel(name)
 
+    ReferenceDataType = h.changeCase.pascal(Name)
+    referenceDataName = h.changeCase.camel(name)
+
     RepositoryType = h.inflection.pluralize(Name)
     repositoryName = h.changeCase.camel(RepositoryType)
 
@@ -30,6 +33,7 @@
     featureName = h.changeCase.lower(locals.feature ? locals.feature : name)
     FeaturePackage = RootPackage + "." + featureName
     FeatureWebPackage = FeaturePackage + ".web"
+    ReferenceDataPackage = RootPackage + ".referencedata"
     InfrastructureWebPackage = RootPackage + "._infrastructure.web"
     CommonPackage = RootPackage + ".common";
 

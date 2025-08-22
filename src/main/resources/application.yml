@@ -15,6 +15,9 @@ spring:
     hibernate:
       naming:
         implicit-strategy: com.example.app._infrastructure.persistence.EmbeddedPrefixImplicitNamingStrategy
+  modulith:
+    events:
+      republish-outstanding-events-on-restart: true
 springdoc:
   swagger-ui:
     csrf:

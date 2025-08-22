@@ -4,6 +4,8 @@ import com.example.app.common.model.I18nText;
 import com.example.app.person.People;
 import com.example.app.person.Person;
 import com.example.app.person.PersonCommand;
+import com.example.app.referencedata.Cities;
+import com.example.app.referencedata.City;
 import com.example.app.sample.Sample.SampleState;
 import com.example.app.sample.SampleCommand.CreateSample;
 import lombok.val;
@@ -22,11 +24,15 @@ class SamplesTest {
     @Autowired
     People people;
 
+    @Autowired
+    Cities cities;
+
     @Test
     void save_validSampleGiven_savedToDb() {
         // arrange
         val person = people.save(person());
-        val sample = sample(person);
+        val city = cities.save(city());
+        val sample = sample(person, city);
         val initialCount = samples.count();
 
         // act
@@ -40,7 +46,8 @@ class SamplesTest {
     void findById_exists_returned() {
         // arrange
         val person = people.save(person());
-        val sample = sample(person);
+        val city = cities.save(city());
+        val sample = sample(person, city);
         samples.save(sample);
 
         // act
@@ -54,10 +61,11 @@ class SamplesTest {
         });
     }
 
-    private static Sample sample(Person person) {
+    private static Sample sample(Person person, City city) {
         return Sample.create(CreateSample.builder()
                 .name(I18nText.en("Sample 1"))
                 .description("Sample description")
+                .city(city)
                 .owner(person)
                 .build());
     }
@@ -66,5 +74,9 @@ class SamplesTest {
         return Person.create(PersonCommand.CreatePerson.builder()
                 .name("N.N.")
                 .build());
+    }
+
+    private static City city() {
+        return City.ofPostalCodeAndName(3000, I18nText.builder().en("Bern").de("Bern").build());
     }
 }

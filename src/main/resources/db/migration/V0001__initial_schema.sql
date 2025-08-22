@@ -17,6 +17,13 @@ CREATE TABLE IF NOT EXISTS "person" (
     CONSTRAINT "person_unique_name" UNIQUE ("name")
     );
 
+CREATE TABLE IF NOT EXISTS "city" (
+    "id" UUID PRIMARY KEY,
+    "postal_code" INTEGER NOT NULL,
+    "name_en" VARCHAR(255) NOT NULL,
+    "name_de" VARCHAR(255) NOT NULL
+    );
+
 CREATE TABLE IF NOT EXISTS "sample" (
     "id" UUID PRIMARY KEY,
     "version" INT NOT NULL,
@@ -25,5 +32,8 @@ CREATE TABLE IF NOT EXISTS "sample" (
     "description" VARCHAR(2048) NOT NULL,
     "state" VARCHAR(20) NOT nULL,
     "owner" VARCHAR(36) NOT NULL,
+    "city_postal_code" INTEGER NOT NULL,
+    "city_name_en" VARCHAR(255) NOT NULL,
+    "city_name_de" VARCHAR(255) NOT NULL,
     FOREIGN KEY ("owner") REFERENCES "person"("id")
     );

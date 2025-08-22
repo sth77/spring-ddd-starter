@@ -4,6 +4,7 @@ import com.example.app.common.model.DomainException;
 import com.example.app.common.model.I18nText;
 import com.example.app.person.Person;
 import com.example.app.person.PersonCommand;
+import com.example.app.referencedata.City;
 import com.example.app.sample.SampleCommand.CreateSample;
 import com.example.app.sample.SampleCommand.UpdateSample;
 import com.example.app.sample.SampleCommand.PublishSample;
@@ -30,6 +31,7 @@ public class SampleTest {
         // act
         val sample = Sample.create(CreateSample.builder()
                 .name(name)
+                .city(city())
                 .owner(person())
                 .build());
 
@@ -50,6 +52,7 @@ public class SampleTest {
         sample.update(UpdateSample.builder()
                 .name(updatedName)
                 .description(updatedDescription)
+                .city(city())
                 .build());
 
         // assert
@@ -109,6 +112,7 @@ public class SampleTest {
         val result = Sample.create(CreateSample.builder()
                 .name(I18nText.en("Sample X"))
                 .owner(person())
+                .city(city())
                 .build());
         clearEvents(result);
         return result;
@@ -118,6 +122,10 @@ public class SampleTest {
         return Person.create(PersonCommand.CreatePerson.builder()
                 .name("N.N.")
                 .build());
+    }
+
+    private static City city() {
+        return City.ofPostalCodeAndName(3000, I18nText.builder().en("Bern").de("Bern").build());
     }
 
 }
