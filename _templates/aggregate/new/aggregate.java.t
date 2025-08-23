@@ -44,20 +44,18 @@ public class <%= AggregateType %> extends AbstractAggregate<<%= Name %>, <%= IdT
         return result;
     }
 
-    public <%= AggregateType %> update(<%= UpdateCommandType %> data) {
+    public void update(<%= UpdateCommandType %> data) {
         assertCan(data.getClass());
         if (!Objects.equals(this.name, data.name())) {
             this.name = data.name();
             registerEvent(new <%= UpdatedEventType %>(id, name));
         }
-        return this;
     }
 
-    public <%= AggregateType %> publish() {
+    public void publish() {
         assertCan(<%= PublishCommandType %>.class);
         state = <%= StateType %>.PUBLISHED;
         registerEvent(new <%= PublishedEventType %>(id, name));
-        return this;
     }
 
     private void assertCan(Class<? extends <%= CommandType %>> command) {

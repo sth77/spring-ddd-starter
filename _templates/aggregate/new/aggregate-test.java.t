@@ -20,6 +20,7 @@ import static com.example.app.AggregateEvents.clearEvents;
 import static com.example.app.AggregateEvents.getEvents;
 import static <%= FeaturePackage %>.<%= AggregateType %>.<%= StateType %>.DRAFT;
 import static <%= FeaturePackage %>.<%= AggregateType %>.<%= StateType %>.PUBLISHED;
+import static <%= FeaturePackage %>.<%= AggregateType %>TestData.<%= aggregateName %>;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
@@ -38,9 +39,8 @@ public class <%= AggregateType %>Test {
         // assert
         assertThat(<%= aggregateName %>.getName()).isEqualTo(name);
         assertThat(<%= aggregateName %>.getState()).isEqualTo(DRAFT);
-        assertThat(getEvents(<%= aggregateName %>)).containsExactly(<%= CreatedEventType %>.builder()
-                .<%= aggregateName %>Id(<%= aggregateName %>.getId())
-                .build());
+        assertThat(getEvents(<%= aggregateName %>)).containsExactly(
+                <%= CreatedEventType %>.of(<%= aggregateName %>.getId()));
     }
 
     @Test
@@ -104,18 +104,11 @@ public class <%= AggregateType %>Test {
     @Test
     void canUpdate_inPublishedState_falseReturned() {
         // arrange
-        val <%= aggregateName %> = <%= aggregateName %>().publish();
+        val <%= aggregateName %> = <%= aggregateName %>();
+        <%= aggregateName %>.publish();
 
         // act & assert
         assertThat(<%= aggregateName %>.can(<%= UpdateCommandType %>.class)).isFalse();
-    }
-
-    private static <%= AggregateType %> <%= aggregateName %>() {
-        val result = <%= AggregateType %>.create(<%= CreateCommandType %>.builder()
-                .name("<%= AggregateType %> X")
-                .build());
-        clearEvents(result);
-        return result;
     }
 
 }

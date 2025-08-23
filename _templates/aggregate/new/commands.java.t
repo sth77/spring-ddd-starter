@@ -8,18 +8,19 @@ package <%= FeaturePackage %>;
 
 import <%= CommonPackage %>.model.Command;
 import lombok.Builder;
+import lombok.NonNull;
 
 public sealed interface <%= CommandType %> extends Command {
 
     @Builder
     record <%= CreateCommandType %>(
-        String name
+        @NonNull String name
         // TODO add the fields required to create the aggregate
         ) implements <%= CommandType %> { }
 
     @Builder
     record <%= UpdateCommandType %>(
-        String name) implements <%= CommandType %> { }
+        @NonNull String name) implements <%= CommandType %> { }
 
     record <%= PublishCommandType %>() implements <%= CommandType %> { }
 
