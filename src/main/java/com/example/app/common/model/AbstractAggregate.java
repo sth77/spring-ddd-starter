@@ -1,6 +1,7 @@
 package com.example.app.common.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.AbstractAggregateRoot;
 
 @Slf4j
 @MappedSuperclass
+@JsonIgnoreProperties("new")
 public abstract class AbstractAggregate<T extends AbstractAggregate<T, ID>, ID extends Identifier> extends AbstractAggregateRoot<T> implements AggregateRoot<T, ID> {
 
     /**

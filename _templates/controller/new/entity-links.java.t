@@ -43,7 +43,7 @@ public class <%= AggregateType %>Links implements RepresentationModelProcessor<E
            Class<? extends <%= CommandType %>> commandType) {
       val rel = aggregateCommands.getRel(commandType);
       model.addIf(<%= aggregateName %>.can(commandType), () -> entityLinks
-              .linkFor(<%= AggregateType %>.class).slash(rel)
+              .linkForItemResource(<%= AggregateType %>.class, <%= aggregateName %>.getId()).slash(rel)
               .withRel(rel));
    }
 
