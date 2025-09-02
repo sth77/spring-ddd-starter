@@ -1,7 +1,7 @@
 # Spring DDD Starter
 
 Seed project to easily get started implementing applications using patterns of tactical domain driven design in Java.
-It provides a suitable set of [Spring](https://spring.io/) libraries complemented by scaffolding through [hygen](https://github.com/jondot/hygen) 
+It provides a suitable set of [Spring](https://spring.io/) libraries complemented by scaffolding through [Hygen](https://github.com/jondot/hygen) 
 templates allowing to quickly get started with aggregates, repositories, domain events etc. in a consistent and minimal 
 fashion. The project lays a foundation to build the application in a modular fashion based on [Spring Modulith](https://spring.io/projects/spring-modulith). 
 Layering along the simplified onion architecture cleanly separates domain, application, and infrastructure concerns, 
@@ -73,12 +73,12 @@ The generator adheres to the following package structure, which is largely gover
 features and of aggregates:
 <pre>
 &lt;root-package&gt;/
-  domain/                              Domain ring of the applicataion
+  domain/                              Domain ring of the application
     common/                              Root package for common functionality
       exception/                           Basic exception types
       logging/                             Helpers to work with log prefixes
       model/                               Basic types that can be used everywhere
-    &lt;feature1&gt;/                          Root package of a featute
+    &lt;feature1&gt;/                          Root package of a feature
       Sample.java                          An aggregate, here with name "Sample"
       SampleCommand.java                   Commands to change the aggregate
       SampleEvent.java                     Domain events produced by the aggregate
