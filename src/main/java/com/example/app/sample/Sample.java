@@ -35,7 +35,8 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
 
     private I18nText name;
     private String description;
-    private City city;
+    // TODO find naming strategy which ads prefixes for directly embedded value objects
+    // private City city;
     private SampleState state;
 
     public static Sample create(CreateSample data) {
@@ -44,7 +45,7 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
                 Association.forAggregate(data.owner()),
                 data.name(),
                 data.description(),
-                City.of(data.city()),
+                // City.of(data.city()),
                 SampleState.DRAFT);
         result.registerEvent(new SampleCreated(result.getId()));
         return result;
@@ -56,7 +57,7 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
                 && Objects.equals(description, data.description()))) {
             name = data.name();
             description = data.description();
-            city = City.of(data.city());
+            // city = City.of(data.city());
             registerEvent(new SampleUpdated(id, name, description));
         }
         return this;
@@ -83,7 +84,7 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
         return state != SampleState.PUBLISHED;
     }
 
-    public record SampleId(@Column(name = "id") UUID uuidValue) implements Identifier {
+    public record SampleId(UUID uuidValue) implements Identifier {
 
         public static SampleId random() {
             return SampleId.of(UUID.randomUUID());

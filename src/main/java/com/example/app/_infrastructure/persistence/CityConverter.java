@@ -17,7 +17,7 @@ public class CityConverter implements AttributeConverter<City, UUID> {
 
     @Override
     public UUID convertToDatabaseColumn(City city) {
-        return city.getId().id();
+        return city.getId().uuidValue();
     }
 
     @Override

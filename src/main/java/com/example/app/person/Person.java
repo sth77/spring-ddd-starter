@@ -54,7 +54,7 @@ public class Person extends AbstractAggregate<Person, PersonId> implements Aggre
         public final String rel;
     }
 
-    public record PersonId(UUID id) implements Identifier {
+    public record PersonId(UUID uuidValue) implements Identifier {
 
         public static PersonId random() {
             return PersonId.of(UUID.randomUUID());
@@ -66,7 +66,7 @@ public class Person extends AbstractAggregate<Person, PersonId> implements Aggre
 
         @Override
         public String toString() {
-            return id.toString();
+            return uuidValue.toString();
         }
     }
 

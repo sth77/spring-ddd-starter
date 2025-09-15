@@ -14,7 +14,7 @@ spring:
         globally_quoted_identifiers: true
     hibernate:
       naming:
-        implicit-strategy: com.example.app._infrastructure.persistence.EmbeddedPrefixImplicitNamingStrategy
+        implicit-strategy: com.example.app._infrastructure.persistence.ValueWrapperAwareImplicitNamingStrategy
   modulith:
     events:
       republish-outstanding-events-on-restart: true

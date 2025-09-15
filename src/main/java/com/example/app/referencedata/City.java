@@ -1,10 +1,7 @@
 package com.example.app.referencedata;
 
 import com.example.app.common.model.I18nText;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jmolecules.ddd.annotation.Entity;
 import org.jmolecules.ddd.annotation.Identity;
@@ -12,11 +9,9 @@ import org.jmolecules.ddd.types.Identifier;
 
 import java.util.UUID;
 
-@Entity
-@Getter
 @Slf4j
-@ToString
-@AllArgsConstructor
+@Value
+@Entity
 public class City {
 
     @Identity
@@ -30,7 +25,7 @@ public class City {
         return log(new City(CityId.random(), postalCode, name));
     }
 
-    public record CityId(UUID id) implements Identifier {
+    public record CityId(UUID uuidValue) implements Identifier {
         static CityId random() {
             return new CityId(UUID.randomUUID());
         }
