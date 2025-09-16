@@ -72,19 +72,19 @@ public class <%= AggregateType %> extends AbstractAggregate<<%= Name %>, <%= IdT
         return state != <%= StateType %>.PUBLISHED;
     }
 
-    public record <%= IdType %>(@JsonValue UUID id) implements Identifier {
+    public record <%= IdType %>(@JsonValue UUID uuidValue) implements Identifier {
 
         public static <%= IdType %> random() {
             return <%= IdType %>.of(UUID.randomUUID());
         }
 
-        public static <%= IdType %> of(UUID id) {
-            return new <%= IdType %>(id);
+        public static <%= IdType %> of(UUID uuidValue) {
+            return new <%= IdType %>(uuidValue);
         }
 
         @Override
         public String toString() {
-            return id.toString();
+            return uuidValue.toString();
         }
     }
 
