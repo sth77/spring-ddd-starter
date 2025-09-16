@@ -7,12 +7,13 @@ to: src/test/java/com/example/app/<%= h.changeCase.lower(feature) %>/<%= h.infle
 package <%= FeaturePackage %>;
 
 import <%= FeaturePackage %>.<%= AggregateType %>.<%= StateType %>;
-import <%= FeaturePackage %>.<%= AggregateType %>Command.<%= CreateCommandType %>;
+import jakarta.persistence.EntityManager;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import static <%= FeaturePackage %>.<%= AggregateType %>TestData.<%= aggregateName %>;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
@@ -20,6 +21,9 @@ class <%= RepositoryType %>Test {
 
     @Autowired
     <%= RepositoryType %> <%= repositoryName %>;
+
+    @Autowired
+    EntityManager entityManager;
 
     @Test
     void save_valid<%= AggregateType %>Given_savedToDb() {
@@ -39,6 +43,8 @@ class <%= RepositoryType %>Test {
         // arrange
         val <%= aggregateName %> = <%= aggregateName %>();
         <%= repositoryName %>.save(<%= aggregateName %>);
+        entityManager.flush();
+        entityManager.clear();
 
         // act
         val result = <%= repositoryName %>.findById(<%= aggregateName %>.getId());
@@ -46,15 +52,11 @@ class <%= RepositoryType %>Test {
         // assert
         assertThat(result).isPresent();
         assertThat(result).get().satisfies(actual -> {
+            assertThat(actual).isEqualTo(<%= aggregateName %>);
+            assertThat(actual).isNotSameAs(<%= aggregateName %>);
             assertThat(actual.getName()).isEqualTo(<%= aggregateName %>.getName());
             assertThat(actual.getState()).isEqualTo(<%= StateType %>.DRAFT);
         });
-    }
-
-    private static <%= AggregateType %> <%= aggregateName %>() {
-        return <%= AggregateType %>.create(<%= CreateCommandType %>.builder()
-                .name("<%= AggregateType %> 1")
-                .build());
     }
 
 }
