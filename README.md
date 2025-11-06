@@ -27,6 +27,13 @@ to your `build` and `rebuild` commands. For IntelliJ, this is done as follows:
 2) Open the Maven tool window (found on the right) and find the list of plugins included in the project. Expand 
    `byte-buddy`, right click on transform-extended, and select 'Execute After Build' and 'Execute After Rebuild'.
 
+### Add the jMolecules plugin and facets to IntelliJ
+
+If you use IntelliJ as your IDE, it is recommended to install the jMolecules Plugin, which reduces the number of 
+warnings shown otherwise, because IntelliJ does not understand the jMolecules annotations.
+
+You can then go to Project Settings, and add the jddd-core and jddd-event facet under "Facets".
+
 ### Install hygen for scaffolding
 
 The project contains templates to scaffold elements of tactical domain-driven design such as aggregates, repositories, 

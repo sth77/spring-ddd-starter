@@ -142,6 +142,7 @@
         <dependency>
             <groupId>org.jmolecules.integrations</groupId>
             <artifactId>jmolecules-apt</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
