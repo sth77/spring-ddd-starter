@@ -1,19 +1,11 @@
 ---
-to: src/test/java/com/example/app/<%= h.changeCase.lower(feature) %>/<%= Name %>TestData.java
+to: src/test/java/com/example/app/<%= h.changeCase.lower(feature) %>/<%= h.changeCase.pascal(feature) %>TestData.java
+inject: true
+after: "TestData {\n"
 ---
 <%
    include(`${templates}/variables.ejs`)
 -%>
-package <%= FeaturePackage %>;
-
-import <%= FeaturePackage %>.<%= CommandType %>.<%= CreateCommandType %>;
-import lombok.experimental.UtilityClass;
-import lombok.val;
-
-import static com.example.app.AggregateEvents.clearEvents;
-
-@UtilityClass
-public class <%= AggregateType %>TestData {
 
     public static <%= AggregateType %> <%= aggregateName %>() {
         return <%= aggregateName %>("<%= AggregateType %> X");
@@ -27,4 +19,3 @@ public class <%= AggregateType %>TestData {
         return result;
     }
 
-}

@@ -20,7 +20,7 @@ import static com.example.app.AggregateEvents.clearEvents;
 import static com.example.app.AggregateEvents.getEvents;
 import static <%= FeaturePackage %>.<%= AggregateType %>.<%= StateType %>.DRAFT;
 import static <%= FeaturePackage %>.<%= AggregateType %>.<%= StateType %>.PUBLISHED;
-import static <%= FeaturePackage %>.<%= AggregateType %>TestData.<%= aggregateName %>;
+import static <%= FeaturePackage %>.<%= TestDataType %>.<%= aggregateName %>;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 

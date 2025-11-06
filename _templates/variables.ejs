@@ -1,4 +1,14 @@
 <%
+    featureName = h.changeCase.lower(locals.feature ? locals.feature : name)
+    RootPackage = "com.example.app";
+    PackageDir = h.changeCase.lower(name)
+    FeaturePackage = RootPackage + "." + featureName
+    FeatureWebPackage = FeaturePackage + ".web"
+    ReferenceDataPackage = RootPackage + ".referencedata"
+    InfrastructureWebPackage = RootPackage + "._infrastructure.web"
+    CommonPackage = RootPackage + ".common";
+
+
     AggregateType = h.changeCase.pascal(Name)
     aggregateName = h.changeCase.camel(name)
 
@@ -10,6 +20,8 @@
 
     ControllerType = Name + "CommandController";
     controllerName = h.changeCase.camel(ControllerType)
+
+    TestDataType = h.changeCase.pascal(locals.feature ? locals.feature : name) + "TestData"
 
     IdType = AggregateType + "Id"
     IdName = h.changeCase.pascal(IdType)
@@ -27,15 +39,6 @@
     CreatedEventType = AggregateType + "Created"
     UpdatedEventType = AggregateType + "Updated"
     PublishedEventType = AggregateType + "Published"
-
-    RootPackage = "com.example.app";
-    PackageDir = h.changeCase.lower(name)
-    featureName = h.changeCase.lower(locals.feature ? locals.feature : name)
-    FeaturePackage = RootPackage + "." + featureName
-    FeatureWebPackage = FeaturePackage + ".web"
-    ReferenceDataPackage = RootPackage + ".referencedata"
-    InfrastructureWebPackage = RootPackage + "._infrastructure.web"
-    CommonPackage = RootPackage + ".common";
 
     collectionRel = h.inflection.pluralize(aggregateName)
 -%>
