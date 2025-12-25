@@ -9,9 +9,6 @@ spring:
   application:
     name: Spring DDD Starter
   jpa:
-    properties:
-      hibernate:
-        globally_quoted_identifiers: true
     hibernate:
       naming:
         implicit-strategy: com.example.app._infrastructure.persistence.ValueWrapperAwareImplicitNamingStrategy

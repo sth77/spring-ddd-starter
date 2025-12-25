@@ -1,11 +1,11 @@
 # Spring DDD Starter
 
 Seed project to easily get started implementing applications using patterns of tactical domain driven design in Java.
-It provides a suitable set of [Spring](https://spring.io/) libraries complemented by scaffolding through [Hygen](https://github.com/jondot/hygen) 
-templates allowing to quickly get started with aggregates, repositories, domain events etc. in a consistent and minimal 
-fashion. The project lays a foundation to build the application in a modular fashion based on [Spring Modulith](https://spring.io/projects/spring-modulith). 
-Layering along the simplified onion architecture cleanly separates domain, application, and infrastructure concerns, 
-helping to reduce complexity as applications grow large. Both DDD and architectural concepts are made 
+It provides a suitable set of [Spring](https://spring.io/) libraries complemented by scaffolding through [Hygen](https://github.com/jondot/hygen)
+templates allowing to quickly get started with aggregates, repositories, domain events etc. in a consistent and minimal
+fashion. The project lays a foundation to build the application in a modular fashion based on [Spring Modulith](https://spring.io/projects/spring-modulith).
+Layering along the simplified onion architecture cleanly separates domain, application, and infrastructure concerns,
+helping to reduce complexity as applications grow large. Both DDD and architectural concepts are made
 explicit and enforced through [jMolecules](https://github.com/xmolecules/jmolecules).
 
 ## Getting started
@@ -169,8 +169,7 @@ It basically allows to attach hyperlinks to the representation of a REST resourc
 root, Spring returns an object with the field "_links", pointing at the aggregates served by the application:
 
 ```bash
-$ curl user:1234@localhost:8080/api
-Enter host password for user 'user':
+$ curl -u "user:1234" localhost:8080/api
 ```
 
 ```json
@@ -180,7 +179,7 @@ Enter host password for user 'user':
       "href" : "http://localhost:8080/api/people"
     },
     "samples" : {
-      "href" : "http://localhost:8080/api/samples"
+      "href" : "http://localhost:8080/api/samples{?projection}"
     },
     "profile" : {
       "href" : "http://localhost:8080/api/profile"

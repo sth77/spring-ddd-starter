@@ -1,6 +1,6 @@
 package com.example.app._application;
 
-import org.springframework.retry.annotation.Retryable;
+import org.springframework.resilience.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,8 +24,8 @@ import java.sql.SQLException;
 })
 @TransactionalEventListener
 @Retryable(
-        maxAttempts = RetryableApplicationModuleListener.ATTEMPTS_NUMBER,
-        retryFor = {
+        maxRetries = RetryableApplicationModuleListener.MAX_RETRIES,
+        includes = {
                 SQLException.class,
                 IOException.class,
                 RuntimeException.class,
@@ -33,12 +33,12 @@ import java.sql.SQLException;
         }
 )
 public @interface RetryableApplicationModuleListener {
-    int ATTEMPTS_NUMBER = 5;
+    int MAX_RETRIES = 5;
 
     /**
      * Override this value if another threshold is needed.
      *
      * @return attempts
      */
-    int attempts() default ATTEMPTS_NUMBER;
+    int attempts() default MAX_RETRIES;
 }

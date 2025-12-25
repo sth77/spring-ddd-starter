@@ -1,19 +1,15 @@
 package com.example.app._infrastructure.web;
 
 import com.example.app._application.ApplicationProperties;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.jmolecules.ddd.types.AggregateRoot;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
-import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 
@@ -21,16 +17,6 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 public class WebConfiguration implements RepositoryRestConfigurer {
 
     public static final String BASE_PATH = "/api";
-
-    @Bean
-    public Jackson2ObjectMapperBuilderCustomizer jsonCustomizer() {
-        return builder -> builder
-                .annotationIntrospector(new LombokJacksonAnnotationIntrospector())
-                .modules(
-                        new Jackson2HalModule(),
-                        new JavaTimeModule(),
-                        new Jdk8Module());
-    }
 
     @Override
     public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config, CorsRegistry cors) {

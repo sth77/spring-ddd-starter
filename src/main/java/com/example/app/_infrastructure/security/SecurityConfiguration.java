@@ -50,7 +50,7 @@ public class SecurityConfiguration {
                         .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
                  */
-                .csrf().disable()
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth.requestMatchers(
                                 "/actuator/**",
                                 "/v3/api-docs/**",
