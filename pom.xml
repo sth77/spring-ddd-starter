@@ -272,6 +272,31 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <!-- Integration tests (excludes HygenTemplatesIT which needs hygen-it profile) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/*IT.java</include>
+                    </includes>
+                    <excludes>
+                        <exclude>**/HygenTemplatesIT.java</exclude>
+                    </excludes>
+                    <argLine>
+                        -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar
+                        -Xshare:off
+                    </argLine>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <profiles>
@@ -384,7 +409,7 @@
                         </executions>
                     </plugin>
 
-                    <!-- Integration test execution -->
+                    <!-- Integration test execution - runs ALL IT tests including HygenTemplatesIT -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
@@ -392,6 +417,8 @@
                             <includes>
                                 <include>**/*IT.java</include>
                             </includes>
+                            <!-- Override default excludes - run ALL IT tests -->
+                            <excludes combine.self="override"/>
                             <argLine>
                                 -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar
                                 -Xshare:off
