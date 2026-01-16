@@ -4,11 +4,9 @@ to: src/main/java/com/example/app/<%= h.changeCase.lower(name) %>/package-info.j
 <%
    include(`${templates}/variables.ejs`)
 -%>
-@NonNullApi
-@NonNullFields
+@NullMarked
 @DomainRing
 package <%= FeaturePackage %>;
 
 import org.jmolecules.architecture.onion.simplified.DomainRing;
-import org.springframework.lang.NonNullApi;
-import org.springframework.lang.NonNullFields;
+import org.jspecify.annotations.NullMarked;

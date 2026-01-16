@@ -1,8 +1,6 @@
-@NonNullApi
-@NonNullFields
+@NullMarked
 @InfrastructureRing
 package com.example.app._infrastructure.security;
 
 import org.jmolecules.architecture.onion.simplified.InfrastructureRing;
-import org.springframework.lang.NonNullApi;
-import org.springframework.lang.NonNullFields;
+import org.jspecify.annotations.NullMarked;
