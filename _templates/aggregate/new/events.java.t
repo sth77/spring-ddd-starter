@@ -8,7 +8,6 @@ package <%= FeaturePackage %>;
 
 import <%= FeaturePackage %>.<%= AggregateType %>.<%= IdType %>;
 import lombok.Builder;
-import lombok.NonNull;
 import org.jmolecules.event.types.DomainEvent;
 
 public sealed interface <%= EventType %> extends DomainEvent {
@@ -24,14 +23,14 @@ public sealed interface <%= EventType %> extends DomainEvent {
 
     @Builder
     record <%= UpdatedEventType %>(
-        @NonNull <%= IdType %> <%= idName %>,
-        @NonNull String name) implements <%= EventType %> {
+        <%= IdType %> <%= idName %>,
+        String name) implements <%= EventType %> {
     }
 
     @Builder
     record <%= PublishedEventType %>(
-        @NonNull <%= IdType %> <%= idName %>,
-        @NonNull String name) implements <%= EventType %> {
+        <%= IdType %> <%= idName %>,
+        String name) implements <%= EventType %> {
     }
 
 }

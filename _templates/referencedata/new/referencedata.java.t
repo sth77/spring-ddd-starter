@@ -9,7 +9,6 @@ package <%= ReferenceDataPackage %>;
 import <%= CommonPackage %>.model.I18nText;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.jmolecules.ddd.annotation.Entity;
@@ -30,7 +29,7 @@ public class <%= ReferenceDataType %> {
 
     private final I18nText name;
 
-    public static <%= ReferenceDataType %> of(@NonNull I18nText name) {
+    public static <%= ReferenceDataType %> of(I18nText name) {
         return new <%= ReferenceDataType %>(<%= IdType %>.random(), name);
     }
 

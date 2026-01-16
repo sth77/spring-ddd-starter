@@ -1,6 +1,5 @@
 package com.example.app.common.model;
 
-import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.Accessors;
 import org.jmolecules.ddd.annotation.ValueObject;
@@ -10,7 +9,6 @@ import org.jmolecules.ddd.annotation.ValueObject;
 @ValueObject
 public class Email {
 
-    @NonNull
     String stringValue;
 
 }

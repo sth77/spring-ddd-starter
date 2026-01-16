@@ -7,20 +7,20 @@ to: src/main/java/com/example/app/<%= h.changeCase.lower(feature) %>/<%= Name %>
 package <%= FeaturePackage %>;
 
 import <%= CommonPackage %>.model.Command;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
-import lombok.NonNull;
 
 public sealed interface <%= CommandType %> extends Command {
 
     @Builder
     record <%= CreateCommandType %>(
-        @NonNull String name
+        @NotBlank String name
         // TODO add the fields required to create the aggregate
         ) implements <%= CommandType %> { }
 
     @Builder
     record <%= UpdateCommandType %>(
-        @NonNull String name) implements <%= CommandType %> { }
+        @NotBlank String name) implements <%= CommandType %> { }
 
     record <%= PublishCommandType %>() implements <%= CommandType %> { }
 

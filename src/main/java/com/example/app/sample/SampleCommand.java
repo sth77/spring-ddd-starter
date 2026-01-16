@@ -4,6 +4,9 @@ import com.example.app.common.model.Command;
 import com.example.app.common.model.I18nText;
 import com.example.app.person.Person;
 import com.example.app.referencedata.City;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import org.jmolecules.architecture.onion.simplified.DomainRing;
 import org.springframework.hateoas.server.core.Relation;
@@ -14,17 +17,17 @@ public sealed interface SampleCommand extends Command {
     @Builder
     @Relation("produce") // showcase override
     record CreateSample(
-            I18nText name,
-            String description,
+            @NotNull @Valid I18nText name,
+            @Size(max = 1000) String description,
             City city, // from master data
-            Person owner
+            @NotNull Person owner
     ) implements SampleCommand {
     }
 
     @Builder
     record UpdateSample(
-            I18nText name,
-            String description,
+            @NotNull @Valid I18nText name,
+            @Size(max = 1000) String description,
             City city) implements SampleCommand {
     }
 

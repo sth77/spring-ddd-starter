@@ -1,7 +1,7 @@
 package com.example.app.referencedata;
 
 import com.example.app.common.model.I18nText;
-import lombok.*;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.jmolecules.ddd.annotation.Entity;
 import org.jmolecules.ddd.annotation.Identity;
@@ -21,7 +21,7 @@ public class City {
 
     private final I18nText name;
 
-    public static City ofPostalCodeAndName(int postalCode, @NonNull I18nText name) {
+    public static City ofPostalCodeAndName(int postalCode, I18nText name) {
         return log(new City(CityId.random(), postalCode, name));
     }
 

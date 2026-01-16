@@ -2,7 +2,6 @@ package com.example.app._infrastructure.persistence;
 
 import com.example.app.common.model.Email;
 import lombok.AllArgsConstructor;
-import lombok.NonNull;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 
@@ -12,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 public class PersistenceConfiguration {
 
-    protected @NonNull List<?> userConverters() {
+    protected List<?> userConverters() {
         return List.of(
                 new EmailConverter());
     }
@@ -20,7 +19,7 @@ public class PersistenceConfiguration {
     private static class EmailConverter implements Converter<Email, String> {
 
         @Override
-        public String convert(@NonNull Email source) {
+        public String convert(Email source) {
             return source.stringValue();
         }
     }

@@ -12,6 +12,7 @@ import <%= FeaturePackage %>.<%= RepositoryType %>;
 import <%= FeaturePackage %>.<%= CommandType %>.<%= CreateCommandType %>;
 import <%= FeaturePackage %>.<%= CommandType %>.<%= UpdateCommandType %>;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
@@ -41,14 +42,14 @@ public class <%= ControllerType %> {
 
     @Secured("ROLE_USER")
     @PostMapping("/<%= collectionRel %>")
-    public ResponseEntity<EntityModel<<%= AggregateType %>>> create(@RequestBody <%= CreateCommandType %> data) {
+    public ResponseEntity<EntityModel<<%= AggregateType %>>> create(@Valid @RequestBody <%= CreateCommandType %> data) {
         val result = <%= repositoryName %>.save(<%= AggregateType %>.create(data));
         return ResponseEntity.ok(EntityModel.of(result));
     }
 
     @Secured("ROLE_USER")
 	@PostMapping(path = "/<%= collectionRel %>/{<%= idName %>}/update")
-	public ResponseEntity<EntityModel<<%= AggregateType %>>> update(@PathVariable <%= IdType %> <%= idName %>, @RequestBody <%= UpdateCommandType %> data) {
+	public ResponseEntity<EntityModel<<%= AggregateType %>>> update(@PathVariable <%= IdType %> <%= idName %>, @Valid @RequestBody <%= UpdateCommandType %> data) {
 		return doWith<%= AggregateType %>(<%= idName %>, it -> it.update(data));
 	}
 
