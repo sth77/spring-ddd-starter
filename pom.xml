@@ -267,8 +267,147 @@
                         -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar
                         -Xshare:off
                     </argLine>
+                    <excludes>
+                        <exclude>**/*IT.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <!-- Integration test profile for testing hygen templates -->
+        <profile>
+            <id>hygen-it</id>
+            <build>
+                <plugins>
+                    <!-- Hygen code generation -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.5.0</version>
+                        <executions>
+                            <!-- Safety check: fail if uncommitted changes in src/ -->
+                            <execution>
+                                <id>check-no-uncommitted-changes</id>
+                                <phase>pre-integration-test</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>bash</executable>
+                                    <arguments>
+                                        <argument>-c</argument>
+                                        <argument>if [ -n "$(git status --porcelain src/)" ]; then echo "ERROR: Uncommitted changes detected in src/. The hygen-it profile will clean src/ after tests. Please commit or stash your changes first." &gt;&amp;2; exit 1; fi</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>generate-fleet-feature</id>
+                                <phase>pre-integration-test</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>hygen</executable>
+                                    <arguments>
+                                        <argument>feature</argument>
+                                        <argument>new</argument>
+                                        <argument>fleet</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>generate-airplane-aggregate</id>
+                                <phase>pre-integration-test</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>hygen</executable>
+                                    <arguments>
+                                        <argument>aggregate</argument>
+                                        <argument>new</argument>
+                                        <argument>Airplane</argument>
+                                        <argument>--feature=fleet</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>generate-airplane-controller</id>
+                                <phase>pre-integration-test</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>hygen</executable>
+                                    <arguments>
+                                        <argument>controller</argument>
+                                        <argument>new</argument>
+                                        <argument>Airplane</argument>
+                                        <argument>--feature=fleet</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <!-- Recompile and transform after hygen generation -->
+                            <execution>
+                                <id>compile-and-transform-generated</id>
+                                <phase>pre-integration-test</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>mvn</executable>
+                                    <arguments>
+                                        <argument>compile</argument>
+                                        <argument>byte-buddy:transform-extended</argument>
+                                        <argument>-o</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <!-- Cleanup via git reset -->
+                            <execution>
+                                <id>cleanup-generated-java</id>
+                                <phase>post-integration-test</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>git</executable>
+                                    <arguments>
+                                        <argument>checkout</argument>
+                                        <argument>--</argument>
+                                        <argument>src/</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>cleanup-untracked-files</id>
+                                <phase>post-integration-test</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>git</executable>
+                                    <arguments>
+                                        <argument>clean</argument>
+                                        <argument>-fd</argument>
+                                        <argument>src/</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Integration test execution -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <includes>
+                                <include>**/*IT.java</include>
+                            </includes>
+                            <argLine>
+                                -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar
+                                -Xshare:off
+                            </argLine>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles> 
 </project>
