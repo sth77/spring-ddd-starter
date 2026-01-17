@@ -90,46 +90,48 @@ The project includes a GitHub Actions workflow (`.github/workflows/build.yml`) t
 ## Baked-in concepts
 
 This project follows an opinionated approach to building DDD-style applications in Java. It is highly inspired by 
-Oliver Drotbohm's [Spring Restbucks](https://github.com/odrotbohm/spring-restbucks) sample application. The approach
-implemented here more strictly separates different rings of the onion architecture, placing for example every controller 
-in a package in the infrastructure layer, avoiding in the domain package dependencies to Jackson and other concepts 
-related to the REST API, and explicitly introducing a package for application and infrastructure rings of the onion.
+Oliver Drotbohm's [Spring Restbucks](https://github.com/odrotbohm/spring-restbucks) sample application. The approach 
+implemented here more strictly separates different rings of the onion architecture, avoiding in the domain package 
+dependencies to Jackson and other concepts related to the REST API, and explicitly introducing a package for 
+application and infrastructure rings of the onion.
 
 ### Package structure
 
 The generator adheres to the following package structure, which is largely governed by the name of 
-features and of aggregates:
+features and of aggregates. Feature packages are kept on top-level to profit from Spring modulith defaults and to keep
+the package hierarchy flat. To still clearly separate them from application and infrastructure, the latter two use the 
+unconventional prefix "_":
+
 <pre>
 &lt;root-package&gt;/
-  domain/                              Domain ring of the application
-    common/                              Root package for common functionality
-      exception/                           Basic exception types
-      logging/                             Helpers to work with log prefixes
-      model/                               Basic types that can be used everywhere
-    &lt;feature1&gt;/                          Root package of a feature
-      Sample.java                          An aggregate, here with name "Sample"
-      SampleCommand.java                   Commands to change the aggregate
-      SampleEvent.java                     Domain events produced by the aggregate
-      Samples.java                         Repository to work with the aggregate
-      web/                                 Root package of the feature's REST API
-        SampleOperationsController.java      Controller exposing operations of the aggregate
-        SampleSummary.java                   Projection with reduced data suitable to render lists
-        SampleDetail.java                    Projection with detailed data to render detail views
-        SampleLinks.java                     Factory for HAL links of the aggregate
-    &lt;feature2&gt;/                        Root package of another feature
-      ...
-  application/                         Application ring of the application
-  infrastructure/                      Infrastructure ring of the application
-    &lt;api1&gt;/                              Implementation of an API to another system
-    &lt;api2&gt;/                              Implementation of another API to another system
+  _application/                         Application ring of the application
+  _infrastructure/                      Infrastructure ring of the application
+    &lt;api1&gt;/                               Implementation of an API to another system
+    &lt;api2&gt;/                               Implementation of another API to another system
     ...
-    demo/                                Demo data creation suitable for development
-    logging/                             Logging configuration 
-    persistence/                         Persistence configuration
-    security/                            Security configuration
-    web/                                 REST API of the application
-      SampleApiConfiguration.java          Configuration for link generation for projections
+    demo/                                 Demo data creation suitable for development
+    logging/                              Logging configuration 
+    persistence/                          Persistence configuration
+    security/                             Security configuration
+    web/                                  Global REST API configuration
+      <Aggregate1>ApiConfiguration.java     Configuration for link generation for projections
       ...
+  common/                               Root package for common functionality
+    exception/                            Basic exception types
+    logging/                              Helpers to work with log prefixes
+    model/                                Basic types that can be used everywhere
+  &lt;feature1&gt;/                           Root package of a feature
+    <Aggregate1>.java                     An aggregate, here with name "Sample"
+    <Aggregate1>Command.java              Commands to change the aggregate
+    <Aggregate1>Event.java                Domain events produced by the aggregate
+    <Aggregate1s>.java                    Repository to work with the aggregate
+    web/                                  Root package of the feature's REST API
+      <Aggregate1>OperationsController.java Controller exposing operations of the aggregate
+      <Aggregate1>Summary.java              Projection with reduced data suitable to render lists
+      <Aggregate1>Detail.java               Projection with detailed data to render detail views
+      <Aggregate1>Links.java                Factory for HAL links of the aggregate
+  &lt;feature2&gt;/                            Root package of another feature
+    ...
 </pre>
 
 ### Persistence
