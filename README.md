@@ -316,6 +316,15 @@ Command parameters use Jakarta Bean Validation (`@Valid`, `@NotNull`) for input 
 
 Domain exceptions extending `DomainException` are automatically mapped to appropriate HTTP responses by `DomainExceptionHandler`. This provides consistent error handling for domain rule violations.
 
+## Support for AI coding agents
+
+THe repository declares a generic INSTRUCTIONS.md which can be fed to AI coding agents such as Github Copilot,
+Cursor, Claude Code, etc. The folder .claude/ contains further instructions specific for Claude Code. 
+
+The AI is instructed to bootstrap new feature packages, aggregates, and REST APIs using the scaffolding with hygen,
+allowing you to establish a sound basis with baked in coding conventions with respect to naming, package layout and 
+library use.
+
 ## Open Issues
 
 * Add documentation to generated artifacts
