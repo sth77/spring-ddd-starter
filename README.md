@@ -66,6 +66,27 @@ If you want to make your aggregate available through the REST API, type:
 
 > $ hygen controller new Todo --feature=todo
 
+## Running Tests
+
+Run unit tests:
+
+> $ mvn test
+
+Run integration tests:
+
+> $ mvn verify
+
+Run hygen template integration tests. This is useful to ensure that changed hygen templates still work correctly
+after changing it to your needs. Generates fleet/Airplane code via hygen and tests full aggregate lifecycle. 
+Executes a git clean of the /src folder after execution. Test execution will be aborted if there are uncommitted changes 
+in /src.
+
+> $ mvn verify -Phygen-it
+
+## Continuous Integration
+
+The project includes a GitHub Actions workflow (`.github/workflows/build.yml`) that runs the build and tests on every push and pull request.
+
 ## Baked-in concepts
 
 This project follows an opinionated approach to building DDD-style applications in Java. It is highly inspired by 
@@ -281,12 +302,23 @@ Dependencies are only allowed in this direction: infrastructure -> application -
 
 jMolecules also ensures that the elements of tactical domain-driven design are used correctly. There is both a Unit test and the jMolecules annotation processor (jmolecules-atp) which can detect breaches already at compile time.
 
+### Nullability
+
+The project uses [JSpecify](https://jspecify.dev/) annotations for nullability. Package-level `@NullMarked` annotations indicate that all types are non-null by default. Use `@Nullable` to explicitly mark nullable types.
+
+### Validation
+
+Command parameters use Jakarta Bean Validation (`@Valid`, `@NotNull`) for input validation, ensuring domain invariants are checked at the API boundary.
+
+### Domain Exception Handling
+
+Domain exceptions extending `DomainException` are automatically mapped to appropriate HTTP responses by `DomainExceptionHandler`. This provides consistent error handling for domain rule violations.
+
 ## Open Issues
 
-* Generate test classes for controllers
 * Add documentation to generated artifacts
 * Allow adding operations with related commands and events one by one
-* Log domain events _before_ they are published
+* Master data handling has been prototyped with the City class, but is not to the point yet
 
 ## References
 
