@@ -103,34 +103,33 @@ the package hierarchy flat. To still clearly separate them from application and 
 unconventional prefix "_":
 
 <pre>
-&lt;root-package&gt;/
+[root-package]/
   _application/                         Application ring of the application
   _infrastructure/                      Infrastructure ring of the application
-    &lt;api1&gt;/                               Implementation of an API to another system
-    &lt;api2&gt;/                               Implementation of another API to another system
+    [api1]/                               Implementation of an API to another system
+    [api2]/                               Implementation of another API to another system
     ...
-    demo/                                 Demo data creation suitable for development
     logging/                              Logging configuration 
     persistence/                          Persistence configuration
     security/                             Security configuration
     web/                                  Global REST API configuration
-      <Aggregate1>ApiConfiguration.java     Configuration for link generation for projections
+      [Aggregate1]ApiConfiguration.java     Configuration for link generation for projections
       ...
   common/                               Root package for common functionality
     exception/                            Basic exception types
     logging/                              Helpers to work with log prefixes
     model/                                Basic types that can be used everywhere
-  &lt;feature1&gt;/                           Root package of a feature
-    <Aggregate1>.java                     An aggregate, here with name "Sample"
-    <Aggregate1>Command.java              Commands to change the aggregate
-    <Aggregate1>Event.java                Domain events produced by the aggregate
-    <Aggregate1s>.java                    Repository to work with the aggregate
+  [feature1]/                           Root package of a feature
+    [Aggregate1].java                     An aggregate, here with name "Sample"
+    [Aggregate1]Command.java              Commands to change the aggregate
+    [Aggregate1]Event.java                Domain events produced by the aggregate
+    [Aggregate1s].java                    Repository to work with the aggregate
     web/                                  Root package of the feature's REST API
-      <Aggregate1>OperationsController.java Controller exposing operations of the aggregate
-      <Aggregate1>Summary.java              Projection with reduced data suitable to render lists
-      <Aggregate1>Detail.java               Projection with detailed data to render detail views
-      <Aggregate1>Links.java                Factory for HAL links of the aggregate
-  &lt;feature2&gt;/                            Root package of another feature
+      [Aggregate1]OperationsController.java Controller exposing operations of the aggregate
+      [Aggregate1]Summary.java              Projection with reduced data suitable to render lists
+      [Aggregate1]Detail.java               Projection with detailed data to render detail views
+      [Aggregate1]Links.java                Factory for HAL links of the aggregate
+  [feature2]/                            Root package of another feature
     ...
 </pre>
 
@@ -330,6 +329,7 @@ library use.
 * Add documentation to generated artifacts
 * Allow adding operations with related commands and events one by one
 * Master data handling has been prototyped with the City class, but is not to the point yet
+* Should add an example for @ModuleTest
 
 ## References
 
