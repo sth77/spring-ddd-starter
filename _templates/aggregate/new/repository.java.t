@@ -8,7 +8,9 @@ package <%= FeaturePackage %>;
 
 import <%= FeaturePackage %>.<%= AggregateType %>.<%= IdType %>;
 import <%= CommonPackage %>.model.AggregateRepository;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
+@RepositoryRestResource(collectionResourceRel = "<%= collectionRel %>", path = "<%= collectionRel %>")
 public interface <%= RepositoryType %> extends AggregateRepository<<%= AggregateType %>, <%= IdType %>> {
 
     @Override

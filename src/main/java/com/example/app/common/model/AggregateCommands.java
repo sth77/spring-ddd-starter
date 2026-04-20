@@ -1,7 +1,6 @@
 package com.example.app.common.model;
 
 import lombok.RequiredArgsConstructor;
-import lombok.val;
 import org.jmolecules.ddd.types.AggregateRoot;
 import org.springframework.hateoas.server.core.Relation;
 
@@ -28,14 +27,14 @@ public final class AggregateCommands<A extends AggregateRoot<?, ?>, C extends Co
     }
 
     public String getRel(Class<? extends C> commandType) {
-        val annotatedRel = Optional.ofNullable(commandType.getAnnotation(Relation.class));
+        final var annotatedRel = Optional.ofNullable(commandType.getAnnotation(Relation.class));
         return annotatedRel
                 .map(Relation::value)
                 .orElseGet(() -> extractRelFromCommandType(commandType));
     }
 
     private String extractRelFromCommandType(Class<? extends C> commandType) {
-        val strippedCommandName = commandType.getSimpleName().replace(aggregateType.getSimpleName(), "");
+        final var strippedCommandName = commandType.getSimpleName().replace(aggregateType.getSimpleName(), "");
         return firstCharToLowerCase(!strippedCommandName.isEmpty()
                 ? strippedCommandName
                 : commandType.getSimpleName());

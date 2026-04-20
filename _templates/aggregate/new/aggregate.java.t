@@ -15,11 +15,9 @@ import <%= FeaturePackage %>.<%= CommandType %>.<%= PublishCommandType %>;
 import <%= FeaturePackage %>.<%= EventType %>.<%= PublishedEventType %>;
 import <%= FeaturePackage %>.<%= EventType %>.<%= CreatedEventType %>;
 import <%= FeaturePackage %>.<%= EventType %>.<%= UpdatedEventType %>;
-import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.val;
 
 import org.jmolecules.ddd.types.AggregateRoot;
 import org.jmolecules.ddd.types.Identifier;
@@ -36,7 +34,7 @@ public class <%= AggregateType %> extends AbstractAggregate<<%= Name %>, <%= IdT
     private <%= StateType %> state;
 
     public static <%= AggregateType %> create(<%= CreateCommandType %> data) {
-        val result = new <%= AggregateType %>(
+        final var result = new <%= AggregateType %>(
             <%= IdType %>.random(),
             data.name(),
             <%= StateType %>.DRAFT);
@@ -72,7 +70,7 @@ public class <%= AggregateType %> extends AbstractAggregate<<%= Name %>, <%= IdT
         return state != <%= StateType %>.PUBLISHED;
     }
 
-    public record <%= IdType %>(@JsonValue UUID uuidValue) implements Identifier {
+    public record <%= IdType %>(UUID uuidValue) implements Identifier {
 
         public static <%= IdType %> random() {
             return <%= IdType %>.of(UUID.randomUUID());

@@ -10,7 +10,9 @@ import org.springframework.data.util.Streamable;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.app.sample.Sample.SampleId;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
+@RepositoryRestResource(collectionResourceRel = "samples", path = "samples")
 public interface Samples extends Repository<Sample, SampleId>, AssociationResolver<Sample, SampleId> {
     
     Sample save(Sample sample);

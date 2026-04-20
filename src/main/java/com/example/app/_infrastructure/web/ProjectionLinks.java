@@ -2,7 +2,6 @@ package com.example.app._infrastructure.web;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import org.jmolecules.ddd.types.AggregateRoot;
 import org.springframework.data.projection.TargetAware;
 import org.springframework.hateoas.EntityModel;
@@ -26,7 +25,7 @@ public class ProjectionLinks<T extends AggregateRoot<?, ?>> implements Represent
     public EntityModel<TargetAware> process(EntityModel<TargetAware> model) {
         if (model.getContent() instanceof TargetAware targetAware
                 && aggregateType.isInstance(targetAware.getTarget())) {
-            val target = aggregateType.cast(targetAware.getTarget());
+            final var target = aggregateType.cast(targetAware.getTarget());
             log.info("Creating links for " + target + " with input " + model.getContent());
             model.add(delegate.process(EntityModel.of(target)).getLinks());
         }

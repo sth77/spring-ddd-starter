@@ -4,7 +4,6 @@ import com.example.app.common.model.AggregateCommands;
 import com.example.app.sample.Sample;
 import com.example.app.sample.SampleCommand;
 import lombok.RequiredArgsConstructor;
-import lombok.val;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.server.EntityLinks;
@@ -13,14 +12,16 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class SampleLinks implements RepresentationModelProcessor<EntityModel<Sample>> {
+public class SampleEntityLinks implements RepresentationModelProcessor<EntityModel<Sample>> {
 
     private final EntityLinks entityLinks;
-    private final AggregateCommands<Sample, SampleCommand> aggregateCommands = new AggregateCommands<>(Sample.class, SampleCommand.class);
+    private final AggregateCommands<Sample, SampleCommand> aggregateCommands =
+            new AggregateCommands<>(Sample.class, SampleCommand.class);
 
     @Override
     public EntityModel<Sample> process(EntityModel<Sample> model) {
-        if (model.getContent() instanceof Sample sample) {
+        final var sample = model.getContent();
+        if (sample != null) {
             aggregateCommands.getCommands().forEach(
                     command -> addCommandLink(model, sample, command));
             model.addIf(!model.hasLink(IanaLinkRelations.SELF),
@@ -33,9 +34,9 @@ public class SampleLinks implements RepresentationModelProcessor<EntityModel<Sam
             EntityModel<Sample> model,
             Sample sample,
             Class<? extends SampleCommand> commandType) {
-        val rel = aggregateCommands.getRel(commandType);
+        final var rel = aggregateCommands.getRel(commandType);
         model.addIf(sample.can(commandType), () -> entityLinks
-                .linkFor(Sample.class).slash(rel)
+                .linkForItemResource(Sample.class, sample.getId()).slash(rel)
                 .withRel(rel));
     }
 }

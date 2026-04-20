@@ -8,7 +8,6 @@ import com.example.app.referencedata.Cities;
 import com.example.app.referencedata.City;
 import com.example.app.sample.Sample.SampleState;
 import com.example.app.sample.SampleCommand.CreateSample;
-import lombok.val;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -28,12 +27,12 @@ class SamplesTest {
     Cities cities;
 
     @Test
-    void save_validSampleGiven_savedToDb() {
+    void save_whenValidSample_persistsToDb() {
         // arrange
-        val person = people.save(person());
-        val city = cities.save(city());
-        val sample = sample(person, city);
-        val initialCount = samples.count();
+        final var person = people.save(person());
+        final var city = cities.save(city());
+        final var sample = sample(person, city);
+        final var initialCount = samples.count();
 
         // act
         samples.save(sample);
@@ -43,15 +42,15 @@ class SamplesTest {
     }
 
     @Test
-    void findById_exists_returned() {
+    void findById_whenExists_returnsPersistedAggregate() {
         // arrange
-        val person = people.save(person());
-        val city = cities.save(city());
-        val sample = sample(person, city);
+        final var person = people.save(person());
+        final var city = cities.save(city());
+        final var sample = sample(person, city);
         samples.save(sample);
 
         // act
-        val result = samples.findById(sample.getId());
+        final var result = samples.findById(sample.getId());
 
         // assert
         assertThat(result).isPresent();

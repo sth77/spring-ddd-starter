@@ -12,7 +12,7 @@ after: "TestData {\n"
     }
 
     public static <%= AggregateType %> <%= aggregateName %>(String name) {
-        val result = <%= AggregateType %>.create(<%= CreateCommandType %>.builder()
+        final var result = <%= AggregateType %>.create(<%= CreateCommandType %>.builder()
                 .name(name)
                 .build());
         clearEvents(result);

@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -64,7 +65,7 @@ class HygenTemplatesIT {
     @Test
     @Order(2)
     void updateAirplane_shouldReturnUpdatedNameWithLinks() throws Exception {
-        mockMvc.perform(post(updateLink)
+        mockMvc.perform(put(updateLink)
                 .with(user("testuser").roles("USER", "ADMIN"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""

@@ -24,6 +24,7 @@ import java.util.UUID;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -79,9 +80,9 @@ class SampleOperationsControllerIT {
         }
 
         @Test
-        @DisplayName("POST /samples/{id}/update without authentication should return 401 Unauthorized")
+        @DisplayName("PUT /samples/{id} without authentication should return 401 Unauthorized")
         void update_withoutAuthentication_returnsUnauthorized() throws Exception {
-            mockMvc.perform(post("/api/samples/" + UUID.randomUUID() + "/update")
+            mockMvc.perform(put("/api/samples/" + UUID.randomUUID())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isUnauthorized());
@@ -135,9 +136,9 @@ class SampleOperationsControllerIT {
     class UpdateSampleTests {
 
         @Test
-        @DisplayName("POST /samples/{id}/update for non-existent sample should return 404")
+        @DisplayName("PUT /samples/{id} for non-existent sample should return 404")
         void update_nonExistentSample_returnsNotFound() throws Exception {
-            mockMvc.perform(post("/api/samples/" + UUID.randomUUID() + "/update")
+            mockMvc.perform(put("/api/samples/" + UUID.randomUUID())
                     .with(user("testuser").roles("USER"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(validUpdateSampleJson()))
@@ -145,11 +146,11 @@ class SampleOperationsControllerIT {
         }
 
         @Test
-        @DisplayName("POST /samples/{id}/update without name should return 400 Bad Request")
+        @DisplayName("PUT /samples/{id} without name should return 400 Bad Request")
         void update_withoutName_returnsBadRequest() throws Exception {
             Sample sample = createDraftSample();
 
-            mockMvc.perform(post("/api/samples/" + sample.getId().uuidValue() + "/update")
+            mockMvc.perform(put("/api/samples/" + sample.getId().uuidValue())
                     .with(user("testuser").roles("USER"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""
@@ -194,11 +195,11 @@ class SampleOperationsControllerIT {
     class StateMachineTests {
 
         @Test
-        @DisplayName("POST /samples/{id}/update on PUBLISHED sample should fail")
+        @DisplayName("PUT /samples/{id} on PUBLISHED sample should fail")
         void update_publishedSample_returnsBadRequest() throws Exception {
             Sample sample = createPublishedSample();
 
-            mockMvc.perform(post("/api/samples/" + sample.getId().uuidValue() + "/update")
+            mockMvc.perform(put("/api/samples/" + sample.getId().uuidValue())
                     .with(user("testuser").roles("USER"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(validUpdateSampleJson()))
@@ -252,7 +253,7 @@ class SampleOperationsControllerIT {
                 .andExpect(jsonPath("$.state").value("PUBLISHED"));
 
             // Verify cannot update after publish
-            mockMvc.perform(post("/api/samples/" + sampleId + "/update")
+            mockMvc.perform(put("/api/samples/" + sampleId)
                     .with(user("testuser").roles("USER"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(validUpdateSampleJson()))

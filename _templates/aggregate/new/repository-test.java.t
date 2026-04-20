@@ -8,7 +8,6 @@ package <%= FeaturePackage %>;
 
 import <%= FeaturePackage %>.<%= AggregateType %>.<%= StateType %>;
 import jakarta.persistence.EntityManager;
-import lombok.val;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -26,10 +25,10 @@ class <%= RepositoryType %>Test {
     EntityManager entityManager;
 
     @Test
-    void save_valid<%= AggregateType %>Given_savedToDb() {
+    void save_whenValid<%= AggregateType %>_persistsToDb() {
         // arrange
-        val <%= aggregateName %> = <%= aggregateName %>();
-        val initialCount = <%= repositoryName %>.count();
+        final var <%= aggregateName %> = <%= aggregateName %>();
+        final var initialCount = <%= repositoryName %>.count();
 
         // act
         <%= repositoryName %>.save(<%= aggregateName %>);
@@ -39,15 +38,15 @@ class <%= RepositoryType %>Test {
     }
 
     @Test
-    void findById_exists_returned() {
+    void findById_whenExists_returnsPersistedAggregate() {
         // arrange
-        val <%= aggregateName %> = <%= aggregateName %>();
+        final var <%= aggregateName %> = <%= aggregateName %>();
         <%= repositoryName %>.save(<%= aggregateName %>);
         entityManager.flush();
         entityManager.clear();
 
         // act
-        val result = <%= repositoryName %>.findById(<%= aggregateName %>.getId());
+        final var result = <%= repositoryName %>.findById(<%= aggregateName %>.getId());
 
         // assert
         assertThat(result).isPresent();

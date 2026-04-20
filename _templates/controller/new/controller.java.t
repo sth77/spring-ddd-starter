@@ -1,5 +1,5 @@
 ---
-to: src/main/java/com/example/app/<%= feature %>/web/<%= Name %>CommandController.java
+to: src/main/java/com/example/app/<%= feature %>/web/<%= Name %>OperationsController.java
 ---
 <%
    include(`${templates}/variables.ejs`)
@@ -14,7 +14,6 @@ import <%= FeaturePackage %>.<%= CommandType %>.<%= UpdateCommandType %>;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.val;
 
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.hateoas.EntityModel;
@@ -24,13 +23,11 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.function.Consumer;
 
-/**
- * Extends the REST controller provided by Spring Data REST with aggregate specific operations.
- */
 @Transactional
 @RequiredArgsConstructor
 @RepositoryRestController
@@ -38,32 +35,36 @@ import java.util.function.Consumer;
 @SecurityRequirement(name = "basicAuth")
 public class <%= ControllerType %> {
 
-	private final <%= RepositoryType %> <%= repositoryName %>;
+    private final <%= RepositoryType %> <%= repositoryName %>;
 
     @Secured("ROLE_USER")
     @PostMapping("/<%= collectionRel %>")
     public ResponseEntity<EntityModel<<%= AggregateType %>>> create(@Valid @RequestBody <%= CreateCommandType %> data) {
-        val result = <%= repositoryName %>.save(<%= AggregateType %>.create(data));
+        final var result = <%= repositoryName %>.save(<%= AggregateType %>.create(data));
         return ResponseEntity.ok(EntityModel.of(result));
     }
 
     @Secured("ROLE_USER")
-	@PostMapping(path = "/<%= collectionRel %>/{<%= idName %>}/update")
-	public ResponseEntity<EntityModel<<%= AggregateType %>>> update(@PathVariable <%= IdType %> <%= idName %>, @Valid @RequestBody <%= UpdateCommandType %> data) {
-		return doWith<%= AggregateType %>(<%= idName %>, it -> it.update(data));
-	}
+    @PutMapping(path = "/<%= collectionRel %>/{<%= idName %>}")
+    public ResponseEntity<EntityModel<<%= AggregateType %>>> update(
+            @PathVariable <%= IdType %> <%= idName %>,
+            @Valid @RequestBody <%= UpdateCommandType %> data) {
+        return doWith<%= AggregateType %>(<%= idName %>, it -> it.update(data));
+    }
 
     @Secured("ROLE_ADMIN")
-	@PostMapping(path = "/<%= collectionRel %>/{<%= idName %>}/publish")
-	public ResponseEntity<EntityModel<<%= AggregateType %>>> publish(@PathVariable <%= IdType %> <%= idName %>) {
-		return doWith<%= AggregateType %>(<%= idName %>, <%= AggregateType %>::publish);
-	}
+    @PostMapping(path = "/<%= collectionRel %>/{<%= idName %>}/publish")
+    public ResponseEntity<EntityModel<<%= AggregateType %>>> publish(@PathVariable <%= IdType %> <%= idName %>) {
+        return doWith<%= AggregateType %>(<%= idName %>, <%= AggregateType %>::publish);
+    }
 
-	private ResponseEntity<EntityModel<<%= AggregateType %>>> doWith<%= AggregateType %>(<%= IdType %> <%= idName %>, Consumer<<%= AggregateType %>> action) {
-		return <%= repositoryName %>.doWith(<%= idName %>, action)
-				.map(EntityModel::of)
-				.map(ResponseEntity::ok)
-				.orElse(ResponseEntity.notFound().build());
-	}
+    private ResponseEntity<EntityModel<<%= AggregateType %>>> doWith<%= AggregateType %>(
+            <%= IdType %> <%= idName %>,
+            Consumer<<%= AggregateType %>> action) {
+        return <%= repositoryName %>.doWith(<%= idName %>, action)
+                .map(EntityModel::of)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 
 }

@@ -1,13 +1,32 @@
 <%
+    // Feature name: supports both flat ("identity") and nested ("content.score") features
     featureName = h.changeCase.lower(locals.feature ? locals.feature : name)
+
     RootPackage = "com.example.app";
     PackageDir = h.changeCase.lower(name)
+
+    // FeaturePackage: dots in feature name become package separators (already valid Java package syntax)
+    // e.g., "content.score" → "com.example.app.content.score"
+    // e.g., "identity" → "com.example.app.identity"
     FeaturePackage = RootPackage + "." + featureName
     FeatureWebPackage = FeaturePackage + ".web"
+
+    // FeatureDir: dots become directory separators for file system paths in to: directives
+    // e.g., "content.score" → "content/score"
+    // e.g., "identity" → "identity"
+    FeatureDir = featureName.replace(/\./g, '/')
+
+    // IsNested: true if feature contains dots (e.g., "content.score")
+    IsNested = featureName.includes('.')
+
     ReferenceDataPackage = RootPackage + ".referencedata"
     InfrastructureWebPackage = RootPackage + "._infrastructure.web"
     CommonPackage = RootPackage + ".common";
 
+    // TestData type: for nested features, use the last segment (e.g., "content.score" → "ScoreTestData")
+    testDataFeatureName = locals.feature ? locals.feature : name
+    testDataBaseName = testDataFeatureName.includes('.') ? testDataFeatureName.split('.').pop() : testDataFeatureName
+    TestDataType = h.changeCase.pascal(testDataBaseName) + "TestData"
 
     AggregateType = h.changeCase.pascal(Name)
     aggregateName = h.changeCase.camel(name)
@@ -18,10 +37,8 @@
     RepositoryType = h.inflection.pluralize(Name)
     repositoryName = h.changeCase.camel(RepositoryType)
 
-    ControllerType = Name + "CommandController";
+    ControllerType = Name + "OperationsController";
     controllerName = h.changeCase.camel(ControllerType)
-
-    TestDataType = h.changeCase.pascal(locals.feature ? locals.feature : name) + "TestData"
 
     IdType = AggregateType + "Id"
     IdName = h.changeCase.pascal(IdType)
@@ -41,4 +58,25 @@
     PublishedEventType = AggregateType + "Published"
 
     collectionRel = h.inflection.pluralize(aggregateName)
+
+    // HTTP verb mapping for operations.
+    // Operations listed here use PUT or DELETE; all others default to POST.
+    putOperations = ["update", "rename", "reassign", "correct", "edit"]
+    deleteOperations = ["remove", "delete", "archive", "cancel", "withdraw"]
+
+    // Helper: derive HTTP method from operation rel name
+    function httpMethod(rel) {
+        final lowerRel = rel.toLowerCase()
+        if (putOperations.some(op => lowerRel.startsWith(op))) return "Put"
+        if (deleteOperations.some(op => lowerRel.startsWith(op))) return "Delete"
+        return "Post"
+    }
+
+    // Migration: --migration flag controls output.
+    // Default: append to V0001__initial_schema.sql
+    // --migration V006: generate standalone V006__create_{feature}_module.sql
+    migrationFile = locals.migration
+        ? "src/main/resources/db/migration/" + locals.migration + "__create_" + featureName.replace(/\./g, '_') + "_module.sql"
+        : "src/main/resources/db/migration/V0001__initial_schema.sql"
+    migrationIsAppend = !locals.migration
 -%>

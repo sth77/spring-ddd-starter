@@ -11,7 +11,6 @@ import com.example.app.sample.SampleCommand.PublishSample;
 import com.example.app.sample.SampleEvent.SampleCreated;
 import com.example.app.sample.SampleEvent.SamplePublished;
 import com.example.app.sample.SampleEvent.SampleUpdated;
-import lombok.val;
 import org.junit.jupiter.api.Test;
 
 import static com.example.app.AggregateEvents.clearEvents;
@@ -21,15 +20,15 @@ import static com.example.app.sample.Sample.SampleState.PUBLISHED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-public class SampleTest {
+class SampleTest {
 
     @Test
-    void create_validDataGiven_created() {
+    void create_whenValidData_createsInDraftState() {
         // arrange
-        val name = I18nText.en("Sample 1");
+        final var name = I18nText.en("Sample 1");
 
         // act
-        val sample = Sample.create(CreateSample.builder()
+        final var sample = Sample.create(CreateSample.builder()
                 .name(name)
                 .city(city())
                 .owner(person())
@@ -42,11 +41,11 @@ public class SampleTest {
     }
 
     @Test
-    void update_validDataGiven_updated() {
+    void update_whenInDraftState_updatesName() {
         // arrange
-        val sample = sample();
-        val updatedName = I18nText.en("Sample with updated name");
-        val updatedDescription = "Sample with updated description";
+        final var sample = sample();
+        final var updatedName = I18nText.en("Sample with updated name");
+        final var updatedDescription = "Sample with updated description";
 
         // act
         sample.update(UpdateSample.builder()
@@ -65,9 +64,9 @@ public class SampleTest {
     }
 
     @Test
-    void publish_inDraftState_published() {
+    void publish_whenInDraftState_transitionsToPublished() {
         // arrange
-        val sample = sample();
+        final var sample = sample();
 
         // act
         sample.publish(new PublishSample());
@@ -78,38 +77,37 @@ public class SampleTest {
     }
 
     @Test
-    void publish_alreadyPublished_exceptionThrown() {
+    void publish_whenAlreadyPublished_throwsDomainException() {
         // arrange
-        val sample = sample();
+        final var sample = sample();
         sample.publish(new PublishSample());
         clearEvents(sample);
 
-        // act & assert
+        // act + assert
         assertThatExceptionOfType(DomainException.class)
                 .isThrownBy(() -> sample.publish(new PublishSample()));
     }
 
     @Test
-    void canPublish_inDraftState_trueReturned() {
+    void can_whenPublishInDraftState_returnsTrue() {
         // arrange
-        val sample = sample();
+        final var sample = sample();
 
-        // act & assert
+        // act + assert
         assertThat(sample.can(PublishSample.class)).isTrue();
     }
 
-
     @Test
-    void canUpdate_inPublishedState_falseReturned() {
+    void can_whenUpdateInPublishedState_returnsFalse() {
         // arrange
-        val sample = sample().publish(new PublishSample());
+        final var sample = sample().publish(new PublishSample());
 
-        // act & assert
+        // act + assert
         assertThat(sample.can(UpdateSample.class)).isFalse();
     }
 
     private static Sample sample() {
-        val result = Sample.create(CreateSample.builder()
+        final var result = Sample.create(CreateSample.builder()
                 .name(I18nText.en("Sample X"))
                 .owner(person())
                 .city(city())

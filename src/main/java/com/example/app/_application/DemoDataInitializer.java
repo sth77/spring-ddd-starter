@@ -14,7 +14,6 @@ import com.example.app.sample.SampleCommand.UpdateSample;
 import com.example.app.sample.Samples;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
@@ -49,13 +48,13 @@ public class DemoDataInitializer {
          * 1) declare dependencies to your repositories as final fields
          * 2) create some test data useful for developing the application
          */
-        val personData = IntStream.range(1, 3)
+        final var personData = IntStream.range(1, 3)
                 .mapToObj(i -> Person.create(CreatePerson.builder()
                         .name("Person " + i)
                         .build()))
                 .map(people::save)
                 .toList();
-        val sampleData = IntStream.range(1, 4)
+        final var sampleData = IntStream.range(1, 4)
                 .mapToObj(i -> Sample.create(CreateSample.builder()
                         .name(I18nText.en("Sample " + i))
                         .description("Description of sample " + i)
@@ -65,14 +64,14 @@ public class DemoDataInitializer {
                 .map(samples::save)
                 .toList();
 
-        val sample2 = sampleData.get(1);
+        final var sample2 = sampleData.get(1);
         samples.save(sample2.update(UpdateSample.builder()
                 .name(sample2.getName())
                 .description("Updated description of sample 2")
                 .city(cities.findByPostalCode(POSTAL_CODE2).orElseThrow())
                 .build()));
 
-        val sample3 = sampleData.get(2);
+        final var sample3 = sampleData.get(2);
         samples.save(sample3.publish(PublishSample.create()));
 
     }

@@ -66,6 +66,13 @@ If you want to make your aggregate available through the REST API, type:
 
 > $ hygen controller new Todo --feature=todo
 
+To add a field to an existing aggregate (injects into aggregate, command, projections, and migration):
+
+> $ hygen field add --name title --type string --aggregate Todo --feature todo
+
+Field types: `string`, `nullable-string`, `enum`, `association`, `boolean`, `instant`, `text`. 
+Run `hygen field help` for full documentation and examples.
+
 ## Running Tests
 
 Run unit tests:
@@ -128,7 +135,8 @@ unconventional prefix "_":
       [Aggregate1]OperationsController.java Controller exposing operations of the aggregate
       [Aggregate1]Summary.java              Projection with reduced data suitable to render lists
       [Aggregate1]Detail.java               Projection with detailed data to render detail views
-      [Aggregate1]Links.java                Factory for HAL links of the aggregate
+      [Aggregate1]EntityLinks.java            Factory for HAL links of the aggregate
+      [Aggregate1]CollectionLinks.java      Factory for HAL links on the collection
   [feature2]/                            Root package of another feature
     ...
 </pre>
@@ -230,22 +238,26 @@ When accessing a single aggregate, Spring shows the fields of the aggregate, plu
 We can now use the same mechanism to communicate to the client of the API which business operations (i.e. commands) are
 currently available depending on the aggregate state and the user role. The convention is to produce a HAL link for each
 available operation and let it point at the path served by the controller to execute the command. The logic
-to produce the links is placed in a class `<AggregateName>Links` in the web API package of the feature.
+to produce the links is placed in a class `<AggregateName>EntityLinks` in the web API package of the feature.
 
 For the sample aggregate, this looks like this:
 ```java
 @Component
 @RequiredArgsConstructor
-public class SampleLinks implements RepresentationModelProcessor<EntityModel<Sample>> {
+public class SampleEntityLinks implements RepresentationModelProcessor<EntityModel<Sample>> {
 
    private final EntityLinks entityLinks;
-   private final AggregateCommands<Sample, SampleCommand, SampleOperationsController> aggregateCommands = new AggregateCommands<>(Sample.class, SampleCommand.class, SampleOperationsController.class);
+   private final AggregateCommands<Sample, SampleCommand> aggregateCommands =
+           new AggregateCommands<>(Sample.class, SampleCommand.class);
 
    @Override
    public EntityModel<Sample> process(EntityModel<Sample> model) {
-      if (model.getContent() instanceof Sample sample) {
+      final var sample = model.getContent();
+      if (sample != null) {
          aggregateCommands.getCommands().forEach(
                  command -> addCommandLink(model, sample, command));
+         model.addIf(!model.hasLink(IanaLinkRelations.SELF),
+                 () -> entityLinks.linkForItemResource(Sample.class, sample.getId()).withSelfRel());
       }
       return model;
    }
@@ -254,9 +266,9 @@ public class SampleLinks implements RepresentationModelProcessor<EntityModel<Sam
            EntityModel<Sample> model,
            Sample sample,
            Class<? extends SampleCommand> commandType) {
-      val rel = aggregateCommands.getRel(commandType);
+      final var rel = aggregateCommands.getRel(commandType);
       model.addIf(sample.can(commandType), () -> entityLinks
-              .linkFor(Sample.class).slash(rel)
+              .linkForItemResource(Sample.class, sample.getId()).slash(rel)
               .withRel(rel));
    }
 }
@@ -274,7 +286,7 @@ generator for the aggregate:
 public class SampleApiConfiguration {
 
    @Bean
-   ProjectionLinks<Sample> sampleSummaryLinks(SampleLinks delegate) {
+   ProjectionLinks<Sample> sampleProjectionLinks(SampleEntityLinks delegate) {
       return new ProjectionLinks<>(delegate, Sample.class);
    }
 

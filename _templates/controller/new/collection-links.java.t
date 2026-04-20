@@ -8,10 +8,8 @@ package <%= FeatureWebPackage %>;
 
 import <%= CommonPackage %>.model.AggregateCommands;
 import <%= FeaturePackage %>.<%= AggregateType %>;
-
 import <%= FeaturePackage %>.<%= CommandType %>;
 import <%= FeaturePackage %>.<%= CommandType %>.<%= CreateCommandType %>;
-import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -24,12 +22,12 @@ import org.springframework.stereotype.Component;
 public class <%= AggregateType %>CollectionLinks implements RepresentationModelProcessor<CollectionModel<EntityModel<<%= AggregateType %>>>> {
 
     private final EntityLinks entityLinks;
-    private final AggregateCommands<<%= AggregateType %>, <%= CommandType %>> aggregateCommands = new AggregateCommands<>(<%= AggregateType %>.class, <%= CommandType %>.class);
+    private final AggregateCommands<<%= AggregateType %>, <%= CommandType %>> aggregateCommands =
+            new AggregateCommands<>(<%= AggregateType %>.class, <%= CommandType %>.class);
 
-    @Nonnull
     @Override
     public CollectionModel<EntityModel<<%= AggregateType %>>> process(CollectionModel<EntityModel<<%= AggregateType %>>> model) {
-        return model.add(entityLinks.linkFor(<%= AggregateType %>.class).withRel(aggregateCommands.getRel(<%= CreateCommandType %>.class)));
+        final var rel = aggregateCommands.getRel(<%= CreateCommandType %>.class);
+        return model.add(entityLinks.linkFor(<%= AggregateType %>.class).slash(rel).withRel(rel));
     }
-
 }

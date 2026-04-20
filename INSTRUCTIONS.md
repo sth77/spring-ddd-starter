@@ -50,15 +50,36 @@ A REST controller serving an aggregate to the frontend should be created through
 
 Each API implemented by the application should reside in a subpackage of the `_infrastructure` package. Integration with the domain layer can be realized through an interface declared in a domain package (the port), which is implemented in the API package under `_infrastructure/<api-name>` (the adapter), by listening to commands or events published by the domain layer (for outgoing messages), or by directly invoking the respective domain operation or application service (for incoming messages).
 
+# Adding fields to an aggregate
+
+To add a field to an existing aggregate, use the hygen `field add` generator:
+
+```
+hygen field add --name <fieldName> --type <fieldType> --aggregate <Aggregate> --feature <feature> [options]
+```
+
+This injects the field into the aggregate class, create command, projections, and SQL migration in one step.
+
+Field types: `string`, `nullable-string`, `enum`, `association`, `boolean`, `instant`, `text`.
+Run `hygen field help` for full documentation.
+
 # Adding business operations
 
 To add a business operation to an aggregate, the following steps are necessary:
 * Declare a command with fields representing the data required to execute the operation (if any). 
-* Extend the ´can´ method in the aggregate to define rules when the new command can be executed or not, depending on the state of the aggregate.
+* Extend the `can` method in the aggregate to define rules when the new command can be executed or not, depending on the state of the aggregate.
 * Declare a new method on the aggregate which takes the command as input parameter named 'data', checks whether the command can be executed (`assertCan(<Command Type>.class)`) and updates the fields of the aggregate accordingly.
 * If needed, register one or more domain events on the aggregate after having updated the fields, which are published by Spring on saving the aggregate to the DB.
-* If the aggregate has a REST controller, add a method to the controller with the name of the command, taking the command as input and invoking with it the ´doWith<AggregateType> method´.
+* If the aggregate has a REST controller, add a method to the controller with the name of the command, taking the command as input and invoking with it the `doWith<AggregateType>` method.
 * the new methods in aggregate and controller should be covered by a new unit test
+
+## REST API conventions
+
+* **Create:** `POST /api/{aggregates}` — collection resource
+* **Idempotent updates:** `PUT /api/{aggregates}/{id}` — standard REST
+* **Domain operations:** `POST /api/{aggregates}/{id}/{rel}` — state transitions, discoverable via HATEOAS
+* **Delete/archive:** `DELETE /api/{aggregates}/{id}` — standard REST
+* **HATEOAS links:** link rel carries domain name (e.g., `publish`), HTTP method is implementation detail discovered via links
 
 
 

@@ -1,6 +1,5 @@
 package com.example.app;
 
-import lombok.val;
 import org.jmolecules.event.types.DomainEvent;
 import org.springframework.data.domain.AbstractAggregateRoot;
 
@@ -16,7 +15,7 @@ public final class AggregateEvents {
     @SuppressWarnings("unchecked")
     public static List<DomainEvent> getEvents(AbstractAggregateRoot<?> aggregate) {
         try {
-            val method = AbstractAggregateRoot.class.getDeclaredMethod("domainEvents");
+            final var method = AbstractAggregateRoot.class.getDeclaredMethod("domainEvents");
             method.setAccessible(true);
             return new ArrayList<>((Collection<DomainEvent>) method.invoke(aggregate));
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
@@ -26,7 +25,7 @@ public final class AggregateEvents {
 
     public static void clearEvents(AbstractAggregateRoot<?> aggregate) {
         try {
-            val method = AbstractAggregateRoot.class.getDeclaredMethod("clearDomainEvents");
+            final var method = AbstractAggregateRoot.class.getDeclaredMethod("clearDomainEvents");
             method.setAccessible(true);
             method.invoke(aggregate);
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {

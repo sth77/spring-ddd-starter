@@ -13,7 +13,6 @@ import <%= FeaturePackage %>.<%= CommandType %>.<%= PublishCommandType %>;
 import <%= FeaturePackage %>.<%= EventType %>.<%= CreatedEventType %>;
 import <%= FeaturePackage %>.<%= EventType %>.<%= PublishedEventType %>;
 import <%= FeaturePackage %>.<%= EventType %>.<%= UpdatedEventType %>;
-import lombok.val;
 import org.junit.jupiter.api.Test;
 
 import static com.example.app.AggregateEvents.clearEvents;
@@ -24,15 +23,15 @@ import static <%= FeaturePackage %>.<%= TestDataType %>.<%= aggregateName %>;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-public class <%= AggregateType %>Test {
+class <%= AggregateType %>Test {
 
     @Test
-    void create_validDataGiven_created() {
+    void create_whenValidData_createsInDraftState() {
         // arrange
-        val name = "<%= AggregateType %> 1";
+        final var name = "<%= AggregateType %> 1";
 
         // act
-        val <%= aggregateName %> = <%= AggregateType %>.create(<%= CreateCommandType %>.builder()
+        final var <%= aggregateName %> = <%= AggregateType %>.create(<%= CreateCommandType %>.builder()
                 .name(name)
                 .build());
 
@@ -44,10 +43,10 @@ public class <%= AggregateType %>Test {
     }
 
     @Test
-    void update_validDataGiven_updated() {
+    void update_whenInDraftState_updatesName() {
         // arrange
-        val <%= aggregateName %> = <%= aggregateName %>();
-        val updatedName = "<%= AggregateType %> with updated name";
+        final var <%= aggregateName %> = <%= aggregateName %>();
+        final var updatedName = "<%= AggregateType %> with updated name";
 
         // act
         <%= aggregateName %>.update(<%= UpdateCommandType %>.builder()
@@ -64,9 +63,9 @@ public class <%= AggregateType %>Test {
     }
 
     @Test
-    void publish_inDraftState_published() {
+    void publish_whenInDraftState_transitionsToPublished() {
         // arrange
-        val <%= aggregateName %> = <%= aggregateName %>();
+        final var <%= aggregateName %> = <%= aggregateName %>();
 
         // act
         <%= aggregateName %>.publish();
@@ -80,34 +79,33 @@ public class <%= AggregateType %>Test {
     }
 
     @Test
-    void publish_alreadyPublished_exceptionThrown() {
+    void publish_whenAlreadyPublished_throwsDomainException() {
         // arrange
-        val <%= aggregateName %> = <%= aggregateName %>();
+        final var <%= aggregateName %> = <%= aggregateName %>();
         <%= aggregateName %>.publish();
         clearEvents(<%= aggregateName %>);
 
-        // act & assert
+        // act + assert
         assertThatExceptionOfType(DomainException.class)
                 .isThrownBy(<%= aggregateName %>::publish);
     }
 
     @Test
-    void canPublish_inDraftState_trueReturned() {
+    void can_whenPublishInDraftState_returnsTrue() {
         // arrange
-        val <%= aggregateName %> = <%= aggregateName %>();
+        final var <%= aggregateName %> = <%= aggregateName %>();
 
-        // act & assert
+        // act + assert
         assertThat(<%= aggregateName %>.can(<%= PublishCommandType %>.class)).isTrue();
     }
 
-
     @Test
-    void canUpdate_inPublishedState_falseReturned() {
+    void can_whenUpdateInPublishedState_returnsFalse() {
         // arrange
-        val <%= aggregateName %> = <%= aggregateName %>();
+        final var <%= aggregateName %> = <%= aggregateName %>();
         <%= aggregateName %>.publish();
 
-        // act & assert
+        // act + assert
         assertThat(<%= aggregateName %>.can(<%= UpdateCommandType %>.class)).isFalse();
     }
 

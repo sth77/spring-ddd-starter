@@ -16,7 +16,6 @@ import jakarta.persistence.Column;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.val;
 import org.jmolecules.architecture.onion.simplified.DomainRing;
 import org.jmolecules.ddd.types.AggregateRoot;
 import org.jmolecules.ddd.types.Association;
@@ -40,7 +39,7 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
     private SampleState state;
 
     public static Sample create(CreateSample data) {
-        val result = new Sample(
+        final var result = new Sample(
                 SampleId.random(),
                 Association.forAggregate(data.owner()),
                 data.name(),

@@ -7,18 +7,15 @@ to: src/main/java/com/example/app/_infrastructure/web/<%= Name %>ApiConfiguratio
 package com.example.app._infrastructure.web;
 
 import <%= FeaturePackage %>.<%= AggregateType %>;
-import <%= FeatureWebPackage %>.<%= AggregateType %>Links;
+import <%= FeatureWebPackage %>.<%= AggregateType %>EntityLinks;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class <%= Name %>ApiConfiguration {
 
-    /**
-     * Ensures that projections are equipped with the same links as the aggregate.
-     */
     @Bean
-    ProjectionLinks<<%= AggregateType %>> <%= aggregateName %>ProjectionLinks(<%= AggregateType %>Links delegate) {
+    ProjectionLinks<<%= AggregateType %>> <%= aggregateName %>ProjectionLinks(<%= AggregateType %>EntityLinks delegate) {
         return new ProjectionLinks<>(delegate, <%= AggregateType %>.class);
     }
 
