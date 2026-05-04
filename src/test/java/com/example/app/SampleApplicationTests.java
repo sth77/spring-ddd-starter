@@ -20,6 +20,7 @@ class SampleApplicationTests {
 
     @ArchTest
     ArchRule dddRules = JMoleculesDddRules.all();
+
     @ArchTest
     ArchRule onion = JMoleculesArchitectureRules.ensureOnionSimple();
 

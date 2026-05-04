@@ -10,6 +10,7 @@ spring:
     name: Spring DDD Starter
   jpa:
     hibernate:
+      ddl-auto: validate
       naming:
         implicit-strategy: com.example.app._infrastructure.persistence.ValueWrapperAwareImplicitNamingStrategy
   modulith:
