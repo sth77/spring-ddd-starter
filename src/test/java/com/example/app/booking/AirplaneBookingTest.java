@@ -1,0 +1,108 @@
+package com.example.app.booking;
+
+import com.example.app.common.model.DomainException;
+import com.example.app.booking.AirplaneBookingCommand.CreateAirplaneBooking;
+import com.example.app.booking.AirplaneBookingCommand.UpdateAirplaneBooking;
+import com.example.app.booking.AirplaneBookingCommand.PublishAirplaneBooking;
+import com.example.app.booking.AirplaneBookingEvent.AirplaneBookingCreated;
+import com.example.app.booking.AirplaneBookingEvent.AirplaneBookingPublished;
+import com.example.app.booking.AirplaneBookingEvent.AirplaneBookingUpdated;
+import lombok.val;
+import org.junit.jupiter.api.Test;
+
+import static com.example.app.AggregateEvents.clearEvents;
+import static com.example.app.AggregateEvents.getEvents;
+import static com.example.app.booking.AirplaneBooking.AirplaneBookingState.DRAFT;
+import static com.example.app.booking.AirplaneBooking.AirplaneBookingState.PUBLISHED;
+import static com.example.app.booking.BookingTestData.airplaneBooking;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+
+public class AirplaneBookingTest {
+
+    @Test
+    void create_validDataGiven_created() {
+        // arrange
+        val name = "AirplaneBooking 1";
+
+        // act
+        val airplaneBooking = AirplaneBooking.create(CreateAirplaneBooking.builder()
+                .name(name)
+                .build());
+
+        // assert
+        assertThat(airplaneBooking.getName()).isEqualTo(name);
+        assertThat(airplaneBooking.getState()).isEqualTo(DRAFT);
+        assertThat(getEvents(airplaneBooking)).containsExactly(
+                AirplaneBookingCreated.of(airplaneBooking.getId()));
+    }
+
+    @Test
+    void update_validDataGiven_updated() {
+        // arrange
+        val airplaneBooking = airplaneBooking();
+        val updatedName = "AirplaneBooking with updated name";
+
+        // act
+        airplaneBooking.update(UpdateAirplaneBooking.builder()
+                .name(updatedName)
+                .build());
+
+        // assert
+        assertThat(airplaneBooking.getName()).isEqualTo(updatedName);
+        assertThat(airplaneBooking.getState()).isEqualTo(DRAFT);
+        assertThat(getEvents(airplaneBooking)).containsExactly(AirplaneBookingUpdated.builder()
+                .airplaneBookingId(airplaneBooking.getId())
+                .name(updatedName)
+                .build());
+    }
+
+    @Test
+    void publish_inDraftState_published() {
+        // arrange
+        val airplaneBooking = airplaneBooking();
+
+        // act
+        airplaneBooking.publish();
+
+        // assert
+        assertThat(airplaneBooking.getState()).isEqualTo(PUBLISHED);
+        assertThat(getEvents(airplaneBooking)).containsExactly(AirplaneBookingPublished.builder()
+                .airplaneBookingId(airplaneBooking.getId())
+                .name(airplaneBooking.getName())
+                .build());
+    }
+
+    @Test
+    void publish_alreadyPublished_exceptionThrown() {
+        // arrange
+        val airplaneBooking = airplaneBooking();
+        airplaneBooking.publish();
+        clearEvents(airplaneBooking);
+
+        // act & assert
+        assertThatExceptionOfType(DomainException.class)
+                .isThrownBy(airplaneBooking::publish);
+    }
+
+    @Test
+    void canPublish_inDraftState_trueReturned() {
+        // arrange
+        val airplaneBooking = airplaneBooking();
+
+        // act & assert
+        assertThat(airplaneBooking.can(PublishAirplaneBooking.class)).isTrue();
+    }
+
+
+    @Test
+    void canUpdate_inPublishedState_falseReturned() {
+        // arrange
+        val airplaneBooking = airplaneBooking();
+        airplaneBooking.publish();
+
+        // act & assert
+        assertThat(airplaneBooking.can(UpdateAirplaneBooking.class)).isFalse();
+    }
+
+}

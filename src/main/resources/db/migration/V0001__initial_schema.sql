@@ -42,9 +42,20 @@ CREATE TABLE IF NOT EXISTS sample (
     FOREIGN KEY (owner) REFERENCES person(id)
     );
 
-create table airplane (id uuid not null, inventory_code varchar(255), status tinyint check ((status between 0 and 2)), primary key (id));
+create table airplane (
+    id uuid not null,
+    inventory_code varchar(255),
+    status tinyint check ((status between 0 and 2)),
+    primary key (id));
 create table maintenance_report (id uuid not null, confirmed_at timestamp(6), document_id varchar(255), maintenance_reports_id uuid, primary key (id));
 alter table if exists sample alter column description set data type varchar(255);
 alter table if exists sample alter column owner set data type uuid;
 alter table if exists sample alter column state set data type tinyint;
 alter table if exists maintenance_report add constraint FK4ii3uoih6soxjhw7pqhrbtuk foreign key (maintenance_reports_id) references airplane;
+
+CREATE TABLE IF NOT EXISTS airplane_booking (
+    id UUID PRIMARY KEY,
+    version INT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    state VARCHAR(20) NOT NULL
+    );
