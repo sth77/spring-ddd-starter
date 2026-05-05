@@ -1,6 +1,7 @@
 package com.example.app.booking;
 
 
+import com.example.app.airplane.Airplane;
 import com.example.app.booking.AirplaneBookingCommand.CreateAirplaneBooking;
 
 import lombok.experimental.UtilityClass;
@@ -19,7 +20,8 @@ public class BookingTestData {
     public static AirplaneBooking airplaneBooking(String name) {
         val result = AirplaneBooking.create(CreateAirplaneBooking.builder()
                 .name(name)
-                .build());
+                .build(),
+                Airplane.Id.random());
         clearEvents(result);
         return result;
     }

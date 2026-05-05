@@ -5,6 +5,7 @@ import com.example.app.booking.AirplaneBooking.AirplaneBookingId;
 import com.example.app.booking.AirplaneBookings;
 import com.example.app.booking.AirplaneBookingCommand.CreateAirplaneBooking;
 import com.example.app.booking.AirplaneBookingCommand.UpdateAirplaneBooking;
+import com.example.app.booking.app.AirplaneBookingService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,11 +34,12 @@ import java.util.function.Consumer;
 public class AirplaneBookingCommandController {
 
 	private final AirplaneBookings airplaneBookings;
+    private final AirplaneBookingService airplaneBookingService;
 
     @Secured("ROLE_USER")
     @PostMapping("/airplaneBookings")
     public ResponseEntity<EntityModel<AirplaneBooking>> create(@Valid @RequestBody CreateAirplaneBooking data) {
-        val result = airplaneBookings.save(AirplaneBooking.create(data));
+        val result = airplaneBookingService.create(data);
         return ResponseEntity.ok(EntityModel.of(result));
     }
 

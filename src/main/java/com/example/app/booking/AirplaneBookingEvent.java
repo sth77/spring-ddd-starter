@@ -27,4 +27,8 @@ public sealed interface AirplaneBookingEvent extends DomainEvent {
         String name) implements AirplaneBookingEvent {
     }
 
+    record AirplaneBookingCancelled(
+        AirplaneBookingId airplaneBookingId) implements AirplaneBookingEvent {
+    }
+
 }

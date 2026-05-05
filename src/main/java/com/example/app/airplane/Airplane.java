@@ -80,8 +80,8 @@ public class Airplane
                 this.getStatus()));
     }
 
-    public record Id(UUID id) implements Identifier {
-        static Id random() {
+    public record Id(UUID uuidValue) implements Identifier {
+        public static Id random() {
             return new Id(UUID.randomUUID());
         }
     }
