@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.5</version>
+        <version>4.0.6</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.example</groupId>
@@ -26,12 +26,12 @@
     </developers>
     <properties>
         <java.version>25</java.version>
-        <spring-modulith.version>2.0.5</spring-modulith.version>
+        <spring-modulith.version>2.0.6</spring-modulith.version>
         <bytebuddy.version>1.18.8</bytebuddy.version>
         <validation-api.version>3.1.1</validation-api.version>
         <jmolecules-bom.version>2025.0.2</jmolecules-bom.version>
-        <springdoc-openapi.version>3.0.2</springdoc-openapi.version>
-        <archunit.version>1.4.1</archunit.version>
+        <springdoc-openapi.version>3.0.3</springdoc-openapi.version>
+        <archunit.version>1.4.2</archunit.version>
     </properties>
     <dependencyManagement>
         <dependencies>
