@@ -158,6 +158,41 @@ Single- and multi-valued value objects are embedded directly into the owning agg
 
 As a result, aggregates carry no persistence annotations: the schema follows from the value objects' shape.
 
+#### Master data handling
+
+Master data (e.g. a list of cities) is modeled as a jMolecules `@Entity` under `referencedata`, not as a full-blown
+aggregate. Such reference data has its own lifecycle and identity but is never referenced by association
+from another aggregate. Instead, an aggregate can embed relevant fields of masterdata in a child value object.
+
+The starter project illustrates this idea on the example of a list of cities:
+- `referencedata.City` is the master-data entity (own table, own id).
+- `sample.City` is a value object — a copy of the relevant master-data fields, embedded into the `Sample` aggregate
+  (`City.of(referenceData)` performs the copy).
+
+This keeps the aggregate self-contained and immutable against later changes to the master data: a `Sample` records
+the city as it was at the time of creation, rather than following a live reference. The copy is embedded into the
+`sample` table via the naming strategy above (`city_postal_code`, `city_name_en`, `city_name_de`), again without any
+column annotations.
+
+The master-data repository is exported as a REST resource (`@RepositoryRestResource`), so the frontend can list and
+select reference data (e.g. `GET /api/cities`). Full CRUD is acceptable here, because reference data has no business
+rules to enforce and registers no domain events, so it need not go through an aggregate's operation controller. A
+command then references the chosen entity **by its URI**: the
+`CreateSample` command declares `City city`, and the request passes a link, which Spring Data REST resolves to the
+entity before the command is handled:
+
+```json
+POST /api/samples
+{
+  "name": { "en": "Sample 1", "de": "DE_Sample 1" },
+  "owner": "/api/people/{personId}",
+  "city": "/api/cities/{cityId}"
+}
+```
+
+The aggregate then copies the resolved `City` into its embedded value object. The same mechanism resolves the
+`owner` association.
+
 ### REST API with Links in HAL format
 
 The REST API is largely provided out of the box by Spring Data REST. Its converters allow to reference aggregates through their URI. If exposed through `@RepositoryRestResource`, finder methods of a repository are published under the search resource of an aggregate collection.

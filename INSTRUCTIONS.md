@@ -38,7 +38,7 @@ Domain services should be implemented as classes in the toplevel directory of th
 
 ## Application services
 
-Application services closely related to a specific domain should be in a subpackage `app` of the feature package the service relates to. App services should declare Transactions and may listen to domain events. Domain events from other modules should be consumed using jMolecules @ApplicationModuleListener annotation, processing the event in a separate thread and using a database transaction.
+Application services closely related to a specific domain should be in a subpackage `app` of the feature package the service relates to. App services should declare Transactions and may listen to domain events. Domain events from other modules should be consumed using Spring Modulith @ApplicationModuleListener annotation, processing the event in a separate thread and using a database transaction.
 
 # Infrastructure layer
 

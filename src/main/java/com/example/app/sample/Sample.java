@@ -12,7 +12,6 @@ import com.example.app.sample.SampleCommand.UpdateSample;
 import com.example.app.sample.SampleEvent.SampleCreated;
 import com.example.app.sample.SampleEvent.SamplePublished;
 import com.example.app.sample.SampleEvent.SampleUpdated;
-import jakarta.persistence.Column;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -35,8 +34,7 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
 
     private I18nText name;
     private String description;
-    // TODO find naming strategy which ads prefixes for directly embedded value objects
-    // private City city;
+    private City city;
     private SampleState state;
 
     public static Sample create(CreateSample data) {
@@ -45,7 +43,7 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
                 Association.forAggregate(data.owner()),
                 data.name(),
                 data.description(),
-                // City.of(data.city()),
+                City.of(data.city()),
                 SampleState.DRAFT);
         result.registerEvent(new SampleCreated(result.getId()));
         return result;
@@ -57,7 +55,7 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
                 && Objects.equals(description, data.description()))) {
             name = data.name();
             description = data.description();
-            // city = City.of(data.city());
+            city = City.of(data.city());
             registerEvent(new SampleUpdated(id, name, description));
         }
         return this;

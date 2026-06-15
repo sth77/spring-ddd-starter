@@ -10,6 +10,6 @@ public record City(int postalCode, I18nText name) {
     }
 
     public static City of(com.example.app.referencedata.City city) {
-        return new City(city.getPostalCode(), city.getName());
+        return city == null ? null : new City(city.getPostalCode(), city.getName());
     }
 }

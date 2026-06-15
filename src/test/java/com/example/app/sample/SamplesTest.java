@@ -58,6 +58,7 @@ class SamplesTest {
         assertThat(result).get().satisfies(actual -> {
             assertThat(actual.getName()).isEqualTo(sample.getName());
             assertThat(actual.getState()).isEqualTo(SampleState.DRAFT);
+            assertThat(actual.getCity()).isEqualTo(com.example.app.sample.City.of(city));
         });
     }
 

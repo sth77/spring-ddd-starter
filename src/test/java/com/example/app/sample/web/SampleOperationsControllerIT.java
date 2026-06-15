@@ -4,6 +4,8 @@ import com.example.app.common.model.I18nText;
 import com.example.app.person.People;
 import com.example.app.person.Person;
 import com.example.app.person.PersonCommand;
+import com.example.app.referencedata.Cities;
+import com.example.app.referencedata.City;
 import com.example.app.sample.Sample;
 import com.example.app.sample.SampleCommand.CreateSample;
 import com.example.app.sample.SampleCommand.PublishSample;
@@ -48,6 +50,9 @@ class SampleOperationsControllerIT {
 
     @Autowired
     private Samples samples;
+
+    @Autowired
+    private Cities cities;
 
     private Person testOwner;
 
@@ -127,6 +132,34 @@ class SampleOperationsControllerIT {
                     .with(user("testuser").roles("USER")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.state").value("DRAFT"));
+        }
+    }
+
+    @Nested
+    @DisplayName("Create Sample Tests")
+    class CreateSampleTests {
+
+        @Test
+        @DisplayName("POST /samples resolves owner and city from their URIs and copies the city into the aggregate")
+        void create_withOwnerAndCityUris_resolvesAssociationsAndCopiesCity() throws Exception {
+            City city = cities.save(City.ofPostalCodeAndName(3000,
+                    I18nText.builder().en("Bern").de("Bern").build()));
+
+            mockMvc.perform(post("/api/samples")
+                    .with(user("testuser").roles("USER"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""
+                        {
+                            "name": { "en": "Sample 1", "de": "DE_Sample 1" },
+                            "description": "Sample description",
+                            "owner": "/api/people/%s",
+                            "city": "/api/cities/%s"
+                        }
+                        """.formatted(testOwner.getId().uuidValue(), city.getId().uuidValue())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name.en").value("Sample 1"))
+                .andExpect(jsonPath("$.city.postalCode").value(3000))
+                .andExpect(jsonPath("$.city.name.en").value("Bern"));
         }
     }
 
