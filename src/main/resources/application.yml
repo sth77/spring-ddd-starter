@@ -11,7 +11,7 @@ spring:
   jpa:
     hibernate:
       naming:
-        implicit-strategy: com.example.app._infrastructure.persistence.ValueWrapperAwareImplicitNamingStrategy
+        implicit-strategy: com.example.app._infrastructure.persistence.ValueObjectAwareImplicitNamingStrategy
   modulith:
     events:
       republish-outstanding-events-on-restart: true

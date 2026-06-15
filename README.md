@@ -139,6 +139,25 @@ Aggregates are directly persisted to a relational database through JPA / Hiberna
 model with persistence logic, Aggregates rely on jMolecules `byte-buddy` plugin to generated required annotations.
 The initial schema is created through Flyway.
 
+#### Value-object-aware column naming
+
+Single- and multi-valued value objects are embedded directly into the owning aggregate's table, without any
+`@Column` or `@AttributeOverride` annotations on the domain model. This is handled centrally by
+`ValueObjectAwareImplicitNamingStrategy` (registered via `spring.jpa.hibernate.naming.implicit-strategy`):
+
+- **Single-value wrappers** collapse to the owning attribute, dropping the wrapper component. A wrapper is
+  recognized by the `<type>Value` naming convention of its sole component, so no list of field names has to be
+  maintained:
+  - `SampleId(UUID uuidValue)` mapped as `id` → column `id`
+  - `Email(String stringValue)` mapped as `email` → column `email`
+- **Multi-field value objects** keep the owning-attribute prefix, which disambiguates sibling embeddables:
+  - `I18nText(String en, String de)` mapped as `name` → columns `name_en`, `name_de`
+  - nested: `City(int postalCode, I18nText name)` mapped as `city` → `city_postal_code`, `city_name_en`, `city_name_de`
+- **`@ElementCollection` elements** live in their own table, so the collection prefix is dropped and columns are
+  named by the path within the element.
+
+As a result, aggregates carry no persistence annotations: the schema follows from the value objects' shape.
+
 ### REST API with Links in HAL format
 
 The REST API is largely provided out of the box by Spring Data REST. Its converters allow to reference aggregates through their URI. If exposed through `@RepositoryRestResource`, finder methods of a repository are published under the search resource of an aggregate collection.
