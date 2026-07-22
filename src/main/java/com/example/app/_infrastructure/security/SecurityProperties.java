@@ -9,13 +9,13 @@ import java.util.List;
 @ConfigurationProperties(prefix = "security")
 public class SecurityProperties {
 
-    String frontendSuccess;
-    List<User> users;
+    String frontendSuccess = "";
+    List<User> users = List.of();
 
     @Data
     public static class User {
-        String name;
-        String password;
-        List<String> roles;
+        String name = "";
+        String password = "";
+        List<String> roles = List.of();
     }
 }

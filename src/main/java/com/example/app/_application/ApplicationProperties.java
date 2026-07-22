@@ -6,6 +6,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Data
 @ConfigurationProperties(prefix = "application")
 public class ApplicationProperties {
-    String name;
-    String version;
+    String name = "";
+    String version = "";
 }

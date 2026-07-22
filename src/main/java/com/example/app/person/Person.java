@@ -21,7 +21,7 @@ import java.util.UUID;
 public class Person extends AbstractAggregate<Person, PersonId> implements AggregateRoot<Person, PersonId>{
 
     private final PersonId id;
-    private String name;
+    private String name = "";
 
     public static Person create(CreatePerson data) {
         val result = new Person(PersonId.random());

@@ -20,6 +20,7 @@ import org.jmolecules.architecture.onion.simplified.DomainRing;
 import org.jmolecules.ddd.types.AggregateRoot;
 import org.jmolecules.ddd.types.Association;
 import org.jmolecules.ddd.types.Identifier;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -34,7 +35,7 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
 
     private I18nText name;
     private String description;
-    private City city;
+    private @Nullable City city;
     private SampleState state;
 
     public static Sample create(CreateSample data) {

@@ -23,8 +23,11 @@ public enum UserRole {
     }
 
     public static List<UserRole> current() {
-        return SecurityContextHolder.getContext()
-            .getAuthentication()
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            return List.of();
+        }
+        return authentication
             .getAuthorities()
             .stream()
             .map(GrantedAuthority::getAuthority)
@@ -32,6 +35,5 @@ public enum UserRole {
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(Collectors.toList());
-
     }
 }

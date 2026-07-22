@@ -7,6 +7,7 @@ import org.hibernate.boot.model.naming.ImplicitNamingStrategyComponentPathImpl;
 import org.hibernate.boot.model.source.spi.AttributePath;
 
 import java.util.ArrayDeque;
+import java.util.Objects;
 
 /**
  * Implicit column naming for embedded value objects:
@@ -59,7 +60,8 @@ public class ValueObjectAwareImplicitNamingStrategy extends ImplicitNamingStrate
         for (String segment : segments) {
             path = (path == null) ? AttributePath.parse(segment) : path.append(segment);
         }
-        return path;
+        // reroot is only ever called with a non-empty segment list
+        return Objects.requireNonNull(path);
     }
 
     /**

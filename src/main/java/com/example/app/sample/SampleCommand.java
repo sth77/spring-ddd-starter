@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import org.jmolecules.architecture.onion.simplified.DomainRing;
+import org.jspecify.annotations.Nullable;
 import org.springframework.hateoas.server.core.Relation;
 
 @DomainRing
@@ -19,7 +20,7 @@ public sealed interface SampleCommand extends Command {
     record CreateSample(
             @NotNull @Valid I18nText name,
             @Size(max = 1000) String description,
-            City city, // from master data
+            @Nullable City city, // from master data
             @NotNull Person owner
     ) implements SampleCommand {
     }
@@ -28,7 +29,7 @@ public sealed interface SampleCommand extends Command {
     record UpdateSample(
             @NotNull @Valid I18nText name,
             @Size(max = 1000) String description,
-            City city) implements SampleCommand {
+            @Nullable City city) implements SampleCommand {
     }
 
     record PublishSample() implements SampleCommand {
