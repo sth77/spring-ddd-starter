@@ -6,7 +6,7 @@ to: src/main/java/com/example/app/<%= feature %>/web/<%= Name %>Links.java
 -%>
 package <%= FeatureWebPackage %>;
 
-import <%= CommonPackage %>.model.AggregateCommands;
+import <%= CommonPackage %>.web.SecuredAggregateCommands;
 import <%= FeaturePackage %>.<%= AggregateType %>;
 
 import <%= FeaturePackage %>.<%= CommandType %>;
@@ -24,12 +24,12 @@ import static org.springframework.hateoas.IanaLinkRelations.SELF;
 public class <%= AggregateType %>Links implements RepresentationModelProcessor<EntityModel<<%= AggregateType %>>> {
 
    private final EntityLinks entityLinks;
-   private final AggregateCommands<<%= AggregateType %>, <%= CommandType %>> aggregateCommands = new AggregateCommands<>(<%= AggregateType %>.class, <%= CommandType %>.class);
+   private final SecuredAggregateCommands<<%= AggregateType %>, <%= CommandType %>> aggregateCommands = new SecuredAggregateCommands<>(<%= AggregateType %>.class, <%= CommandType %>.class, <%= ControllerType %>.class);
 
    @Override
    public EntityModel<<%= AggregateType %>> process(EntityModel<<%= AggregateType %>> model) {
       if (model.getContent() instanceof <%= AggregateType %> <%= aggregateName %>) {
-         aggregateCommands.getCommands().forEach(
+         aggregateCommands.getAllowedCommands().forEach(
                  command -> addCommandLink(model, <%= aggregateName %>, command));
          model.addIf(!model.hasLink(SELF),
                  () -> entityLinks.linkForItemResource(<%= AggregateType %>.class, <%= aggregateName %>.getId()).withSelfRel());

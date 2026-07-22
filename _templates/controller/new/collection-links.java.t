@@ -6,7 +6,7 @@ to: src/main/java/com/example/app/<%= feature %>/web/<%= Name %>CollectionLinks.
 -%>
 package <%= FeatureWebPackage %>;
 
-import <%= CommonPackage %>.model.AggregateCommands;
+import <%= CommonPackage %>.web.SecuredAggregateCommands;
 import <%= FeaturePackage %>.<%= AggregateType %>;
 
 import <%= FeaturePackage %>.<%= CommandType %>;
@@ -24,12 +24,14 @@ import org.springframework.stereotype.Component;
 public class <%= AggregateType %>CollectionLinks implements RepresentationModelProcessor<CollectionModel<EntityModel<<%= AggregateType %>>>> {
 
     private final EntityLinks entityLinks;
-    private final AggregateCommands<<%= AggregateType %>, <%= CommandType %>> aggregateCommands = new AggregateCommands<>(<%= AggregateType %>.class, <%= CommandType %>.class);
+    private final SecuredAggregateCommands<<%= AggregateType %>, <%= CommandType %>> aggregateCommands = new SecuredAggregateCommands<>(<%= AggregateType %>.class, <%= CommandType %>.class, <%= ControllerType %>.class);
 
     @Nonnull
     @Override
     public CollectionModel<EntityModel<<%= AggregateType %>>> process(CollectionModel<EntityModel<<%= AggregateType %>>> model) {
-        return model.add(entityLinks.linkFor(<%= AggregateType %>.class).withRel(aggregateCommands.getRel(<%= CreateCommandType %>.class)));
+        return model.addIf(
+                aggregateCommands.isAllowedForCurrentUser(<%= CreateCommandType %>.class),
+                () -> entityLinks.linkFor(<%= AggregateType %>.class).withRel(aggregateCommands.getRel(<%= CreateCommandType %>.class)));
     }
 
 }

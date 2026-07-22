@@ -1,6 +1,6 @@
 package com.example.app.sample.web;
 
-import com.example.app.common.model.AggregateCommands;
+import com.example.app.common.web.SecuredAggregateCommands;
 import com.example.app.sample.Sample;
 import com.example.app.sample.SampleCommand;
 import lombok.RequiredArgsConstructor;
@@ -16,12 +16,13 @@ import org.springframework.stereotype.Component;
 public class SampleLinks implements RepresentationModelProcessor<EntityModel<Sample>> {
 
     private final EntityLinks entityLinks;
-    private final AggregateCommands<Sample, SampleCommand> aggregateCommands = new AggregateCommands<>(Sample.class, SampleCommand.class);
+    private final SecuredAggregateCommands<Sample, SampleCommand> aggregateCommands =
+            new SecuredAggregateCommands<>(Sample.class, SampleCommand.class, SampleOperationsController.class);
 
     @Override
     public EntityModel<Sample> process(EntityModel<Sample> model) {
         if (model.getContent() instanceof Sample sample) {
-            aggregateCommands.getCommands().forEach(
+            aggregateCommands.getAllowedCommands().forEach(
                     command -> addCommandLink(model, sample, command));
             model.addIf(!model.hasLink(IanaLinkRelations.SELF),
                     () -> entityLinks.linkForItemResource(Sample.class, sample.getId()).withSelfRel());

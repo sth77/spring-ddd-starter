@@ -1,6 +1,6 @@
 package com.example.app.sample.web;
 
-import com.example.app.common.model.AggregateCommands;
+import com.example.app.common.web.SecuredAggregateCommands;
 import com.example.app.sample.Sample;
 import com.example.app.sample.SampleCommand;
 import com.example.app.sample.SampleCommand.CreateSample;
@@ -17,12 +17,15 @@ import org.springframework.stereotype.Component;
 public class SampleCollectionLinks implements RepresentationModelProcessor<CollectionModel<EntityModel<Sample>>> {
 
     private final EntityLinks entityLinks;
-    private final AggregateCommands<Sample, SampleCommand> aggregateCommands = new AggregateCommands<>(Sample.class, SampleCommand.class);
+    private final SecuredAggregateCommands<Sample, SampleCommand> aggregateCommands =
+            new SecuredAggregateCommands<>(Sample.class, SampleCommand.class, SampleOperationsController.class);
 
     @Nonnull
     @Override
     public CollectionModel<EntityModel<Sample>> process(CollectionModel<EntityModel<Sample>> model) {
-        return model.add(entityLinks.linkFor(Sample.class).withRel(aggregateCommands.getRel(CreateSample.class)));
+        return model.addIf(
+                aggregateCommands.isAllowedForCurrentUser(CreateSample.class),
+                () -> entityLinks.linkFor(Sample.class).withRel(aggregateCommands.getRel(CreateSample.class)));
     }
 
 }
