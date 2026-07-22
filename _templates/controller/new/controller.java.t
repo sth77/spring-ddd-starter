@@ -21,7 +21,6 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.ExposesResourceFor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,7 +30,6 @@ import java.util.function.Consumer;
 /**
  * Extends the REST controller provided by Spring Data REST with aggregate specific operations.
  */
-@Transactional
 @RequiredArgsConstructor
 @RepositoryRestController
 @ExposesResourceFor(<%= AggregateType %>.class)
