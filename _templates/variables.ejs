@@ -18,7 +18,7 @@
     RepositoryType = h.inflection.pluralize(Name)
     repositoryName = h.changeCase.camel(RepositoryType)
 
-    ControllerType = Name + "CommandController";
+    ControllerType = Name + "OperationsController";
     controllerName = h.changeCase.camel(ControllerType)
 
     TestDataType = h.changeCase.pascal(locals.feature ? locals.feature : name) + "TestData"

@@ -1,5 +1,5 @@
 ---
-to: src/main/java/com/example/app/<%= feature %>/web/<%= Name %>CommandController.java
+to: src/main/java/com/example/app/<%= feature %>/web/<%= Name %>OperationsController.java
 ---
 <%
    include(`${templates}/variables.ejs`)
