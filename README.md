@@ -15,7 +15,10 @@ explicit and enforced through [jMolecules](https://github.com/xmolecules/jmolecu
 3) Right-click on the `pom.xml` and import the project as Maven project to your IDE
 4) Refactor the package `com.example.app` to a suitable name
 5) Replace the path `com/example/app` in all files to match the package you defined in the previous step
-6) Rename the value of the variable "RootPackage" under _templates/variables.ejs to your chosen package name
+6) Also update the package name in the `pom.xml`, where it appears in the NullAway compiler option
+   (`-XepOpt:NullAway:AnnotatedPackages=com.example.app`) — otherwise the null-safety checks silently stop applying
+   to your code
+7) Rename the value of the variable "RootPackage" under _templates/variables.ejs to your chosen package name
 
 ### Register byte-buddy in IntelliJ
 
@@ -199,6 +202,14 @@ The REST API is largely provided out of the box by Spring Data REST. Its convert
 
 Through configuration, http methods to create, update or patch an aggregate are disabled in favor of using well-defined operations for creating and changing aggregates, forcing them to go through the business logic implemented in the domain layer. 
 
+#### Serialization of value objects
+
+Domain identifiers and single-attribute value objects carry no Jackson annotations. `jmolecules-jackson`
+serializes any jMolecules `Identifier` or single-field `@ValueObject` to — and deserializes it from — its bare
+wrapped value. For example `SampleId(UUID uuidValue)` appears in JSON simply as the UUID string, and a command
+field of that type is bound straight from the bare value. This keeps the domain model free of serialization
+concerns (no `@JsonValue`/`@JsonCreator`), matching the same annotation-free approach used for persistence.
+
 #### Summary and detail projections
 
 It is a common scenario that an application displays a list of aggregates, with a detail view of a single 
@@ -293,13 +304,16 @@ For the sample aggregate, this looks like this:
 public class SampleLinks implements RepresentationModelProcessor<EntityModel<Sample>> {
 
    private final EntityLinks entityLinks;
-   private final AggregateCommands<Sample, SampleCommand, SampleOperationsController> aggregateCommands = new AggregateCommands<>(Sample.class, SampleCommand.class, SampleOperationsController.class);
+   private final SecuredAggregateCommands<Sample, SampleCommand> aggregateCommands =
+           new SecuredAggregateCommands<>(Sample.class, SampleCommand.class, SampleOperationsController.class);
 
    @Override
    public EntityModel<Sample> process(EntityModel<Sample> model) {
       if (model.getContent() instanceof Sample sample) {
-         aggregateCommands.getCommands().forEach(
+         aggregateCommands.getAllowedCommands().forEach(
                  command -> addCommandLink(model, sample, command));
+         model.addIf(!model.hasLink(IanaLinkRelations.SELF),
+                 () -> entityLinks.linkForItemResource(Sample.class, sample.getId()).withSelfRel());
       }
       return model;
    }
@@ -315,9 +329,15 @@ public class SampleLinks implements RepresentationModelProcessor<EntityModel<Sam
    }
 }
 ```
-Note how Spring's entity links comes in handy to resolve the path annotated on the `SampleOperationsController`. A link
-is only produced if the Sample's `can` method allows for this operation. The check could be extended here by checking 
-the user's role, allowing the publish operation for example only for a user with role `ADMIN`.
+A command link appears only when **both** conditions hold: the aggregate permits the operation in its current
+state (`sample.can(commandType)`) **and** the current user is authorized to invoke it. The authorization part is
+handled by `SecuredAggregateCommands` (in `common.web`): at construction it reads, for each command, the `@Secured`
+role declared on the `SampleOperationsController` method that handles it, and `getAllowedCommands()` then returns
+only the commands whose required role the authenticated user holds. Because the controller's `@Secured` annotation
+stays the single source of truth, link visibility and endpoint authorization cannot drift apart — Spring HATEOAS
+does not derive link visibility from Spring Security on its own. `SecuredAggregateCommands` composes the plain
+`AggregateCommands`, which resolves the command relations, keeping the role logic separate from the relation
+metadata.
 
 Projections of the aggregate (see above) do not automatically pick up the links generated for the aggregate. The 
 `ProjectionLinks` helper class can be used to declare a link generator for the projection which delegates to the link 
@@ -359,7 +379,27 @@ jMolecules also ensures that the elements of tactical domain-driven design are u
 
 ### Nullability
 
-The project uses [JSpecify](https://jspecify.dev/) annotations for nullability. Package-level `@NullMarked` annotations indicate that all types are non-null by default. Use `@Nullable` to explicitly mark nullable types.
+The project uses [JSpecify](https://jspecify.dev/) annotations for nullability. Package-level `@NullMarked`
+annotations (one per package, guarded by `NullabilityAnnotationTests`) declare that all types are non-null by
+default; use `@Nullable` to explicitly opt a type out.
+
+This contract is enforced at build time by [NullAway](https://github.com/uber/NullAway), which runs as an
+[Error Prone](https://errorprone.info/) plugin while the main sources compile. Any potential null-pointer
+dereference — a `@Nullable` value dereferenced without a check, a `@NonNull` field left uninitialized, a
+`@Nullable` value returned from or passed where `@NonNull` is required, and so on — **fails the build**. This turns
+the nullness contract from documentation into a guarantee, which is especially valuable when new contributors or AI
+coding agents extend the code.
+
+The check is wired into the `maven-compiler-plugin`'s `default-compile` execution:
+
+- `error_prone_core` and `nullaway` are added to the annotation-processor path (alongside Lombok);
+- `-Xplugin:ErrorProne -XepDisableAllChecks -Xep:NullAway:ERROR -XepOpt:NullAway:AnnotatedPackages=com.example.app`
+  runs NullAway — and only NullAway — as an error;
+- the compiler is forked with the `jdk.compiler` `--add-exports`/`--add-opens` that Error Prone needs on current JDKs.
+
+Only the main sources are checked; test compilation keeps just Lombok, so test idioms (mocks, autowired fields,
+fluent assertions) don't have to satisfy the analyzer. Adjust the enforced scope via `AnnotatedPackages`, or drop
+`-XepDisableAllChecks` to additionally enable Error Prone's own bug-pattern checks.
 
 ### Validation
 
@@ -382,7 +422,6 @@ library use.
 
 * Add documentation to generated artifacts
 * Allow adding operations with related commands and events one by one
-* Master data handling has been prototyped with the City class, but is not to the point yet
 * Should add an example for @ModuleTest
 
 ## References
