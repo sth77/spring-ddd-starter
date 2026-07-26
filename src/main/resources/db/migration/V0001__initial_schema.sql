@@ -1,5 +1,3 @@
-CREATE SEQUENCE IF NOT EXISTS hibernate_sequence;
-
 -- table for spring modulith event publication
 CREATE TABLE IF NOT EXISTS event_publication (
     id UUID PRIMARY KEY,

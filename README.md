@@ -142,6 +142,12 @@ Aggregates are directly persisted to a relational database through JPA / Hiberna
 model with persistence logic, Aggregates rely on jMolecules `byte-buddy` plugin to generated required annotations.
 The initial schema is created through Flyway.
 
+Schema changes follow a **migration-per-change** convention: the initial schema lives in `V0001__initial_schema.sql`,
+and every subsequent change is a *new* versioned file, never an edit to an already-applied one. Accordingly, the
+`hygen aggregate`/`hygen referencedata` scaffolding emits a fresh `V<timestamp>__create_<table>.sql` migration
+rather than appending to `V0001`. Because `spring.jpa.hibernate.ddl-auto` is `validate` (see below), a migration that
+does not match the mapped entity fails the build at startup.
+
 #### Value-object-aware column naming
 
 Single- and multi-valued value objects are embedded directly into the owning aggregate's table, without any
@@ -152,7 +158,7 @@ Single- and multi-valued value objects are embedded directly into the owning agg
   recognized by the `<type>Value` naming convention of its sole component, so no list of field names has to be
   maintained:
   - `SampleId(UUID uuidValue)` mapped as `id` → column `id`
-  - `Email(String stringValue)` mapped as `email` → column `email`
+  - `Principal(String stringValue)` mapped as `principal` → column `principal`
 - **Multi-field value objects** keep the owning-attribute prefix, which disambiguates sibling embeddables:
   - `I18nText(String en, String de)` mapped as `name` → columns `name_en`, `name_de`
   - nested: `City(int postalCode, I18nText name)` mapped as `city` → `city_postal_code`, `city_name_en`, `city_name_de`

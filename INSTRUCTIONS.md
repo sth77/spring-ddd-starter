@@ -50,6 +50,13 @@ A REST controller serving an aggregate to the frontend should be created through
 
 Each API implemented by the application should reside in a subpackage of the `_infrastructure` package. Integration with the domain layer can be realized through an interface declared in a domain package (the port), which is implemented in the API package under `_infrastructure/<api-name>` (the adapter), by listening to commands or events published by the domain layer (for outgoing messages), or by directly invoking the respective domain operation or application service (for incoming messages).
 
+## Database migrations
+
+The schema is managed by Flyway. Never edit a migration that has already been applied (`V0001__initial_schema.sql`
+and anything shipped). Every schema change is a **new** versioned file named `V<timestamp>__<description>.sql`; the
+`hygen` scaffolding creates one automatically for new tables. Because `ddl-auto` is `validate`, a migration that does
+not match the mapped entity fails the build at startup.
+
 # Adding business operations
 
 To add a business operation to an aggregate, the following steps are necessary:

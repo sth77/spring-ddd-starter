@@ -1,13 +1,8 @@
 ---
-to: src/main/resources/db/migration/V0001__initial_schema.sql
-inject: true
-append: true
-skip_if: IF NOT EXISTS "<%= h.changeCase.snakeCase(referenceDataName) %>"
+to: src/main/resources/db/migration/V<%= new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14) %>__create_<%= h.changeCase.snakeCase(referenceDataName) %>.sql
 ---
-
-
-CREATE TABLE IF NOT EXISTS "<%= h.changeCase.snakeCase(referenceDataName) %>" (
-    "id" UUID PRIMARY KEY,
-    "name_en" VARCHAR(255) NOT NULL,
-    "name_de" VARCHAR(255) NOT NULL
+CREATE TABLE <%= h.changeCase.snakeCase(referenceDataName) %> (
+    id UUID PRIMARY KEY,
+    name_en VARCHAR(255) NOT NULL,
+    name_de VARCHAR(255) NOT NULL
     );
