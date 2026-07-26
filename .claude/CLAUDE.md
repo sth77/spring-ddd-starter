@@ -49,7 +49,9 @@ mvn clean verify
 
 - Onion: infrastructure -> application -> domain
 - Modules verified by Spring Modulith
-- DDD rules verified by jMolecules ArchUnit tests
+- DDD + onion rules verified by jMolecules ArchUnit rules in `ArchitectureTests` (runs under `mvn verify`)
+- jMolecules `jmolecules-apt` additionally enforces the DDD rules at compile time
+- Schema drift is caught at startup by Hibernate `ddl-auto: validate` against the Flyway schema
 
 ## Scaffolding (hygen)
 

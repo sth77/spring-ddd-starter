@@ -161,6 +161,14 @@ Single- and multi-valued value objects are embedded directly into the owning agg
 
 As a result, aggregates carry no persistence annotations: the schema follows from the value objects' shape.
 
+#### Enum mapping
+
+Enums are mapped through a JPA `AttributeConverter` (one `@Converter(autoApply = true)` class per enum, see
+`SampleStateConverter`), persisting the enum by name to match the `VARCHAR` schema columns. Do **not** fall back to
+`@Enumerated`: the default ordinal mapping breaks as soon as enum constants are reordered, and annotating the domain
+model would reintroduce exactly the persistence details the byte-buddy approach keeps out of it. The `hygen
+aggregate` generator creates the converter for the aggregate's state enum automatically.
+
 #### Master data handling
 
 Master data (e.g. a list of cities) is modeled as a jMolecules `@Entity` under `referencedata`, not as a full-blown
@@ -419,13 +427,16 @@ Dependencies are only allowed in this direction: infrastructure -> application -
 
 #### DDD architecture
 
-jMolecules also ensures that the elements of tactical domain-driven design are used correctly. There is both a Unit test and the jMolecules annotation processor (jmolecules-atp) which can detect breaches already at compile time.
+jMolecules also ensures that the elements of tactical domain-driven design are used correctly. This is enforced
+twice: the `ArchitectureTests` run the jMolecules ArchUnit rules (`JMoleculesDddRules` and the simplified onion
+rules) as part of `mvn verify`, and the jMolecules annotation processor (`jmolecules-apt`, wired into the
+`default-compile` annotation-processor path) detects breaches already at compile time.
 
 ### Nullability
 
 The project uses [JSpecify](https://jspecify.dev/) annotations for nullability. Package-level `@NullMarked`
-annotations (one per package, guarded by `NullabilityAnnotationTests`) declare that all types are non-null by
-default; use `@Nullable` to explicitly opt a type out.
+annotations (one per package, guarded by the nullability rules in `ArchitectureTests`) declare that all types are
+non-null by default; use `@Nullable` to explicitly opt a type out.
 
 This contract is enforced at build time by [NullAway](https://github.com/uber/NullAway), which runs as an
 [Error Prone](https://errorprone.info/) plugin while the main sources compile. Any potential null-pointer

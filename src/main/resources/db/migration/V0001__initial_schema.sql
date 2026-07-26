@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS sample (
     name_de VARCHAR(255) NOT NULL,
     description VARCHAR(2048) NOT NULL,
     state VARCHAR(20) NOT NULL,
-    owner VARCHAR(36) NOT NULL,
+    owner UUID NOT NULL,
     -- denormalized copy of the owner's name, kept in sync via a domain event
     owner_name VARCHAR(255) NOT NULL,
     city_postal_code INTEGER,

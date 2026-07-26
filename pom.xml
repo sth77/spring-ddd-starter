@@ -278,6 +278,13 @@
                                     <artifactId>nullaway</artifactId>
                                     <version>${nullaway.version}</version>
                                 </path>
+                                <!-- Compile-time DDD verification (jMolecules): fails compilation on
+                                     violations such as an aggregate referencing another directly instead
+                                     of via Association. Version is managed by the jmolecules BOM. -->
+                                <path>
+                                    <groupId>org.jmolecules.integrations</groupId>
+                                    <artifactId>jmolecules-apt</artifactId>
+                                </path>
                             </annotationProcessorPaths>
                             <compilerArgs>
                                 <arg>-XDcompilePolicy=simple</arg>

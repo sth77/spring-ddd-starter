@@ -10,6 +10,9 @@ spring:
     name: Spring DDD Starter
   jpa:
     hibernate:
+      # Fail fast if the JPA mapping (column names derived by ValueObjectAwareImplicitNamingStrategy)
+      # drifts from the hand-written Flyway schema.
+      ddl-auto: validate
       naming:
         implicit-strategy: com.example.app._infrastructure.persistence.ValueObjectAwareImplicitNamingStrategy
   modulith:
