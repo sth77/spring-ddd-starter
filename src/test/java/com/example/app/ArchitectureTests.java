@@ -1,15 +1,22 @@
 package com.example.app;
 
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noFields;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noMethods;
 import static java.util.function.Predicate.not;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.example.app.common.model.Command;
+import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClasses;
+import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
+import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
+import com.tngtech.archunit.lang.ConditionEvents;
+import com.tngtech.archunit.lang.SimpleConditionEvent;
 import jakarta.annotation.security.DenyAll;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
@@ -18,6 +25,7 @@ import java.util.stream.Stream;
 import lombok.val;
 import org.jmolecules.archunit.JMoleculesArchitectureRules;
 import org.jmolecules.archunit.JMoleculesDddRules;
+import org.jmolecules.ddd.types.AggregateRoot;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.security.access.prepost.PostAuthorize;
@@ -69,6 +77,50 @@ class ArchitectureTests {
             .orShould().beAnnotatedWith(DenyAll.class)
             .because("operations controllers must declare roles exclusively via @Secured, the single"
                     + " source SecuredAggregateCommands reads to decide HAL command-link visibility");
+
+    /**
+     * Aggregates change state exclusively through business operations that take a command: no setters, no
+     * loose parameter lists. Read accessors (get/is), the {@code can(...)} guard and the {@code Object}
+     * methods are exempt; static factories are covered by the sealed command pattern itself
+     * ({@code create} takes the Create command).
+     */
+    @ArchTest
+    static final ArchRule aggregateOperationsTakeCommands = methods()
+            .that().areDeclaredInClassesThat().areAssignableTo(AggregateRoot.class)
+            .and().arePublic()
+            .and().areNotStatic()
+            .and(DescribedPredicate.not(accessorGuardOrObjectMethod()))
+            .should(takeExactlyOneCommandParameter())
+            .because("aggregate state changes go through commands only (see INSTRUCTIONS.md,"
+                    + " 'Adding business operations')");
+
+    private static DescribedPredicate<JavaMethod> accessorGuardOrObjectMethod() {
+        return DescribedPredicate.describe(
+                "a get/is accessor, the can() guard, or an Object method",
+                method -> method.getName().startsWith("get")
+                        || method.getName().startsWith("is")
+                        || method.getName().equals("can")
+                        || method.getName().equals("toString")
+                        || method.getName().equals("equals")
+                        || method.getName().equals("hashCode"));
+    }
+
+    private static ArchCondition<JavaMethod> takeExactlyOneCommandParameter() {
+        return new ArchCondition<>("take the operation's command as their only parameter") {
+            @Override
+            public void check(JavaMethod method, ConditionEvents events) {
+                val parameters = method.getRawParameterTypes();
+                val satisfied = parameters.size() == 1 && parameters.get(0).isAssignableTo(Command.class);
+                events.add(new SimpleConditionEvent(
+                        method,
+                        satisfied,
+                        method.getFullName()
+                                + (satisfied
+                                        ? " takes its command as the only parameter"
+                                        : " must take its command as the only parameter")));
+            }
+        };
+    }
 
     @ArchTest
     static void packagesShouldBeAnnotatedWithNullMarked(JavaClasses classes) {

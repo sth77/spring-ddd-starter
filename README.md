@@ -449,6 +449,10 @@ twice: the `ArchitectureTests` run the jMolecules ArchUnit rules (`JMoleculesDdd
 rules) as part of `mvn verify`, and the jMolecules annotation processor (`jmolecules-apt`, wired into the
 `default-compile` annotation-processor path) detects breaches already at compile time.
 
+A project-specific rule additionally enforces the command pattern itself: every public state-changing method on an
+aggregate root must take its command as the only parameter — accessors, the `can(...)` guard and `Object` methods
+are exempt. A setter or a loose parameter list fails the build.
+
 ### Nullability
 
 The project uses [JSpecify](https://jspecify.dev/) annotations for nullability. Package-level `@NullMarked`
