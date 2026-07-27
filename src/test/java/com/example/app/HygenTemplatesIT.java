@@ -81,7 +81,9 @@ class HygenTemplatesIT {
     @Order(3)
     void publishAirplane_shouldReturnPublishedWithOnlySelfLink() throws Exception {
         mockMvc.perform(post(publishLink)
-                .with(user("testuser").roles("USER", "ADMIN")))
+                .with(user("testuser").roles("USER", "ADMIN"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.state").value("PUBLISHED"))
             .andExpect(jsonPath("$._links.self.href").exists())

@@ -1,5 +1,5 @@
 ---
-to: src/test/java/com/example/app/<%= name %>/<%= Name %>TestData.java
+to: src/test/java/com/example/app/<%= h.changeCase.lower(name) %>/<%= Name %>TestData.java
 ---
 package com.example.app.<%= name %>;
 

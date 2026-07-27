@@ -36,7 +36,7 @@ public class SampleLinks implements RepresentationModelProcessor<EntityModel<Sam
             Class<? extends SampleCommand> commandType) {
         val rel = aggregateCommands.getRel(commandType);
         model.addIf(sample.can(commandType), () -> entityLinks
-                .linkFor(Sample.class).slash(rel)
+                .linkForItemResource(Sample.class, sample.getId()).slash(rel)
                 .withRel(rel));
     }
 }

@@ -11,6 +11,7 @@ import com.example.app.sample.SampleCommand.CreateSample;
 import com.example.app.sample.SampleCommand.PublishSample;
 import com.example.app.sample.SampleCommand.UpdateSample;
 import com.example.app.sample.Samples;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -21,6 +22,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.net.URI;
 import java.util.UUID;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -294,6 +296,53 @@ class SampleOperationsControllerIT {
         }
     }
 
+    @Nested
+    @DisplayName("HAL Command Link Tests")
+    class CommandLinkTests {
+
+        @Test
+        @DisplayName("update/publish links in the response point to endpoints that actually accept the command")
+        void createdSample_commandLinksAreFollowable() throws Exception {
+            City city = cities.save(City.ofPostalCodeAndName(3000,
+                    I18nText.builder().en("Bern").de("Bern").build()));
+
+            // create a sample and read the command links straight off the HAL response
+            String createResponse = mockMvc.perform(post("/api/samples")
+                    .with(user("admin").roles("USER", "ADMIN"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""
+                        {
+                            "name": { "en": "Linkable", "de": "DE_Linkable" },
+                            "description": "Sample with command links",
+                            "owner": "/api/people/%s",
+                            "city": "/api/cities/%s"
+                        }
+                        """.formatted(testOwner.getId().uuidValue(), city.getId().uuidValue())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$._links.update.href").exists())
+                .andExpect(jsonPath("$._links.publish.href").exists())
+                .andReturn().getResponse().getContentAsString();
+
+            String updateHref = JsonPath.read(createResponse, "$._links.update.href");
+            String publishHref = JsonPath.read(createResponse, "$._links.publish.href");
+
+            // follow the update link verbatim (do NOT reconstruct the URL) — this is what caught the href bug
+            mockMvc.perform(post(URI.create(updateHref))
+                    .with(user("admin").roles("USER", "ADMIN"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(validUpdateSampleJson()))
+                .andExpect(status().isOk());
+
+            // follow the publish link verbatim
+            mockMvc.perform(post(URI.create(publishHref))
+                    .with(user("admin").roles("USER", "ADMIN"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.state").value("PUBLISHED"));
+        }
+    }
+
     private Sample createDraftSample() {
         return samples.save(Sample.create(CreateSample.builder()
                 .name(I18nText.en("Test Sample"))
@@ -304,7 +353,7 @@ class SampleOperationsControllerIT {
 
     private Sample createPublishedSample() {
         Sample sample = createDraftSample();
-        sample.publish(new PublishSample());
+        sample.publish(PublishSample.create());
         return samples.save(sample);
     }
 

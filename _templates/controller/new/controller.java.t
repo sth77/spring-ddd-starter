@@ -1,5 +1,5 @@
 ---
-to: src/main/java/com/example/app/<%= feature %>/web/<%= Name %>OperationsController.java
+to: src/main/java/com/example/app/<%= h.changeCase.lower(feature) %>/web/<%= Name %>OperationsController.java
 ---
 <%
    include(`${templates}/variables.ejs`)
@@ -11,6 +11,7 @@ import <%= FeaturePackage %>.<%= AggregateType %>.<%= IdType %>;
 import <%= FeaturePackage %>.<%= RepositoryType %>;
 import <%= FeaturePackage %>.<%= CommandType %>.<%= CreateCommandType %>;
 import <%= FeaturePackage %>.<%= CommandType %>.<%= UpdateCommandType %>;
+import <%= FeaturePackage %>.<%= CommandType %>.<%= PublishCommandType %>;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -53,8 +54,8 @@ public class <%= ControllerType %> {
 
     @Secured("ROLE_ADMIN")
 	@PostMapping(path = "/<%= collectionRel %>/{<%= idName %>}/publish")
-	public ResponseEntity<EntityModel<<%= AggregateType %>>> publish(@PathVariable <%= IdType %> <%= idName %>) {
-		return doWith<%= AggregateType %>(<%= idName %>, <%= AggregateType %>::publish);
+	public ResponseEntity<EntityModel<<%= AggregateType %>>> publish(@PathVariable <%= IdType %> <%= idName %>, @Valid @RequestBody <%= PublishCommandType %> data) {
+		return doWith<%= AggregateType %>(<%= idName %>, it -> it.publish(data));
 	}
 
 	private ResponseEntity<EntityModel<<%= AggregateType %>>> doWith<%= AggregateType %>(<%= IdType %> <%= idName %>, Consumer<<%= AggregateType %>> action) {

@@ -39,19 +39,19 @@ public class <%= AggregateType %> extends AbstractAggregate<<%= Name %>, <%= IdT
             <%= IdType %>.random(),
             data.name(),
             <%= StateType %>.DRAFT);
-        result.registerEvent(new <%= CreatedEventType %>(result.id));
+        result.registerEvent(<%= CreatedEventType %>.of(result.id));
         return result;
     }
 
     public void update(<%= UpdateCommandType %> data) {
-        assertCan(data.getClass());
+        assertCan(<%= UpdateCommandType %>.class);
         if (!Objects.equals(this.name, data.name())) {
             this.name = data.name();
             registerEvent(new <%= UpdatedEventType %>(id, name));
         }
     }
 
-    public void publish() {
+    public void publish(<%= PublishCommandType %> data) {
         assertCan(<%= PublishCommandType %>.class);
         state = <%= StateType %>.PUBLISHED;
         registerEvent(new <%= PublishedEventType %>(id, name));

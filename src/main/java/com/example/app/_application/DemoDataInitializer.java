@@ -66,14 +66,16 @@ public class DemoDataInitializer {
                 .toList();
 
         val sample2 = sampleData.get(1);
-        samples.save(sample2.update(UpdateSample.builder()
+        sample2.update(UpdateSample.builder()
                 .name(sample2.getName())
                 .description("Updated description of sample 2")
                 .city(cities.findByPostalCode(POSTAL_CODE2).orElseThrow())
-                .build()));
+                .build());
+        samples.save(sample2);
 
         val sample3 = sampleData.get(2);
-        samples.save(sample3.publish(PublishSample.create()));
+        sample3.publish(PublishSample.create());
+        samples.save(sample3);
 
     }
 

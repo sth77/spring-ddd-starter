@@ -18,7 +18,6 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.val;
-import org.jmolecules.architecture.onion.simplified.DomainRing;
 import org.jmolecules.ddd.types.AggregateRoot;
 import org.jmolecules.ddd.types.Association;
 import org.jmolecules.ddd.types.Identifier;
@@ -28,7 +27,6 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Getter
-@DomainRing
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Sample extends AbstractAggregate<Sample, SampleId> implements AggregateRoot<Sample, SampleId> {
 
@@ -51,46 +49,50 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
                 City.of(data.city()),
                 SampleState.DRAFT,
                 data.owner().getName());
-        result.registerEvent(new SampleCreated(result.getId()));
+        result.registerEvent(SampleCreated.of(result.getId()));
         return result;
     }
 
-    public Sample update(UpdateSample data) {
-        assertCan(data);
+    public void update(UpdateSample data) {
+        assertCan(UpdateSample.class);
         if (!(Objects.equals(name, data.name())
                 && Objects.equals(description, data.description()))) {
             name = data.name();
             description = data.description();
             city = City.of(data.city());
-            registerEvent(new SampleUpdated(id, name, description));
+            registerEvent(SampleUpdated.builder()
+                    .sampleId(id)
+                    .name(name)
+                    .description(description)
+                    .build());
         }
-        return this;
     }
 
     /**
      * Keeps the denormalized owner name in sync with the owning {@link Person}. Invoked by an
      * application listener reacting to the owner's name change.
      */
-    public Sample updateOwnerName(UpdateOwnerName data) {
-        assertCan(data);
+    public void updateOwnerName(UpdateOwnerName data) {
+        assertCan(UpdateOwnerName.class);
         if (!Objects.equals(ownerName, data.ownerName())) {
             ownerName = data.ownerName();
-            registerEvent(new SampleOwnerNameChanged(id, ownerName));
+            registerEvent(SampleOwnerNameChanged.builder()
+                    .sampleId(id)
+                    .ownerName(ownerName)
+                    .build());
         }
-        return this;
     }
 
-    public Sample publish(PublishSample data) {
-        assertCan(data);
+    public void publish(PublishSample data) {
+        assertCan(PublishSample.class);
         state = SampleState.PUBLISHED;
-        registerEvent(new SamplePublished(id));
-        return this;
+        registerEvent(SamplePublished.of(id));
     }
 
-    private void assertCan(SampleCommand command) {
-        if (!can(command.getClass())) {
+    private void assertCan(Class<? extends SampleCommand> command) {
+        if (!can(command)) {
             throw new DomainException("Operation %s not allowed for sample in state %s"
-                    .formatted(command.getClass().getSimpleName(), state));
+                    .formatted(command.getSimpleName(), state));
         }
     }
 

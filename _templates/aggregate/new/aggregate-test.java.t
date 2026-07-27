@@ -69,7 +69,7 @@ public class <%= AggregateType %>Test {
         val <%= aggregateName %> = <%= aggregateName %>();
 
         // act
-        <%= aggregateName %>.publish();
+        <%= aggregateName %>.publish(<%= PublishCommandType %>.create());
 
         // assert
         assertThat(<%= aggregateName %>.getState()).isEqualTo(PUBLISHED);
@@ -83,12 +83,12 @@ public class <%= AggregateType %>Test {
     void publish_alreadyPublished_exceptionThrown() {
         // arrange
         val <%= aggregateName %> = <%= aggregateName %>();
-        <%= aggregateName %>.publish();
+        <%= aggregateName %>.publish(<%= PublishCommandType %>.create());
         clearEvents(<%= aggregateName %>);
 
         // act & assert
         assertThatExceptionOfType(DomainException.class)
-                .isThrownBy(<%= aggregateName %>::publish);
+                .isThrownBy(() -> <%= aggregateName %>.publish(<%= PublishCommandType %>.create()));
     }
 
     @Test
@@ -105,7 +105,7 @@ public class <%= AggregateType %>Test {
     void canUpdate_inPublishedState_falseReturned() {
         // arrange
         val <%= aggregateName %> = <%= aggregateName %>();
-        <%= aggregateName %>.publish();
+        <%= aggregateName %>.publish(<%= PublishCommandType %>.create());
 
         // act & assert
         assertThat(<%= aggregateName %>.can(<%= UpdateCommandType %>.class)).isFalse();

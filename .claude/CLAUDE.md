@@ -61,4 +61,7 @@ hygen aggregate new <Name> --feature=<feature>
 hygen controller new <Name> --feature=<feature>
 ```
 
+The `sample` module must stay structurally identical to the scaffolding output (plus clearly-marked enrichments).
+Change a pattern in the templates first, then bring `sample` in line; `mvn verify -Phygen-it` enforces it.
+
 See INSTRUCTIONS.md for detailed implementation guidelines.

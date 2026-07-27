@@ -6,9 +6,11 @@ import com.example.app.person.Person;
 import com.example.app.person.PersonCommand;
 import com.example.app.referencedata.City;
 import com.example.app.sample.SampleCommand.CreateSample;
+import com.example.app.sample.SampleCommand.UpdateOwnerName;
 import com.example.app.sample.SampleCommand.UpdateSample;
 import com.example.app.sample.SampleCommand.PublishSample;
 import com.example.app.sample.SampleEvent.SampleCreated;
+import com.example.app.sample.SampleEvent.SampleOwnerNameChanged;
 import com.example.app.sample.SampleEvent.SamplePublished;
 import com.example.app.sample.SampleEvent.SampleUpdated;
 import lombok.val;
@@ -38,7 +40,7 @@ public class SampleTest {
         // assert
         assertThat(sample.getName()).isEqualTo(name);
         assertThat(sample.getState()).isEqualTo(DRAFT);
-        assertThat(getEvents(sample)).containsExactly(new SampleCreated(sample.getId()));
+        assertThat(getEvents(sample)).containsExactly(SampleCreated.of(sample.getId()));
     }
 
     @Test
@@ -58,10 +60,11 @@ public class SampleTest {
         // assert
         assertThat(sample.getName()).isEqualTo(updatedName);
         assertThat(sample.getState()).isEqualTo(DRAFT);
-        assertThat(getEvents(sample)).containsExactly(new SampleUpdated(
-                sample.getId(),
-                updatedName,
-                updatedDescription));
+        assertThat(getEvents(sample)).containsExactly(SampleUpdated.builder()
+                .sampleId(sample.getId())
+                .name(updatedName)
+                .description(updatedDescription)
+                .build());
     }
 
     @Test
@@ -70,23 +73,53 @@ public class SampleTest {
         val sample = sample();
 
         // act
-        sample.publish(new PublishSample());
+        sample.publish(PublishSample.create());
 
         // assert
         assertThat(sample.getState()).isEqualTo(PUBLISHED);
-        assertThat(getEvents(sample)).containsExactly(new SamplePublished(sample.getId()));
+        assertThat(getEvents(sample)).containsExactly(SamplePublished.of(sample.getId()));
     }
 
     @Test
     void publish_alreadyPublished_exceptionThrown() {
         // arrange
         val sample = sample();
-        sample.publish(new PublishSample());
+        sample.publish(PublishSample.create());
         clearEvents(sample);
 
         // act & assert
         assertThatExceptionOfType(DomainException.class)
-                .isThrownBy(() -> sample.publish(new PublishSample()));
+                .isThrownBy(() -> sample.publish(PublishSample.create()));
+    }
+
+    @Test
+    void updateOwnerName_nameChanged_updatedAndEventRegistered() {
+        // arrange
+        val sample = sample();
+        sample.publish(PublishSample.create());
+        clearEvents(sample);
+
+        // act: allowed even on a published sample — it is a technical sync, not a business operation
+        sample.updateOwnerName(UpdateOwnerName.of("New Owner"));
+
+        // assert
+        assertThat(sample.getOwnerName()).isEqualTo("New Owner");
+        assertThat(getEvents(sample)).containsExactly(SampleOwnerNameChanged.builder()
+                .sampleId(sample.getId())
+                .ownerName("New Owner")
+                .build());
+    }
+
+    @Test
+    void updateOwnerName_nameUnchanged_noEventRegistered() {
+        // arrange
+        val sample = sample();
+
+        // act
+        sample.updateOwnerName(UpdateOwnerName.of(sample.getOwnerName()));
+
+        // assert
+        assertThat(getEvents(sample)).isEmpty();
     }
 
     @Test
@@ -102,7 +135,8 @@ public class SampleTest {
     @Test
     void canUpdate_inPublishedState_falseReturned() {
         // arrange
-        val sample = sample().publish(new PublishSample());
+        val sample = sample();
+        sample.publish(PublishSample.create());
 
         // act & assert
         assertThat(sample.can(UpdateSample.class)).isFalse();

@@ -1,5 +1,5 @@
 ---
-to: src/main/java/com/example/app/<%= feature %>/web/<%= Name + "Detail" %>.java
+to: src/main/java/com/example/app/<%= h.changeCase.lower(feature) %>/web/<%= Name + "Detail" %>.java
 ---
 <%
    include(`${templates}/variables.ejs`)

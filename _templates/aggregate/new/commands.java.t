@@ -22,6 +22,10 @@ public sealed interface <%= CommandType %> extends Command {
     record <%= UpdateCommandType %>(
         @NotBlank String name) implements <%= CommandType %> { }
 
-    record <%= PublishCommandType %>() implements <%= CommandType %> { }
+    record <%= PublishCommandType %>() implements <%= CommandType %> {
+        public static <%= PublishCommandType %> create() {
+            return new <%= PublishCommandType %>();
+        }
+    }
 
 }

@@ -26,11 +26,11 @@ Aggregates should be instantiated through the hygen command `hygen aggregate new
 
 References to other aggregates should be modeled through jMolecules `Association` class.
 
-Aggregate Roots must not implement setters, but expose methods implementing required business operations, such as `create` (static), `update` or `publish`. Business operations should not take individual arguments as inputs, but rather the dedicated commands, which hold the required data to execute the operation on the aggregate root. Operations must first invoke `assertCan(<CommandType>.class)` to ensure that only valid operations are invoked. They may register a domain event through the inherited `registerEvent` method to notify interested parties about the data change.
+Aggregate Roots must not implement setters, but expose methods implementing required business operations, such as `create` (static), `update` or `publish`. Business operations should not take individual arguments as inputs, but rather the dedicated commands, which hold the required data to execute the operation on the aggregate root. Operations must first invoke `assertCan(<CommandType>.class)` to ensure that only valid operations are invoked (it reads better than passing the command instance, at the price of repeating the command type). They may register a domain event through the inherited `registerEvent` method to notify interested parties about the data change.
 
 ## Commands and events
 
-Commands and events are value objects, so the above state instructions apply. In addition, new commands and domain events should be declared in the `<AggregateName>Command` and in the `<AggregateName>Events` interface respectively.
+Commands and events are value objects, so the above state instructions apply. In addition, new commands and domain events should be declared in the `<AggregateName>Command` and in the `<AggregateName>Event` interface respectively.
 
 ## Domain services
 
@@ -55,7 +55,7 @@ Each API implemented by the application should reside in a subpackage of the `_i
 To add a business operation to an aggregate, the following steps are necessary:
 * Declare a command with fields representing the data required to execute the operation (if any). 
 * Extend the ´can´ method in the aggregate to define rules when the new command can be executed or not, depending on the state of the aggregate.
-* Declare a new method on the aggregate which takes the command as input parameter named 'data', checks whether the command can be executed (`assertCan(<Command Type>.class)`) and updates the fields of the aggregate accordingly.
+* Declare a new method (returning `void`) on the aggregate which takes the command as input parameter named 'data', checks whether the command can be executed (`assertCan(<CommandType>.class)`) and updates the fields of the aggregate accordingly.
 * If needed, register one or more domain events on the aggregate after having updated the fields, which are published by Spring on saving the aggregate to the DB.
 * If the aggregate has a REST controller, add a method to the controller with the name of the command, taking the command as input and invoking with it the ´doWith<AggregateType> method´.
 * the new methods in aggregate and controller should be covered by a new unit test

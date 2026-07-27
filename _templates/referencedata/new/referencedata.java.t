@@ -7,21 +7,15 @@ to: src/main/java/com/example/app/referencedata/<%= Name %>.java
 package <%= ReferenceDataPackage %>;
 
 import <%= CommonPackage %>.model.I18nText;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
+import lombok.Value;
 import org.jmolecules.ddd.annotation.Entity;
 import org.jmolecules.ddd.annotation.Identity;
 import org.jmolecules.ddd.types.Identifier;
 
 import java.util.UUID;
 
+@Value
 @Entity
-@Getter
-@Slf4j
-@ToString
-@AllArgsConstructor
 public class <%= ReferenceDataType %> {
 
     @Identity
@@ -33,7 +27,7 @@ public class <%= ReferenceDataType %> {
         return new <%= ReferenceDataType %>(<%= IdType %>.random(), name);
     }
 
-    public record <%= IdType %>(UUID id) implements Identifier {
+    public record <%= IdType %>(UUID uuidValue) implements Identifier {
         static <%= IdType %> random() {
             return new <%= IdType %>(UUID.randomUUID());
         }

@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import org.jmolecules.architecture.onion.simplified.InfrastructureRing;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.ExposesResourceFor;
@@ -25,7 +24,6 @@ import java.util.function.Consumer;
 /**
  * Extends the REST controller provided by Spring Data REST with aggregate specific operations.
  */
-@InfrastructureRing
 @RequiredArgsConstructor
 @RepositoryRestController
 @ExposesResourceFor(Sample.class)

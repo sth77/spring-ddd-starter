@@ -8,11 +8,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
-import org.jmolecules.architecture.onion.simplified.DomainRing;
 import org.jspecify.annotations.Nullable;
 import org.springframework.hateoas.server.core.Relation;
 
-@DomainRing
 public sealed interface SampleCommand extends Command {
 
     @Builder

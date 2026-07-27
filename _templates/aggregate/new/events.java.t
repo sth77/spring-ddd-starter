@@ -16,7 +16,8 @@ public sealed interface <%= EventType %> extends DomainEvent {
 
     record <%= CreatedEventType %>(
         <%= IdType %> <%= idName %>) implements <%= EventType %> {
-        static <%= CreatedEventType %> of(<%= IdType %> <%= idName %>) {
+
+        public static <%= CreatedEventType %> of(<%= IdType %> <%= idName %>) {
             return new <%= CreatedEventType %>(<%= idName %>);
         }
     }

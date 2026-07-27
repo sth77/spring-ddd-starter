@@ -24,7 +24,9 @@ class SampleOwnerNameSynchronizer {
     @ApplicationModuleListener
     void on(PersonUpdated event) {
         Association<Person, PersonId> owner = Association.forId(event.personId());
-        samples.findByOwner(owner)
-                .forEach(sample -> samples.save(sample.updateOwnerName(UpdateOwnerName.of(event.name()))));
+        samples.findByOwner(owner).forEach(sample -> {
+            sample.updateOwnerName(UpdateOwnerName.of(event.name()));
+            samples.save(sample);
+        });
     }
 }
