@@ -2,10 +2,9 @@ package com.example.app.referencedata;
 
 import com.example.app.common.model.ReferenceDataRepository;
 import com.example.app.referencedata.City.CityId;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
-
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 @RepositoryRestResource(collectionResourceRel = "cities", path = "cities")
 public interface Cities extends ReferenceDataRepository<City, CityId> {

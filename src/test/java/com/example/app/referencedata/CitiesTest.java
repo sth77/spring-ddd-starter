@@ -1,12 +1,12 @@
 package com.example.app.referencedata;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.example.app.common.model.I18nText;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 class CitiesTest {
@@ -62,6 +62,7 @@ class CitiesTest {
     }
 
     private static City city() {
-        return City.ofPostalCodeAndName(3000, I18nText.builder().en("Bern").de("Bern").build());
+        return City.ofPostalCodeAndName(
+                3000, I18nText.builder().en("Bern").de("Bern").build());
     }
 }

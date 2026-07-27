@@ -5,9 +5,8 @@ import com.example.app.referencedata.City;
 import com.example.app.referencedata.City.CityId;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
-import lombok.RequiredArgsConstructor;
-
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 
 @Converter(autoApply = true)
 @RequiredArgsConstructor

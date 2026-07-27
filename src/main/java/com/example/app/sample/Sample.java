@@ -1,7 +1,7 @@
 package com.example.app.sample;
 
-import com.example.app.common.model.DomainException;
 import com.example.app.common.model.AbstractAggregate;
+import com.example.app.common.model.DomainException;
 import com.example.app.common.model.I18nText;
 import com.example.app.person.Person;
 import com.example.app.person.Person.PersonId;
@@ -14,6 +14,8 @@ import com.example.app.sample.SampleEvent.SampleCreated;
 import com.example.app.sample.SampleEvent.SampleOwnerNameChanged;
 import com.example.app.sample.SampleEvent.SamplePublished;
 import com.example.app.sample.SampleEvent.SampleUpdated;
+import java.util.Objects;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,9 +24,6 @@ import org.jmolecules.ddd.types.AggregateRoot;
 import org.jmolecules.ddd.types.Association;
 import org.jmolecules.ddd.types.Identifier;
 import org.jspecify.annotations.Nullable;
-
-import java.util.Objects;
-import java.util.UUID;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -55,8 +54,7 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
 
     public void update(UpdateSample data) {
         assertCan(UpdateSample.class);
-        if (!(Objects.equals(name, data.name())
-                && Objects.equals(description, data.description()))) {
+        if (!(Objects.equals(name, data.name()) && Objects.equals(description, data.description()))) {
             name = data.name();
             description = data.description();
             city = City.of(data.city());
@@ -123,8 +121,6 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
     }
 
     public enum SampleState {
-        DRAFT,
-        PUBLISHED
+        DRAFT, PUBLISHED
     }
-
 }

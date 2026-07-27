@@ -1,26 +1,26 @@
 package com.example.app._infrastructure.persistence;
 
+import java.util.ArrayDeque;
+import java.util.Objects;
 import lombok.val;
 import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.boot.model.naming.ImplicitBasicColumnNameSource;
 import org.hibernate.boot.model.naming.ImplicitNamingStrategyComponentPathImpl;
 import org.hibernate.boot.model.source.spi.AttributePath;
 
-import java.util.ArrayDeque;
-import java.util.Objects;
-
 /**
  * Implicit column naming for embedded value objects:
  * <ul>
- *   <li>Multi-field embeddables inlined into the owning table keep the owning-attribute prefix
- *       ({@code name.en} → {@code name_en}), disambiguating sibling embeddables.
- *   <li>{@code @ElementCollection} elements live in their own table, so the collection-attribute
- *       prefix is dropped and columns are named by the path within the element.
- *   <li>Single-value wrappers collapse to the owning attribute, dropping the wrapper component
- *       ({@code id.uuidValue} → {@code id}).
+ * <li>Multi-field embeddables inlined into the owning table keep the owning-attribute prefix
+ * ({@code name.en} → {@code name_en}), disambiguating sibling embeddables.
+ * <li>{@code @ElementCollection} elements live in their own table, so the collection-attribute
+ * prefix is dropped and columns are named by the path within the element.
+ * <li>Single-value wrappers collapse to the owning attribute, dropping the wrapper component
+ * ({@code id.uuidValue} → {@code id}).
  * </ul>
  *
- * <p>The single-value test is name-based: the implicit-naming SPI exposes only the attribute path,
+ * <p>
+ * The single-value test is name-based: the implicit-naming SPI exposes only the attribute path,
  * never the field type or arity, so single-value wrappers are recognised by their sole component
  * following the {@code <type>Value} convention (e.g. {@code uuidValue}, {@code stringValue}).
  * Multi-field value objects use semantic field names, which never end in {@code Value}.

@@ -1,20 +1,20 @@
 package com.example.app;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Integration test that validates hygen-generated code.
@@ -45,15 +45,17 @@ class HygenTemplatesIT {
                 .with(user("testuser").roles("USER", "ADMIN"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                    {"name": "P1"}
-                    """))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.name").value("P1"))
-            .andExpect(jsonPath("$.state").value("DRAFT"))
-            .andExpect(jsonPath("$._links.self.href").exists())
-            .andExpect(jsonPath("$._links.update.href").exists())
-            .andExpect(jsonPath("$._links.publish.href").exists())
-            .andReturn().getResponse().getContentAsString();
+                        {"name": "P1"}
+                        """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("P1"))
+                .andExpect(jsonPath("$.state").value("DRAFT"))
+                .andExpect(jsonPath("$._links.self.href").exists())
+                .andExpect(jsonPath("$._links.update.href").exists())
+                .andExpect(jsonPath("$._links.publish.href").exists())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
 
         // Extract links for subsequent tests
         airplaneLocation = JsonPath.read(response, "$._links.self.href");
@@ -68,13 +70,13 @@ class HygenTemplatesIT {
                 .with(user("testuser").roles("USER", "ADMIN"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                    {"name": "P1'"}
-                    """))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.name").value("P1'"))
-            .andExpect(jsonPath("$.state").value("DRAFT"))
-            .andExpect(jsonPath("$._links.update.href").exists())
-            .andExpect(jsonPath("$._links.publish.href").exists());
+                        {"name": "P1'"}
+                        """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("P1'"))
+                .andExpect(jsonPath("$.state").value("DRAFT"))
+                .andExpect(jsonPath("$._links.update.href").exists())
+                .andExpect(jsonPath("$._links.publish.href").exists());
     }
 
     @Test
@@ -84,10 +86,10 @@ class HygenTemplatesIT {
                 .with(user("testuser").roles("USER", "ADMIN"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.state").value("PUBLISHED"))
-            .andExpect(jsonPath("$._links.self.href").exists())
-            .andExpect(jsonPath("$._links.update").doesNotExist())
-            .andExpect(jsonPath("$._links.publish").doesNotExist());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.state").value("PUBLISHED"))
+                .andExpect(jsonPath("$._links.self.href").exists())
+                .andExpect(jsonPath("$._links.update").doesNotExist())
+                .andExpect(jsonPath("$._links.publish").doesNotExist());
     }
 }

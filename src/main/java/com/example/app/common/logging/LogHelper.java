@@ -1,10 +1,9 @@
 package com.example.app.common.logging;
 
+import java.util.Optional;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 import org.slf4j.event.Level;
-
-import java.util.Optional;
 
 @UtilityClass
 public class LogHelper {
@@ -13,9 +12,6 @@ public class LogHelper {
 
     public static Level getLevel(Object object) {
         val annotatedLevel = Optional.ofNullable(object.getClass().getAnnotation(LogLevel.class));
-        return annotatedLevel
-                .map(LogLevel::value)
-                .orElse(DEFAULT_LEVEL);
+        return annotatedLevel.map(LogLevel::value).orElse(DEFAULT_LEVEL);
     }
-
 }

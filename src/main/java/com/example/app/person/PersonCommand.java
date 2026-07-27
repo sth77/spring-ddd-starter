@@ -6,13 +6,12 @@ import lombok.Builder;
 public sealed interface PersonCommand extends Command {
 
     @Builder
-    record CreatePerson(
-        String name
-        // TODO add the fields required to create the aggregate
-        ) implements PersonCommand { }
+    record CreatePerson(String name
+    // TODO add the fields required to create the aggregate
+    ) implements PersonCommand {
+    }
 
     @Builder
-    record UpdatePersonName(
-        String name) implements PersonCommand { }
-
+    record UpdatePersonName(String name) implements PersonCommand {
+    }
 }

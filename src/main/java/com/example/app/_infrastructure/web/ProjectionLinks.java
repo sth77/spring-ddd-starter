@@ -13,11 +13,14 @@ import org.springframework.hateoas.server.RepresentationModelProcessor;
  * To avoid code duplication, the {@link ProjectionLinks} delegates the link creation to
  * the representation model processor of the underlying entity.
  *
- * @param <T> entity type the projection is associated with
+ * @param <T>
+ *            entity type the projection is associated with
  */
 @Slf4j
 @RequiredArgsConstructor
-public class ProjectionLinks<T extends AggregateRoot<?, ?>> implements RepresentationModelProcessor<EntityModel<TargetAware>> {
+public class ProjectionLinks<T extends AggregateRoot<?, ?>>
+        implements
+            RepresentationModelProcessor<EntityModel<TargetAware>> {
 
     private final RepresentationModelProcessor<EntityModel<T>> delegate;
     private final Class<T> aggregateType;
@@ -32,5 +35,4 @@ public class ProjectionLinks<T extends AggregateRoot<?, ?>> implements Represent
         }
         return model;
     }
-
 }

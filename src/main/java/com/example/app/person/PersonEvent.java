@@ -10,8 +10,7 @@ public sealed interface PersonEvent extends DomainEvent {
     PersonId personId();
 
     @Builder
-    record PersonCreated(
-        @NotNull PersonId personId) implements PersonEvent {
+    record PersonCreated(@NotNull PersonId personId) implements PersonEvent {
 
         static PersonCreated of(PersonId personId) {
             return new PersonCreated(personId);
@@ -20,8 +19,6 @@ public sealed interface PersonEvent extends DomainEvent {
 
     @Builder
     record PersonUpdated(
-        @NotNull PersonId personId,
-        @NotNull String name) implements PersonEvent {
+            @NotNull PersonId personId, @NotNull String name) implements PersonEvent {
     }
-
 }

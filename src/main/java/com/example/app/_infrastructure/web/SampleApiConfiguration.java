@@ -12,5 +12,4 @@ public class SampleApiConfiguration {
     ProjectionLinks<Sample> sampleProjectionLinks(SampleLinks delegate) {
         return new ProjectionLinks<>(delegate, Sample.class);
     }
-
 }

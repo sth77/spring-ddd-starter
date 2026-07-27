@@ -20,7 +20,7 @@ jobs:
           cache: maven
 
       - name: Build and test
-        run: mvn verify
+        run: ./mvnw verify
 
   hygen-integration-test:
     runs-on: ubuntu-latest
@@ -43,4 +43,4 @@ jobs:
         run: npm install -g hygen
 
       - name: Run hygen integration test
-        run: mvn clean verify -Phygen-it
+        run: ./mvnw clean verify -Phygen-it

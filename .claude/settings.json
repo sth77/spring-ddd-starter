@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./mvnw clean verify:*)",
+      "Bash(./mvnw verify:*)",
+      "Bash(./mvnw test:*)",
+      "Bash(./mvnw spotless:apply:*)",
+      "Bash(mvn clean verify:*)",
+      "Bash(mvn verify:*)",
+      "Bash(mvn test:*)",
+      "WebFetch(domain:docs.spring.io)",
+      "WebFetch(domain:spring.io)",
+      "WebFetch(domain:docs.jmolecules.org)",
+      "WebFetch(domain:springdoc.org)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

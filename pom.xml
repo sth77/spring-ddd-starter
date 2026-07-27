@@ -34,6 +34,7 @@
         <archunit.version>1.4.2</archunit.version>
         <errorprone.version>2.49.0</errorprone.version>
         <nullaway.version>0.13.2</nullaway.version>
+        <spotless.version>2.44.5</spotless.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -312,6 +313,38 @@
                     <execution>
                         <goals>
                             <goal>properties</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--
+                Formatting gate: Eclipse JDT formatter via Spotless. The profile (eclipse-formatter.xml) never joins
+                wrapped lines, so intentional line breaks (before stream and builder operations) survive formatting.
+                `spotless:check` runs in the verify phase and
+                fails the build on unformatted code; run `mvn spotless:apply` to fix. Only the committed sources are
+                checked - the hygen-it profile removes generated files before the verify phase.
+            -->
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>${spotless.version}</version>
+                <configuration>
+                    <java>
+                        <includes>
+                            <include>src/main/java/**/*.java</include>
+                            <include>src/test/java/**/*.java</include>
+                        </includes>
+                        <eclipse>
+                            <file>${project.basedir}/eclipse-formatter.xml</file>
+                        </eclipse>
+                    </java>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>spotless-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
                         </goals>
                     </execution>
                 </executions>

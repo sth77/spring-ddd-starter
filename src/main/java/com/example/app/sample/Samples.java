@@ -15,5 +15,4 @@ public interface Samples extends AggregateRepository<Sample, SampleId> {
     }
 
     Streamable<Sample> findByOwner(Association<Person, PersonId> owner);
-
 }

@@ -1,13 +1,11 @@
 package com.example.app.common.model;
 
-import org.jmolecules.ddd.annotation.ValueObject;
-
 import lombok.Value;
+import org.jmolecules.ddd.annotation.ValueObject;
 
 @ValueObject
 @Value(staticConstructor = "of")
 public class Principal {
 
-	String stringValue;
-
+    String stringValue;
 }

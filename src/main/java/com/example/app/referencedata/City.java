@@ -1,13 +1,12 @@
 package com.example.app.referencedata;
 
 import com.example.app.common.model.I18nText;
+import java.util.UUID;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.jmolecules.ddd.annotation.Entity;
 import org.jmolecules.ddd.annotation.Identity;
 import org.jmolecules.ddd.types.Identifier;
-
-import java.util.UUID;
 
 @Slf4j
 @Value
@@ -35,5 +34,4 @@ public class City {
         log.info("City: " + city);
         return city;
     }
-
 }

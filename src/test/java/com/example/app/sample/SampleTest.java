@@ -1,27 +1,27 @@
 package com.example.app.sample;
 
-import com.example.app.common.model.DomainException;
-import com.example.app.common.model.I18nText;
-import com.example.app.person.Person;
-import com.example.app.person.PersonCommand;
-import com.example.app.referencedata.City;
-import com.example.app.sample.SampleCommand.CreateSample;
-import com.example.app.sample.SampleCommand.UpdateOwnerName;
-import com.example.app.sample.SampleCommand.UpdateSample;
-import com.example.app.sample.SampleCommand.PublishSample;
-import com.example.app.sample.SampleEvent.SampleCreated;
-import com.example.app.sample.SampleEvent.SampleOwnerNameChanged;
-import com.example.app.sample.SampleEvent.SamplePublished;
-import com.example.app.sample.SampleEvent.SampleUpdated;
-import lombok.val;
-import org.junit.jupiter.api.Test;
-
 import static com.example.app.AggregateEvents.clearEvents;
 import static com.example.app.AggregateEvents.getEvents;
 import static com.example.app.sample.Sample.SampleState.DRAFT;
 import static com.example.app.sample.Sample.SampleState.PUBLISHED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+
+import com.example.app.common.model.DomainException;
+import com.example.app.common.model.I18nText;
+import com.example.app.person.Person;
+import com.example.app.person.PersonCommand;
+import com.example.app.referencedata.City;
+import com.example.app.sample.SampleCommand.CreateSample;
+import com.example.app.sample.SampleCommand.PublishSample;
+import com.example.app.sample.SampleCommand.UpdateOwnerName;
+import com.example.app.sample.SampleCommand.UpdateSample;
+import com.example.app.sample.SampleEvent.SampleCreated;
+import com.example.app.sample.SampleEvent.SampleOwnerNameChanged;
+import com.example.app.sample.SampleEvent.SamplePublished;
+import com.example.app.sample.SampleEvent.SampleUpdated;
+import lombok.val;
+import org.junit.jupiter.api.Test;
 
 public class SampleTest {
 
@@ -31,11 +31,8 @@ public class SampleTest {
         val name = I18nText.en("Sample 1");
 
         // act
-        val sample = Sample.create(CreateSample.builder()
-                .name(name)
-                .city(city())
-                .owner(person())
-                .build());
+        val sample = Sample.create(
+                CreateSample.builder().name(name).city(city()).owner(person()).build());
 
         // assert
         assertThat(sample.getName()).isEqualTo(name);
@@ -131,7 +128,6 @@ public class SampleTest {
         assertThat(sample.can(PublishSample.class)).isTrue();
     }
 
-
     @Test
     void canUpdate_inPublishedState_falseReturned() {
         // arrange
@@ -153,13 +149,11 @@ public class SampleTest {
     }
 
     private static Person person() {
-        return Person.create(PersonCommand.CreatePerson.builder()
-                .name("N.N.")
-                .build());
+        return Person.create(PersonCommand.CreatePerson.builder().name("N.N.").build());
     }
 
     private static City city() {
-        return City.ofPostalCodeAndName(3000, I18nText.builder().en("Bern").de("Bern").build());
+        return City.ofPostalCodeAndName(
+                3000, I18nText.builder().en("Bern").de("Bern").build());
     }
-
 }

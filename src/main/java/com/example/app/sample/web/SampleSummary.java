@@ -9,5 +9,4 @@ public interface SampleSummary {
     String getName();
 
     String getOwnerName();
-
 }

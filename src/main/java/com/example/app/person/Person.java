@@ -6,19 +6,17 @@ import com.example.app.person.PersonCommand.CreatePerson;
 import com.example.app.person.PersonCommand.UpdatePersonName;
 import com.example.app.person.PersonEvent.PersonCreated;
 import com.example.app.person.PersonEvent.PersonUpdated;
+import java.util.Objects;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-
 import org.jmolecules.ddd.types.AggregateRoot;
 import org.jmolecules.ddd.types.Identifier;
 
-import java.util.Objects;
-import java.util.UUID;
-
 @Getter
 @RequiredArgsConstructor
-public class Person extends AbstractAggregate<Person, PersonId> implements AggregateRoot<Person, PersonId>{
+public class Person extends AbstractAggregate<Person, PersonId> implements AggregateRoot<Person, PersonId> {
 
     private final PersonId id;
     private String name = "";
@@ -33,10 +31,7 @@ public class Person extends AbstractAggregate<Person, PersonId> implements Aggre
     public Person updateName(UpdatePersonName data) {
         if (!Objects.equals(this.name, data.name())) {
             this.name = data.name();
-            registerEvent(PersonUpdated.builder()
-                      .personId(id)
-                      .name(name)
-                      .build());
+            registerEvent(PersonUpdated.builder().personId(id).name(name).build());
         }
         return this;
     }
@@ -48,8 +43,7 @@ public class Person extends AbstractAggregate<Person, PersonId> implements Aggre
     @Getter
     @RequiredArgsConstructor
     public enum Operation {
-        CREATE("create"),
-        UPDATE_NAME("updateName");
+        CREATE("create"), UPDATE_NAME("updateName");
 
         public final String rel;
     }
@@ -69,5 +63,4 @@ public class Person extends AbstractAggregate<Person, PersonId> implements Aggre
             return uuidValue.toString();
         }
     }
-
 }

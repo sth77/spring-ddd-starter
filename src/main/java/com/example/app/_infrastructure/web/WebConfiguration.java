@@ -22,22 +22,28 @@ public class WebConfiguration implements RepositoryRestConfigurer {
     public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config, CorsRegistry cors) {
         // for aggregates, force modifying operations to go through the aggregate operation controller instead of using
         // the Spring Data REST CRUD API.
-        config.getExposureConfiguration().withCollectionExposure((metadata, httpMethods)
-                -> AggregateRoot.class.isAssignableFrom(metadata.getDomainType())
-                ? httpMethods.disable(HttpMethod.POST, HttpMethod.PATCH, HttpMethod.PUT)
-                : httpMethods);
-        config.getExposureConfiguration().withItemExposure((metadata, httpMethods)
-                -> AggregateRoot.class.isAssignableFrom(metadata.getDomainType())
-                ? httpMethods.disable(HttpMethod.POST, HttpMethod.PATCH, HttpMethod.PUT)
-                : httpMethods);
+        config.getExposureConfiguration()
+                .withCollectionExposure(
+                        (metadata, httpMethods) -> AggregateRoot.class.isAssignableFrom(metadata.getDomainType())
+                                ? httpMethods.disable(HttpMethod.POST, HttpMethod.PATCH, HttpMethod.PUT)
+                                : httpMethods);
+        config.getExposureConfiguration()
+                .withItemExposure(
+                        (metadata, httpMethods) -> AggregateRoot.class.isAssignableFrom(metadata.getDomainType())
+                                ? httpMethods.disable(HttpMethod.POST, HttpMethod.PATCH, HttpMethod.PUT)
+                                : httpMethods);
         config.setBasePath(BASE_PATH);
     }
 
     @Bean
     public OpenAPI customOpenAPI(ApplicationProperties applicationProperties) {
         return new OpenAPI()
-                .components(new Components().addSecuritySchemes("basicAuth",
-                        new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("basic")))
+                .components(new Components()
+                        .addSecuritySchemes(
+                                "basicAuth",
+                                new SecurityScheme()
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("basic")))
                 .info(new Info()
                         .title(applicationProperties.getName() + " API")
                         .version(applicationProperties.getVersion()));

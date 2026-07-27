@@ -2,13 +2,6 @@ package com.example.app.common.web;
 
 import com.example.app.common.model.AggregateCommands;
 import com.example.app.common.model.Command;
-import lombok.val;
-import org.jmolecules.ddd.types.AggregateRoot;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
@@ -17,22 +10,31 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import lombok.val;
+import org.jmolecules.ddd.types.AggregateRoot;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * A role-aware view over an aggregate's {@link AggregateCommands}. It composes the plain command/relation
  * metadata and adds, scanned once at construction, the {@code @Secured} roles required by the operations
  * controller method that handles each command (matched by the command parameter type).
  *
- * <p>{@link #getAllowedCommands()} returns the commands the current user may invoke; only the per-request
+ * <p>
+ * {@link #getAllowedCommands()} returns the commands the current user may invoke; only the per-request
  * check of the current user's authorities happens at call time. Spring HATEOAS does not derive link
  * visibility from Spring Security, so this bridges the two, keeping the controller's {@code @Secured}
  * annotation as the single source of truth for the required role.
  *
- * <p>Lives in the infrastructure ring's shared {@code common.web} named interface so feature web packages
+ * <p>
+ * Lives in the infrastructure ring's shared {@code common.web} named interface so feature web packages
  * can use it without forming a module cycle.
  *
- * @param <A> the aggregate type
- * @param <C> the sealed command parent interface of the aggregate
+ * @param <A>
+ *            the aggregate type
+ * @param <C>
+ *            the sealed command parent interface of the aggregate
  */
 public final class SecuredAggregateCommands<A extends AggregateRoot<?, ?>, C extends Command> {
 
@@ -47,8 +49,8 @@ public final class SecuredAggregateCommands<A extends AggregateRoot<?, ?>, C ext
                         .anyMatch(method -> handles(method, command)))
                 .collect(Collectors.toSet());
         this.requiredRolesByCommand = commands.getCommands().stream()
-                .collect(Collectors.toMap(Function.identity(),
-                        command -> resolveRequiredRoles(operationsControllerType, command)));
+                .collect(Collectors.toMap(
+                        Function.identity(), command -> resolveRequiredRoles(operationsControllerType, command)));
     }
 
     public List<Class<C>> getCommands() {
@@ -61,9 +63,9 @@ public final class SecuredAggregateCommands<A extends AggregateRoot<?, ?>, C ext
 
     /**
      * @return the commands the current user is allowed to invoke through the REST API, i.e. those the
-     * operations controller declares a handler method for, and without a role restriction or whose
-     * required role the authenticated user holds. Commands the controller does not expose (internal
-     * commands only executed by the application itself) are never offered.
+     *         operations controller declares a handler method for, and without a role restriction or whose
+     *         required role the authenticated user holds. Commands the controller does not expose (internal
+     *         commands only executed by the application itself) are never offered.
      */
     public List<Class<C>> getAllowedCommands() {
         return commands.getCommands().stream()
@@ -101,5 +103,4 @@ public final class SecuredAggregateCommands<A extends AggregateRoot<?, ?>, C ext
         return Arrays.stream(method.getParameterTypes())
                 .anyMatch(parameterType -> parameterType.isAssignableFrom(commandType));
     }
-
 }

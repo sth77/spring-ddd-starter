@@ -35,14 +35,14 @@ public class SecurityConfiguration {
                 // deployment behind an identity provider would configure CSRF (or token auth) accordingly.
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth.requestMatchers(
-                                "/actuator/**",
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/index.html",
-                                "/login",
-                                "/logout",
-                                "/h2-console/**")
+                        "/actuator/**",
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/index.html",
+                        "/login",
+                        "/logout",
+                        "/h2-console/**")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
@@ -61,5 +61,4 @@ public class SecurityConfiguration {
                 .toList();
         return new InMemoryUserDetailsManager(userDetails);
     }
-
 }

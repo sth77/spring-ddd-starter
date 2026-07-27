@@ -4,13 +4,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 public enum UserRole {
-    USER,
-    ADMIN;
+    USER, ADMIN;
 
     String asAuthority() {
         return "ROLE_" + name();
@@ -18,8 +16,8 @@ public enum UserRole {
 
     public static Optional<UserRole> forAuthority(String authority) {
         return Stream.of(UserRole.values())
-            .filter(it -> it.asAuthority().equals(authority))
-            .findFirst();
+                .filter(it -> it.asAuthority().equals(authority))
+                .findFirst();
     }
 
     public static List<UserRole> current() {
@@ -27,13 +25,11 @@ public enum UserRole {
         if (authentication == null) {
             return List.of();
         }
-        return authentication
-            .getAuthorities()
-            .stream()
-            .map(GrantedAuthority::getAuthority)
-            .map(UserRole::forAuthority)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(Collectors.toList());
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .map(UserRole::forAuthority)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
     }
 }

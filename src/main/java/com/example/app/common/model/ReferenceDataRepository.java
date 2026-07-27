@@ -12,5 +12,4 @@ public interface ReferenceDataRepository<T, ID extends Identifier> extends CrudR
     default T getRequired(ID id) {
         return findById(id).orElseThrow(() -> new ReferenceDataNotFoundException(getItemType(), id));
     }
-
 }

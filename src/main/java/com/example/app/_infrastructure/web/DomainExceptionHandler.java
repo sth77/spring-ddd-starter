@@ -19,9 +19,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
  * <p>
  * This can be extended to handle specific exception subclasses differently:
  * <ul>
- *     <li>InvariantViolationException → 500 Internal Server Error (system bug)</li>
- *     <li>OptimisticLockException → 409 Conflict</li>
- *     <li>etc.</li>
+ * <li>InvariantViolationException → 500 Internal Server Error (system bug)</li>
+ * <li>OptimisticLockException → 409 Conflict</li>
+ * <li>etc.</li>
  * </ul>
  */
 @ControllerAdvice
@@ -29,12 +29,7 @@ public class DomainExceptionHandler {
 
     @ExceptionHandler(DomainException.class)
     public ResponseEntity<ProblemDetail> handleDomainException(DomainException ex) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-                HttpStatus.BAD_REQUEST,
-                ex.getMessage()
-        );
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(problemDetail);
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
     }
 }

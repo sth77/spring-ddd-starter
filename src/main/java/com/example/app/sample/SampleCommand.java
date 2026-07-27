@@ -19,8 +19,9 @@ public sealed interface SampleCommand extends Command {
             @NotNull @Valid I18nText name,
             @Size(max = 1000) String description,
             @Nullable City city, // from master data
-            @NotNull Person owner
-    ) implements SampleCommand {
+            @NotNull Person owner)
+            implements
+                SampleCommand {
     }
 
     @Builder
@@ -45,5 +46,4 @@ public sealed interface SampleCommand extends Command {
             return new UpdateOwnerName(ownerName);
         }
     }
-
 }

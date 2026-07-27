@@ -12,6 +12,8 @@ import com.example.app.sample.SampleCommand.CreateSample;
 import com.example.app.sample.SampleCommand.PublishSample;
 import com.example.app.sample.SampleCommand.UpdateSample;
 import com.example.app.sample.Samples;
+import java.util.Map;
+import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -20,9 +22,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
-import java.util.stream.IntStream;
 
 @Slf4j
 @Component
@@ -76,14 +75,12 @@ public class DemoDataInitializer {
         val sample3 = sampleData.get(2);
         sample3.publish(PublishSample.create());
         samples.save(sample3);
-
     }
 
     private void initCities() {
         Map.of(
-                        POSTAL_CODE1, I18nText.builder().en("Bern").de("Bern").build(),
-                        POSTAL_CODE2, I18nText.builder().en("Zurich").de("Zürich").build())
+                POSTAL_CODE1, I18nText.builder().en("Bern").de("Bern").build(),
+                POSTAL_CODE2, I18nText.builder().en("Zurich").de("Zürich").build())
                 .forEach((postalCode, name) -> cities.save(City.ofPostalCodeAndName(postalCode, name)));
     }
-
 }

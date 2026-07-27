@@ -4,20 +4,17 @@ This is a Spring Boot DDD starter project implementing tactical domain-driven de
 
 ## Technology Stack
 
-- Java 25
-- Spring Boot 4.0.1
-- Spring Framework 7.0
-- Spring Modulith 2.0.1
-- jMolecules 2025.0.2
-- springdoc-openapi 3.0.0
-- Jackson 3.0
-- Hibernate 7.0
-- H2 Database (dev), Flyway migrations
+Java, Spring Boot / Spring Framework, Spring Modulith, jMolecules, springdoc-openapi, Jackson 3, Hibernate,
+H2 (dev), Flyway. **The `pom.xml` properties are the single source of truth for versions** — do not hard-code
+version numbers here; they only go stale.
 
 ## Build
 
 ```bash
-mvn clean verify
+./mvnw test -Dtest=SampleTest   # fast inner loop: domain-only unit test, seconds
+./mvnw verify                   # full build incl. ArchUnit + NullAway + IT, ~15s
+./mvnw verify -Phygen-it        # regenerate a feature from the templates and test it (needs a clean src/ tree)
+./mvnw spotless:apply           # auto-format sources to satisfy the spotless:check gate
 ```
 
 ## Project Structure
@@ -38,7 +35,7 @@ mvn clean verify
 - **Repositories**: Named as plural of aggregate (e.g., `Samples` for `Sample`)
 - **Controllers**: In `web/` subpackage, expose operations via commands
 
-## Spring Boot 4.0 Notes
+## Framework behavioral notes (correct common knowledge-cutoff errors)
 
 - Uses native `@Retryable` from `org.springframework.resilience.annotation`
 - Jackson 3: Package changed from `com.fasterxml.jackson` to `tools.jackson`
@@ -52,6 +49,19 @@ mvn clean verify
 - DDD + onion rules verified by jMolecules ArchUnit rules in `ArchitectureTests` (runs under `mvn verify`)
 - jMolecules `jmolecules-apt` additionally enforces the DDD rules at compile time
 - Schema drift is caught at startup by Hibernate `ddl-auto: validate` against the Flyway schema
+
+## Known failure signatures
+
+- `Not a managed type: class ...Sample` → the jMolecules byte-buddy transform did not run. Build through the
+  full lifecycle (`./mvnw compile`), or register the byte-buddy `transform-extended` goal in the IDE (see README).
+- Hibernate `Schema-validation` / `wrong column type` / `missing table` at startup → the mapped entity and the
+  Flyway schema disagree (`ddl-auto: validate`). Check the `<type>Value` component-naming convention for value
+  objects and add a **new** migration (never edit an applied one).
+- `-Phygen-it` aborts immediately with "Uncommitted changes detected in src/" → commit or stash first; the profile
+  `git clean`s `src/` after running.
+- A command link is missing from a HAL response → both conditions must hold: the aggregate allows the operation in
+  its state (`can(...)`) **and** the current user has the controller method's `@Secured` role.
+- ArchUnit rules "pass" but never appear as executed tests → the test class is missing `@AnalyzeClasses`.
 
 ## Scaffolding (hygen)
 

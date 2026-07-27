@@ -1,5 +1,7 @@
 package com.example.app._application;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.example.app.common.model.I18nText;
 import com.example.app.person.People;
 import com.example.app.person.Person;
@@ -15,14 +17,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.modulith.test.ApplicationModuleTest;
 import org.springframework.modulith.test.Scenario;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * Verifies the cross-module choreography with Spring Modulith's {@link Scenario} API: when a person is
  * renamed, the sample module keeps its denormalized copy of the owner's name in sync — reacting to the
  * {@link PersonUpdated} event instead of reading across the module boundary.
  *
- * <p>{@code @ApplicationModuleTest} bootstraps the application module together with its dependencies, so the
+ * <p>
+ * {@code @ApplicationModuleTest} bootstraps the application module together with its dependencies, so the
  * asynchronous {@code @ApplicationModuleListener} and the event publication registry are exercised end to end.
  */
 @ApplicationModuleTest(mode = ApplicationModuleTest.BootstrapMode.DIRECT_DEPENDENCIES)
@@ -37,7 +38,8 @@ class SampleOwnerNameSyncScenarioTest {
     @Test
     void personRenamed_denormalizedOwnerNameOnSampleIsSynced(Scenario scenario) {
         // arrange: a person owning a sample that carries a denormalized copy of the owner's name
-        val owner = people.save(Person.create(CreatePerson.builder().name("Ada Lovelace").build()));
+        val owner = people.save(
+                Person.create(CreatePerson.builder().name("Ada Lovelace").build()));
         val sample = samples.save(Sample.create(CreateSample.builder()
                 .name(I18nText.en("Analytical Engine"))
                 .description("A sample owned by Ada")
@@ -52,5 +54,4 @@ class SampleOwnerNameSyncScenarioTest {
                     assertThat(event.ownerName()).isEqualTo("Ada King");
                 });
     }
-
 }

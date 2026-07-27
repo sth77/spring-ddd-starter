@@ -57,6 +57,23 @@ and anything shipped). Every schema change is a **new** versioned file named `V<
 `hygen` scaffolding creates one automatically for new tables. Because `ddl-auto` is `validate`, a migration that does
 not match the mapped entity fails the build at startup.
 
+# Code conventions
+
+Format long method chains with a line break before each stream operation and before each builder operation, e.g.
+
+```java
+val people = IntStream.range(1, 3)
+        .mapToObj(i -> Person.create(CreatePerson.builder()
+                .name("Person " + i)
+                .build()))
+        .map(people::save)
+        .toList();
+```
+
+The formatter (Spotless with the Eclipse profile in `eclipse-formatter.xml`) enforces indentation and line length
+but never joins wrapped lines, so these intentional breaks are preserved. Run `mvn spotless:apply` before
+committing.
+
 # Adding business operations
 
 To add a business operation to an aggregate, the following steps are necessary:

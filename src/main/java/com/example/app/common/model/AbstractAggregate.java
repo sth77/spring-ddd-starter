@@ -14,7 +14,11 @@ import org.springframework.data.domain.AbstractAggregateRoot;
 @Slf4j
 @MappedSuperclass
 @JsonIgnoreProperties("new")
-public abstract class AbstractAggregate<T extends AbstractAggregate<T, ID>, ID extends Identifier> extends AbstractAggregateRoot<T> implements AggregateRoot<T, ID> {
+public abstract class AbstractAggregate<T extends AbstractAggregate<T, ID>, ID extends Identifier>
+        extends
+            AbstractAggregateRoot<T>
+        implements
+            AggregateRoot<T, ID> {
 
     /**
      * The version field is used by Spring Data JDBC for optimistic locking
@@ -24,5 +28,4 @@ public abstract class AbstractAggregate<T extends AbstractAggregate<T, ID>, ID e
     @Getter(AccessLevel.NONE)
     @Version
     private int version;
-
 }

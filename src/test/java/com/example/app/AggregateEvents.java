@@ -1,17 +1,17 @@
 package com.example.app;
 
-import lombok.val;
-import org.jmolecules.event.types.DomainEvent;
-import org.springframework.data.domain.AbstractAggregateRoot;
-
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import lombok.val;
+import org.jmolecules.event.types.DomainEvent;
+import org.springframework.data.domain.AbstractAggregateRoot;
 
 public final class AggregateEvents {
 
-    private AggregateEvents() { }
+    private AggregateEvents() {
+    }
 
     @SuppressWarnings("unchecked")
     public static List<DomainEvent> getEvents(AbstractAggregateRoot<?> aggregate) {

@@ -1,5 +1,7 @@
 package com.example.app._infrastructure.logging;
 
+import static com.example.app.common.logging.LogHelper.getLevel;
+
 import com.example.app.common.logging.LogPrefix;
 import com.example.app.common.model.Command;
 import lombok.extern.slf4j.Slf4j;
@@ -8,8 +10,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
-
-import static com.example.app.common.logging.LogHelper.getLevel;
 
 @Slf4j
 @Component
@@ -26,5 +26,4 @@ public class EventLogger {
     void on(Command command) {
         log.atLevel(getLevel(command)).log(LogPrefix.COMMAND.withText("" + command));
     }
-
 }

@@ -9,8 +9,7 @@ public sealed interface SampleEvent extends DomainEvent {
 
     SampleId sampleId();
 
-    record SampleCreated(
-            SampleId sampleId) implements SampleEvent {
+    record SampleCreated(SampleId sampleId) implements SampleEvent {
 
         public static SampleCreated of(SampleId sampleId) {
             return new SampleCreated(sampleId);
@@ -18,14 +17,10 @@ public sealed interface SampleEvent extends DomainEvent {
     }
 
     @Builder
-    record SampleUpdated(
-            SampleId sampleId,
-            I18nText name,
-            String description) implements SampleEvent {
+    record SampleUpdated(SampleId sampleId, I18nText name, String description) implements SampleEvent {
     }
 
-    record SamplePublished(
-            SampleId sampleId) implements SampleEvent {
+    record SamplePublished(SampleId sampleId) implements SampleEvent {
 
         public static SamplePublished of(SampleId sampleId) {
             return new SamplePublished(sampleId);
@@ -33,9 +28,6 @@ public sealed interface SampleEvent extends DomainEvent {
     }
 
     @Builder
-    record SampleOwnerNameChanged(
-            SampleId sampleId,
-            String ownerName) implements SampleEvent {
+    record SampleOwnerNameChanged(SampleId sampleId, String ownerName) implements SampleEvent {
     }
-
 }

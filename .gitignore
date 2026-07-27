@@ -33,4 +33,4 @@ build/
 .vscode/
 
 ### Frontend workspace (not part of this backend starter) ###
-app/
+/app/

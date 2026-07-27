@@ -17,8 +17,8 @@ import org.springframework.stereotype.Component;
 public class SampleCollectionLinks implements RepresentationModelProcessor<CollectionModel<EntityModel<Sample>>> {
 
     private final EntityLinks entityLinks;
-    private final SecuredAggregateCommands<Sample, SampleCommand> aggregateCommands =
-            new SecuredAggregateCommands<>(Sample.class, SampleCommand.class, SampleOperationsController.class);
+    private final SecuredAggregateCommands<Sample, SampleCommand> aggregateCommands = new SecuredAggregateCommands<>(
+            Sample.class, SampleCommand.class, SampleOperationsController.class);
 
     @Nonnull
     @Override
@@ -27,5 +27,4 @@ public class SampleCollectionLinks implements RepresentationModelProcessor<Colle
                 aggregateCommands.isAllowedForCurrentUser(CreateSample.class),
                 () -> entityLinks.linkFor(Sample.class).withRel(aggregateCommands.getRel(CreateSample.class)));
     }
-
 }

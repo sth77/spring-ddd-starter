@@ -14,5 +14,4 @@ public interface SampleDetail {
 
     @Value("#{@people.resolveRequired(target.owner)}")
     Person getOwner();
-
 }

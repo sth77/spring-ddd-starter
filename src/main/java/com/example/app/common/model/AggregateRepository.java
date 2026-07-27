@@ -1,17 +1,19 @@
 package com.example.app.common.model;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 import org.jmolecules.ddd.integration.AssociationResolver;
 import org.jmolecules.ddd.types.Identifier;
 import org.jmolecules.ddd.types.Repository;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
-
 @NoRepositoryBean
-public interface AggregateRepository<T extends AbstractAggregate<T, ID>, ID extends Identifier> extends Repository<T, ID>, AssociationResolver<T, ID> {
+public interface AggregateRepository<T extends AbstractAggregate<T, ID>, ID extends Identifier>
+        extends
+            Repository<T, ID>,
+            AssociationResolver<T, ID> {
 
     Class<T> getAggregateType();
 
@@ -20,8 +22,7 @@ public interface AggregateRepository<T extends AbstractAggregate<T, ID>, ID exte
     Optional<T> findById(ID id);
 
     default T getRequired(ID id) {
-        return findById(id)
-                .orElseThrow(() -> new AggregateNotFoundException(getAggregateType(), id));
+        return findById(id).orElseThrow(() -> new AggregateNotFoundException(getAggregateType(), id));
     }
 
     List<T> findAll();
@@ -31,18 +32,17 @@ public interface AggregateRepository<T extends AbstractAggregate<T, ID>, ID exte
     /**
      * Applies the operation to the aggregate and saves it.
      *
-     * @param id        the ID of the aggregate
-     * @param operation the operation to apply to the aggregate
+     * @param id
+     *            the ID of the aggregate
+     * @param operation
+     *            the operation to apply to the aggregate
      * @return the aggregate or empty if not found
      */
     @Transactional
     default Optional<T> doWith(ID id, Consumer<T> operation) {
-        return findById(id)
-                .map(it -> {
-                    operation.accept(it);
-                    return save(it);
-                });
+        return findById(id).map(it -> {
+            operation.accept(it);
+            return save(it);
+        });
     }
-
 }
-

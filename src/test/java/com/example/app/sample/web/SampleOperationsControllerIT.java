@@ -1,5 +1,11 @@
 package com.example.app.sample.web;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.example.app.common.model.I18nText;
 import com.example.app.person.People;
 import com.example.app.person.Person;
@@ -12,6 +18,8 @@ import com.example.app.sample.SampleCommand.PublishSample;
 import com.example.app.sample.SampleCommand.UpdateSample;
 import com.example.app.sample.Samples;
 import com.jayway.jsonpath.JsonPath;
+import java.net.URI;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -21,15 +29,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.net.URI;
-import java.util.UUID;
-
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Integration tests for {@link SampleOperationsController}.
@@ -72,8 +71,7 @@ class SampleOperationsControllerIT {
         @Test
         @DisplayName("GET /samples without authentication should return 401 Unauthorized")
         void getSamples_withoutAuthentication_returnsUnauthorized() throws Exception {
-            mockMvc.perform(get("/api/samples"))
-                .andExpect(status().isUnauthorized());
+            mockMvc.perform(get("/api/samples")).andExpect(status().isUnauthorized());
         }
 
         @Test
@@ -82,7 +80,7 @@ class SampleOperationsControllerIT {
             mockMvc.perform(post("/api/samples")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
-                .andExpect(status().isUnauthorized());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test
@@ -91,7 +89,7 @@ class SampleOperationsControllerIT {
             mockMvc.perform(post("/api/samples/" + UUID.randomUUID() + "/update")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
-                .andExpect(status().isUnauthorized());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test
@@ -100,7 +98,7 @@ class SampleOperationsControllerIT {
             mockMvc.perform(post("/api/samples/" + UUID.randomUUID() + "/publish")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
-                .andExpect(status().isUnauthorized());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test
@@ -108,8 +106,7 @@ class SampleOperationsControllerIT {
         void getSample_withoutAuthentication_returnsUnauthorized() throws Exception {
             Sample sample = createDraftSample();
 
-            mockMvc.perform(get("/api/samples/" + sample.getId().uuidValue()))
-                .andExpect(status().isUnauthorized());
+            mockMvc.perform(get("/api/samples/" + sample.getId().uuidValue())).andExpect(status().isUnauthorized());
         }
     }
 
@@ -120,9 +117,8 @@ class SampleOperationsControllerIT {
         @Test
         @DisplayName("GET /samples with authentication should return 200 OK")
         void getSamples_withAuthentication_returnsOk() throws Exception {
-            mockMvc.perform(get("/api/samples")
-                    .with(user("testuser").roles("USER")))
-                .andExpect(status().isOk());
+            mockMvc.perform(get("/api/samples").with(user("testuser").roles("USER")))
+                    .andExpect(status().isOk());
         }
 
         @Test
@@ -132,8 +128,8 @@ class SampleOperationsControllerIT {
 
             mockMvc.perform(get("/api/samples/" + sample.getId().uuidValue())
                     .with(user("testuser").roles("USER")))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.state").value("DRAFT"));
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.state").value("DRAFT"));
         }
     }
 
@@ -144,25 +140,26 @@ class SampleOperationsControllerIT {
         @Test
         @DisplayName("POST /samples resolves owner and city from their URIs and denormalizes the owner name")
         void create_withOwnerAndCityUris_resolvesReferencesAndCopiesData() throws Exception {
-            City city = cities.save(City.ofPostalCodeAndName(3000,
-                    I18nText.builder().en("Bern").de("Bern").build()));
+            City city = cities.save(City.ofPostalCodeAndName(
+                    3000, I18nText.builder().en("Bern").de("Bern").build()));
 
             mockMvc.perform(post("/api/samples")
                     .with(user("testuser").roles("USER"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""
-                        {
-                            "name": { "en": "Sample 1", "de": "DE_Sample 1" },
-                            "description": "Sample description",
-                            "owner": "/api/people/%s",
-                            "city": "/api/cities/%s"
-                        }
-                        """.formatted(testOwner.getId().uuidValue(), city.getId().uuidValue())))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name.en").value("Sample 1"))
-                .andExpect(jsonPath("$.ownerName").value(testOwner.getName()))
-                .andExpect(jsonPath("$.city.postalCode").value(3000))
-                .andExpect(jsonPath("$.city.name.en").value("Bern"));
+                            {
+                                "name": { "en": "Sample 1", "de": "DE_Sample 1" },
+                                "description": "Sample description",
+                                "owner": "/api/people/%s",
+                                "city": "/api/cities/%s"
+                            }
+                            """.formatted(
+                            testOwner.getId().uuidValue(), city.getId().uuidValue())))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.name.en").value("Sample 1"))
+                    .andExpect(jsonPath("$.ownerName").value(testOwner.getName()))
+                    .andExpect(jsonPath("$.city.postalCode").value(3000))
+                    .andExpect(jsonPath("$.city.name.en").value("Bern"));
         }
     }
 
@@ -177,7 +174,7 @@ class SampleOperationsControllerIT {
                     .with(user("testuser").roles("USER"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(validUpdateSampleJson()))
-                .andExpect(status().isNotFound());
+                    .andExpect(status().isNotFound());
         }
 
         @Test
@@ -189,11 +186,11 @@ class SampleOperationsControllerIT {
                     .with(user("testuser").roles("USER"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""
-                        {
-                            "description": "Updated description without name"
-                        }
-                        """))
-                .andExpect(status().isBadRequest());
+                            {
+                                "description": "Updated description without name"
+                            }
+                            """))
+                    .andExpect(status().isBadRequest());
         }
     }
 
@@ -210,8 +207,8 @@ class SampleOperationsControllerIT {
                     .with(user("testuser").roles("USER", "ADMIN"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.state").value("PUBLISHED"));
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.state").value("PUBLISHED"));
         }
 
         @Test
@@ -221,7 +218,7 @@ class SampleOperationsControllerIT {
                     .with(user("testuser").roles("USER", "ADMIN"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
-                .andExpect(status().isNotFound());
+                    .andExpect(status().isNotFound());
         }
     }
 
@@ -238,7 +235,7 @@ class SampleOperationsControllerIT {
                     .with(user("testuser").roles("USER"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(validUpdateSampleJson()))
-                .andExpect(status().isBadRequest());
+                    .andExpect(status().isBadRequest());
         }
 
         @Test
@@ -250,7 +247,7 @@ class SampleOperationsControllerIT {
                     .with(user("testuser").roles("USER", "ADMIN"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
-                .andExpect(status().isBadRequest());
+                    .andExpect(status().isBadRequest());
         }
     }
 
@@ -275,24 +272,24 @@ class SampleOperationsControllerIT {
             // Verify via API that the sample is still in DRAFT
             mockMvc.perform(get("/api/samples/" + sampleId)
                     .with(user("testuser").roles("USER")))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.state").value("DRAFT"))
-                .andExpect(jsonPath("$.name.en").value("Final Name"));
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.state").value("DRAFT"))
+                    .andExpect(jsonPath("$.name.en").value("Final Name"));
 
             // Publish via API
             mockMvc.perform(post("/api/samples/" + sampleId + "/publish")
                     .with(user("testuser").roles("USER", "ADMIN"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.state").value("PUBLISHED"));
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.state").value("PUBLISHED"));
 
             // Verify cannot update after publish
             mockMvc.perform(post("/api/samples/" + sampleId + "/update")
                     .with(user("testuser").roles("USER"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(validUpdateSampleJson()))
-                .andExpect(status().isBadRequest());
+                    .andExpect(status().isBadRequest());
         }
     }
 
@@ -303,25 +300,28 @@ class SampleOperationsControllerIT {
         @Test
         @DisplayName("update/publish links in the response point to endpoints that actually accept the command")
         void createdSample_commandLinksAreFollowable() throws Exception {
-            City city = cities.save(City.ofPostalCodeAndName(3000,
-                    I18nText.builder().en("Bern").de("Bern").build()));
+            City city = cities.save(City.ofPostalCodeAndName(
+                    3000, I18nText.builder().en("Bern").de("Bern").build()));
 
             // create a sample and read the command links straight off the HAL response
             String createResponse = mockMvc.perform(post("/api/samples")
                     .with(user("admin").roles("USER", "ADMIN"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""
-                        {
-                            "name": { "en": "Linkable", "de": "DE_Linkable" },
-                            "description": "Sample with command links",
-                            "owner": "/api/people/%s",
-                            "city": "/api/cities/%s"
-                        }
-                        """.formatted(testOwner.getId().uuidValue(), city.getId().uuidValue())))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$._links.update.href").exists())
-                .andExpect(jsonPath("$._links.publish.href").exists())
-                .andReturn().getResponse().getContentAsString();
+                            {
+                                "name": { "en": "Linkable", "de": "DE_Linkable" },
+                                "description": "Sample with command links",
+                                "owner": "/api/people/%s",
+                                "city": "/api/cities/%s"
+                            }
+                            """.formatted(
+                            testOwner.getId().uuidValue(), city.getId().uuidValue())))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$._links.update.href").exists())
+                    .andExpect(jsonPath("$._links.publish.href").exists())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
 
             String updateHref = JsonPath.read(createResponse, "$._links.update.href");
             String publishHref = JsonPath.read(createResponse, "$._links.publish.href");
@@ -331,15 +331,15 @@ class SampleOperationsControllerIT {
                     .with(user("admin").roles("USER", "ADMIN"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(validUpdateSampleJson()))
-                .andExpect(status().isOk());
+                    .andExpect(status().isOk());
 
             // follow the publish link verbatim
             mockMvc.perform(post(URI.create(publishHref))
                     .with(user("admin").roles("USER", "ADMIN"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.state").value("PUBLISHED"));
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.state").value("PUBLISHED"));
         }
     }
 
@@ -359,13 +359,13 @@ class SampleOperationsControllerIT {
 
     private String validUpdateSampleJson() {
         return """
-            {
-                "name": {
-                    "en": "Updated Sample",
-                    "de": "DE_Updated Sample"
-                },
-                "description": "Updated description"
-            }
-            """;
+                {
+                    "name": {
+                        "en": "Updated Sample",
+                        "de": "DE_Updated Sample"
+                    },
+                    "description": "Updated description"
+                }
+                """;
     }
 }

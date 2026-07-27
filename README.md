@@ -470,6 +470,29 @@ Command parameters use Jakarta Bean Validation (`@Valid`, `@NotNull`) for input 
 
 Domain exceptions extending `DomainException` are automatically mapped to appropriate HTTP responses by `DomainExceptionHandler`. This provides consistent error handling for domain rule violations.
 
+### Code formatting
+
+Formatting is a build gate, not a matter of taste: [Spotless](https://github.com/diffplug/spotless) with the
+Eclipse JDT formatter (profile in `eclipse-formatter.xml`) runs `spotless:check` in the `verify` phase and fails
+the build on unformatted code. Run `mvn spotless:apply` to reformat (and after generating code from the templates,
+since the generated output is not pre-formatted).
+
+The profile is configured to **never join wrapped lines**: intentional line breaks — the project convention is to
+break before stream operations and before builder operations — survive formatting instead of being folded back
+into one line by an opinionated formatter.
+
+#### Using the profile in your IDE
+
+`eclipse-formatter.xml` is a native Eclipse formatter profile, so IDEs can pick it up:
+
+- **Eclipse**: import it directly under Preferences → Java → Code Style → Formatter → Import.
+- **IntelliJ**: import it as a code-style scheme (Settings → Editor → Code Style → Java → ⚙ → Import Scheme →
+  Eclipse XML Profile). IntelliJ maps the settings onto its own formatting engine, which is close but not
+  identical; for an exact match install the *Adapter for Eclipse Code Formatter* plugin, which formats with the
+  real Eclipse engine.
+
+Either way, the build gate is the authority: if the IDE and Spotless ever disagree, `mvn spotless:apply` wins.
+
 ## Support for AI coding agents
 
 THe repository declares a generic INSTRUCTIONS.md which can be fed to AI coding agents such as Github Copilot,

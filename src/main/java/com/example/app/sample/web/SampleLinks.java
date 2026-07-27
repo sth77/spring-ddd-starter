@@ -16,27 +16,29 @@ import org.springframework.stereotype.Component;
 public class SampleLinks implements RepresentationModelProcessor<EntityModel<Sample>> {
 
     private final EntityLinks entityLinks;
-    private final SecuredAggregateCommands<Sample, SampleCommand> aggregateCommands =
-            new SecuredAggregateCommands<>(Sample.class, SampleCommand.class, SampleOperationsController.class);
+    private final SecuredAggregateCommands<Sample, SampleCommand> aggregateCommands = new SecuredAggregateCommands<>(
+            Sample.class, SampleCommand.class, SampleOperationsController.class);
 
     @Override
     public EntityModel<Sample> process(EntityModel<Sample> model) {
         if (model.getContent() instanceof Sample sample) {
-            aggregateCommands.getAllowedCommands().forEach(
-                    command -> addCommandLink(model, sample, command));
-            model.addIf(!model.hasLink(IanaLinkRelations.SELF),
-                    () -> entityLinks.linkForItemResource(Sample.class, sample.getId()).withSelfRel());
+            aggregateCommands.getAllowedCommands().forEach(command -> addCommandLink(model, sample, command));
+            model.addIf(
+                    !model.hasLink(IanaLinkRelations.SELF),
+                    () -> entityLinks
+                            .linkForItemResource(Sample.class, sample.getId())
+                            .withSelfRel());
         }
         return model;
     }
 
-    private void addCommandLink(
-            EntityModel<Sample> model,
-            Sample sample,
-            Class<? extends SampleCommand> commandType) {
+    private void addCommandLink(EntityModel<Sample> model, Sample sample, Class<? extends SampleCommand> commandType) {
         val rel = aggregateCommands.getRel(commandType);
-        model.addIf(sample.can(commandType), () -> entityLinks
-                .linkForItemResource(Sample.class, sample.getId()).slash(rel)
-                .withRel(rel));
+        model.addIf(
+                sample.can(commandType),
+                () -> entityLinks
+                        .linkForItemResource(Sample.class, sample.getId())
+                        .slash(rel)
+                        .withRel(rel));
     }
 }
