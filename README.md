@@ -517,6 +517,14 @@ The AI is instructed to bootstrap new feature packages, aggregates, and REST API
 allowing you to establish a sound basis with baked in coding conventions with respect to naming, package layout and 
 library use.
 
+### AI-assisted commits
+
+Commits in this repository may be AI-assisted; such commits carry a `Co-Authored-By: Claude ...` trailer. Every
+change is human-reviewed and must pass the full build gate — NullAway null-safety, the jMolecules/ArchUnit
+architecture rules, Spring Modulith module verification, the formatting check, and the test suite — before it is
+accepted. Responsibility for every change remains with the human author; the trailer discloses tool usage, it does
+not shift accountability.
+
 ## Open Issues
 
 * Add documentation to generated artifacts
