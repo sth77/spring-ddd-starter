@@ -174,11 +174,12 @@ As a result, aggregates carry no persistence annotations: the schema follows fro
 
 #### Enum mapping
 
-Enums are mapped through a JPA `AttributeConverter` (one `@Converter(autoApply = true)` class per enum, see
-`SampleStateConverter`), persisting the enum by name to match the `VARCHAR` schema columns. Do **not** fall back to
-`@Enumerated`: the default ordinal mapping breaks as soon as enum constants are reordered, and annotating the domain
-model would reintroduce exactly the persistence details the byte-buddy approach keeps out of it. The `hygen
-aggregate` generator creates the converter for the aggregate's state enum automatically.
+Enums are mapped through a JPA `AttributeConverter` (one `@Converter(autoApply = true)` class per enum, extending
+the generic `common.persistence.EnumConverter`, see `SampleStateConverter`), persisting the enum by name to match
+the `VARCHAR` schema columns. Do **not** fall back to `@Enumerated`: the default ordinal mapping breaks as soon as
+enum constants are reordered, and annotating the domain model would reintroduce exactly the persistence details the
+byte-buddy approach keeps out of it — an ArchUnit rule in `ArchitectureTests` fails the build on any `@Enumerated`
+usage. The `hygen aggregate` generator creates the converter for the aggregate's state enum automatically.
 
 #### Master data handling
 

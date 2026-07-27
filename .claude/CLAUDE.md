@@ -34,6 +34,7 @@ version numbers here; they only go stale.
 - **Events**: Sealed interfaces in `<Aggregate>Event.java`
 - **Repositories**: Named as plural of aggregate (e.g., `Samples` for `Sample`)
 - **Controllers**: In `web/` subpackage, expose operations via commands
+- **Enums**: Persist via `AttributeConverter` extending `common.persistence.EnumConverter` — never `@Enumerated` (ArchUnit-enforced)
 
 ## Framework behavioral notes (correct common knowledge-cutoff errors)
 

@@ -1,5 +1,7 @@
 package com.example.app;
 
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noFields;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noMethods;
 import static java.util.function.Predicate.not;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -8,6 +10,7 @@ import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
+import jakarta.persistence.Enumerated;
 import java.util.stream.Stream;
 import lombok.val;
 import org.jmolecules.archunit.JMoleculesArchitectureRules;
@@ -27,6 +30,18 @@ class ArchitectureTests {
 
     @ArchTest
     static final ArchRule onion = JMoleculesArchitectureRules.ensureOnionSimple();
+
+    @ArchTest
+    static final ArchRule noEnumeratedFields = noFields()
+            .should().beAnnotatedWith(Enumerated.class)
+            .because("enums are persisted through an AttributeConverter (extend common.persistence.EnumConverter);"
+                    + " @Enumerated either breaks on constant reordering (ordinal default) or scatters persistence"
+                    + " annotations over the domain model");
+
+    @ArchTest
+    static final ArchRule noEnumeratedMethods = noMethods()
+            .should().beAnnotatedWith(Enumerated.class)
+            .because("enums are persisted through an AttributeConverter (extend common.persistence.EnumConverter)");
 
     @ArchTest
     static void packagesShouldBeAnnotatedWithNullMarked(JavaClasses classes) {
