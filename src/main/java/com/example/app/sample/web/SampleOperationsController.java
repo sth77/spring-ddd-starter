@@ -15,6 +15,7 @@ import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.ExposesResourceFor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,17 +34,20 @@ public class SampleOperationsController {
 
 	private final Samples samples;
 
+	@Secured("ROLE_USER")
 	@PostMapping("/samples")
     public ResponseEntity<EntityModel<Sample>> create(@Valid @RequestBody CreateSample data) {
         val result = samples.save(Sample.create(data));
         return ResponseEntity.ok(EntityModel.of(result));
     }
 
+	@Secured("ROLE_USER")
 	@PostMapping(path = "/samples/{sampleId}/update")
 	public ResponseEntity<EntityModel<Sample>> update(@PathVariable SampleId sampleId, @Valid @RequestBody UpdateSample data) {
 		return doWithSample(sampleId, it -> it.update(data));
 	}
 
+	@Secured("ROLE_ADMIN")
 	@PostMapping(path = "/samples/{sampleId}/publish")
 	public ResponseEntity<EntityModel<Sample>> publish(@PathVariable SampleId sampleId, @Valid @RequestBody PublishSample data) {
 		return doWithSample(sampleId, it -> it.publish(data));

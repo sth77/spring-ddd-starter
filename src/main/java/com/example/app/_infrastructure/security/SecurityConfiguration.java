@@ -6,6 +6,7 @@ import lombok.val;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,6 +18,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @Slf4j
 @RequiredArgsConstructor
 @Configuration(proxyBeanMethods = false)
+@EnableMethodSecurity(securedEnabled = true) // enables @Secured on controller operations
 public class SecurityConfiguration {
 
     private final SecurityProperties securityProperties;

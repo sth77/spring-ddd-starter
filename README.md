@@ -193,8 +193,9 @@ POST /api/samples
 }
 ```
 
-The aggregate then copies the resolved `City` into its embedded value object. The same mechanism resolves the
-`owner` association.
+The aggregate then copies the resolved `City` into its embedded value object. The same URI-resolution mechanism
+binds the `owner` link to a `Person` aggregate, from which the `Sample` denormalizes the owner name (see
+[Loosely coupled modules](#loosely-coupled-modules-with-domain-events)).
 
 ### REST API with Links in HAL format
 
@@ -230,10 +231,10 @@ A projection can be fetched by appending a `projection` query parameter in the c
 GET /api/samples?project=summary
 ```
 
-Spring allows adding arbitrary data to a projection through the use of Spring's `@Value` annotation. In the following example,
-the `detail` projection resolves the association to the owner with the actual `Person` aggregate through access to the 
-`people` repository. I.e. the `@` prefix allows to access any bean in the Spring context, making projections really 
-powerful.
+Spring allows adding arbitrary data to a projection through the use of Spring's `@Value` annotation and a Spring
+Expression (SpEL). The `@` prefix accesses any bean in the Spring context, making projections really powerful: in
+the following example, the `detail` projection resolves the `owner` association to the full `Person` aggregate
+through the `people` repository bean, so the detail representation embeds the entire person:
 
 ```java
 @Projection(name = "detail", types = {Sample.class})
@@ -247,6 +248,11 @@ public interface SampleDetail {
     Person getOwner();
 }
 ```
+
+The summary projection, in contrast, stays cheap: it exposes `getOwnerName()`, which reads the owner's name straight
+off the aggregate, where it is kept as a denormalized copy (see
+[Loosely coupled modules](#loosely-coupled-modules-with-domain-events)) — no cross-aggregate resolution at read time.
+
 In sum, projections act as highly customizable data transfer objects, seamlessly integrated with the application's REST API.
 
 #### HAL link generation
@@ -262,8 +268,8 @@ $ curl -u "user:1234" localhost:8080/api
 ```json
 {
   "_links" : {
-    "persons" : {
-      "href" : "http://localhost:8080/api/people"
+    "cities" : {
+      "href" : "http://localhost:8080/api/cities"
     },
     "samples" : {
       "href" : "http://localhost:8080/api/samples{?projection}"
@@ -356,6 +362,44 @@ public class SampleApiConfiguration {
 ```
 With this, projections have now exactly the same links as the raw aggregate.
 
+### Loosely coupled modules with domain events
+
+Feature modules stay loosely coupled by three general concepts:
+
+- **Reference by identity.** An aggregate references an aggregate of another module only through a jMolecules
+  `Association`, never through a direct object reference. Modules therefore never share object graphs, and each
+  module can load, persist and evolve its aggregates independently.
+- **Denormalize what you need to read.** Identity-only references mean a module cannot read data owned by another
+  module on demand. Where such data is needed for display or logic, the aggregate keeps a **denormalized copy** of
+  just the required fields, populated when the aggregate is created.
+- **Synchronize through domain events.** A denormalized copy must be kept in sync when its source changes. Rather
+  than one module calling into the other (which would couple them), the owning module publishes a domain event and
+  the dependent module reacts to it with a Spring Modulith `@ApplicationModuleListener`, updating its copy through
+  a regular command. The listener is transactional and asynchronous: it runs in its own transaction after the
+  source change has committed, and Spring Modulith's event publication registry (the `event_publication` table)
+  persists each event until its listener completes — no update is lost if the listener fails or the application
+  restarts mid-flight.
+
+These concepts are illustrated in the sample feature as follows; read it for adoption in your own feature modules:
+
+1. `Sample` holds an `Association<Person, PersonId>` to its owner and keeps a denormalized copy of the owner's
+   name in its `ownerName` field, populated at creation time from the resolved owner.
+2. `Person.updateName(...)` publishes a `PersonUpdated` event.
+3. A Spring Modulith `@ApplicationModuleListener` (`SampleOwnerNameSynchronizer`, in `_application`) reacts to it,
+   looks up the affected samples via `Samples.findByOwner(...)`, and executes the internal `UpdateOwnerName` command
+   on each of them (`sample.updateOwnerName(UpdateOwnerName.of(newName))`) — like every state change, the sync goes
+   through a command.
+4. `updateOwnerName` updates the field and, if it actually changed, emits a `SampleOwnerNameChanged` event of its
+   own. The command is internal: the operations controller declares no handler for it, so it never appears as a HAL
+   link.
+
+The choreography is verified end to end with Spring Modulith's `Scenario` API in
+`SampleOwnerNameSyncScenarioTest`: it publishes a `PersonUpdated` event and waits for the resulting
+`SampleOwnerNameChanged` to arrive.
+
+This is the counterpart to the SpEL-based lookup shown for projections above: denormalizing the value onto the
+aggregate keeps reads simple and self-contained, at the cost of the event-driven synchronization described here.
+
 ### Architecture verification
 
 The setup comes with several architecture verifications which ensure that new code does not violate the architecture.
@@ -422,7 +466,6 @@ library use.
 
 * Add documentation to generated artifacts
 * Allow adding operations with related commands and events one by one
-* Should add an example for @ModuleTest
 
 ## References
 

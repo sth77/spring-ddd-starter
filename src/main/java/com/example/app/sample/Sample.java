@@ -8,8 +8,10 @@ import com.example.app.person.Person.PersonId;
 import com.example.app.sample.Sample.SampleId;
 import com.example.app.sample.SampleCommand.CreateSample;
 import com.example.app.sample.SampleCommand.PublishSample;
+import com.example.app.sample.SampleCommand.UpdateOwnerName;
 import com.example.app.sample.SampleCommand.UpdateSample;
 import com.example.app.sample.SampleEvent.SampleCreated;
+import com.example.app.sample.SampleEvent.SampleOwnerNameChanged;
 import com.example.app.sample.SampleEvent.SamplePublished;
 import com.example.app.sample.SampleEvent.SampleUpdated;
 import lombok.AccessLevel;
@@ -37,6 +39,8 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
     private String description;
     private @Nullable City city;
     private SampleState state;
+    // denormalized copy of the owner's name, kept in sync via a PersonUpdated listener
+    private String ownerName;
 
     public static Sample create(CreateSample data) {
         val result = new Sample(
@@ -45,7 +49,8 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
                 data.name(),
                 data.description(),
                 City.of(data.city()),
-                SampleState.DRAFT);
+                SampleState.DRAFT,
+                data.owner().getName());
         result.registerEvent(new SampleCreated(result.getId()));
         return result;
     }
@@ -58,6 +63,19 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
             description = data.description();
             city = City.of(data.city());
             registerEvent(new SampleUpdated(id, name, description));
+        }
+        return this;
+    }
+
+    /**
+     * Keeps the denormalized owner name in sync with the owning {@link Person}. Invoked by an
+     * application listener reacting to the owner's name change.
+     */
+    public Sample updateOwnerName(UpdateOwnerName data) {
+        assertCan(data);
+        if (!Objects.equals(ownerName, data.ownerName())) {
+            ownerName = data.ownerName();
+            registerEvent(new SampleOwnerNameChanged(id, ownerName));
         }
         return this;
     }
@@ -79,6 +97,9 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
     public boolean can(Class<? extends SampleCommand> operation) {
         if (operation.equals(CreateSample.class)) {
             return false;
+        }
+        if (operation.equals(UpdateOwnerName.class)) {
+            return true; // technical sync, allowed in every state
         }
         return state != SampleState.PUBLISHED;
     }

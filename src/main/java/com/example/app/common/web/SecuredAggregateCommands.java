@@ -37,10 +37,15 @@ import java.util.stream.Collectors;
 public final class SecuredAggregateCommands<A extends AggregateRoot<?, ?>, C extends Command> {
 
     private final AggregateCommands<A, C> commands;
+    private final Set<Class<C>> handledCommands;
     private final Map<Class<C>, Set<String>> requiredRolesByCommand;
 
     public SecuredAggregateCommands(Class<A> aggregateType, Class<C> commandType, Class<?> operationsControllerType) {
         this.commands = new AggregateCommands<>(aggregateType, commandType);
+        this.handledCommands = commands.getCommands().stream()
+                .filter(command -> Arrays.stream(operationsControllerType.getDeclaredMethods())
+                        .anyMatch(method -> handles(method, command)))
+                .collect(Collectors.toSet());
         this.requiredRolesByCommand = commands.getCommands().stream()
                 .collect(Collectors.toMap(Function.identity(),
                         command -> resolveRequiredRoles(operationsControllerType, command)));
@@ -55,11 +60,14 @@ public final class SecuredAggregateCommands<A extends AggregateRoot<?, ?>, C ext
     }
 
     /**
-     * @return the commands the current user is allowed to invoke, i.e. those without a role restriction or
-     * whose required role the authenticated user holds.
+     * @return the commands the current user is allowed to invoke through the REST API, i.e. those the
+     * operations controller declares a handler method for, and without a role restriction or whose
+     * required role the authenticated user holds. Commands the controller does not expose (internal
+     * commands only executed by the application itself) are never offered.
      */
     public List<Class<C>> getAllowedCommands() {
         return commands.getCommands().stream()
+                .filter(handledCommands::contains)
                 .filter(this::isAllowedForCurrentUser)
                 .toList();
     }

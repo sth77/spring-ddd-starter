@@ -46,13 +46,13 @@ class SampleOperationsControllerIT {
     private MockMvc mockMvc;
 
     @Autowired
-    private People people;
-
-    @Autowired
     private Samples samples;
 
     @Autowired
     private Cities cities;
+
+    @Autowired
+    private People people;
 
     private Person testOwner;
 
@@ -140,8 +140,8 @@ class SampleOperationsControllerIT {
     class CreateSampleTests {
 
         @Test
-        @DisplayName("POST /samples resolves owner and city from their URIs and copies the city into the aggregate")
-        void create_withOwnerAndCityUris_resolvesAssociationsAndCopiesCity() throws Exception {
+        @DisplayName("POST /samples resolves owner and city from their URIs and denormalizes the owner name")
+        void create_withOwnerAndCityUris_resolvesReferencesAndCopiesData() throws Exception {
             City city = cities.save(City.ofPostalCodeAndName(3000,
                     I18nText.builder().en("Bern").de("Bern").build()));
 
@@ -158,6 +158,7 @@ class SampleOperationsControllerIT {
                         """.formatted(testOwner.getId().uuidValue(), city.getId().uuidValue())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name.en").value("Sample 1"))
+                .andExpect(jsonPath("$.ownerName").value(testOwner.getName()))
                 .andExpect(jsonPath("$.city.postalCode").value(3000))
                 .andExpect(jsonPath("$.city.name.en").value("Bern"));
         }
@@ -204,7 +205,7 @@ class SampleOperationsControllerIT {
             Sample sample = createDraftSample();
 
             mockMvc.perform(post("/api/samples/" + sample.getId().uuidValue() + "/publish")
-                    .with(user("testuser").roles("USER"))
+                    .with(user("testuser").roles("USER", "ADMIN"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isOk())
@@ -215,7 +216,7 @@ class SampleOperationsControllerIT {
         @DisplayName("POST /samples/{id}/publish for non-existent sample should return 404")
         void publish_nonExistentSample_returnsNotFound() throws Exception {
             mockMvc.perform(post("/api/samples/" + UUID.randomUUID() + "/publish")
-                    .with(user("testuser").roles("USER"))
+                    .with(user("testuser").roles("USER", "ADMIN"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isNotFound());
@@ -244,7 +245,7 @@ class SampleOperationsControllerIT {
             Sample sample = createPublishedSample();
 
             mockMvc.perform(post("/api/samples/" + sample.getId().uuidValue() + "/publish")
-                    .with(user("testuser").roles("USER"))
+                    .with(user("testuser").roles("USER", "ADMIN"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isBadRequest());
@@ -278,7 +279,7 @@ class SampleOperationsControllerIT {
 
             // Publish via API
             mockMvc.perform(post("/api/samples/" + sampleId + "/publish")
-                    .with(user("testuser").roles("USER"))
+                    .with(user("testuser").roles("USER", "ADMIN"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isOk())

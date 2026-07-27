@@ -4,6 +4,8 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import com.example.app.common.model.AggregateNotFoundException;
+import com.example.app.person.Person.PersonId;
+import org.jmolecules.ddd.types.Association;
 import org.jmolecules.ddd.types.Repository;
 import org.jmolecules.ddd.integration.AssociationResolver;
 import org.springframework.data.util.Streamable;
@@ -12,10 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.app.sample.Sample.SampleId;
 
 public interface Samples extends Repository<Sample, SampleId>, AssociationResolver<Sample, SampleId> {
-    
+
     Sample save(Sample sample);
 
     Optional<Sample> findById(SampleId id);
+
+    Streamable<Sample> findByOwner(Association<com.example.app.person.Person, PersonId> owner);
 
     default Sample getRequired(SampleId id) {
         return findById(id)

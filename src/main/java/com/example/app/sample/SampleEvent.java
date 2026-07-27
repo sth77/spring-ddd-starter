@@ -22,4 +22,9 @@ public sealed interface SampleEvent extends DomainEvent {
             SampleId sampleId) implements SampleEvent {
     }
 
+    record SampleOwnerNameChanged(
+            SampleId sampleId,
+            String ownerName) implements SampleEvent {
+    }
+
 }

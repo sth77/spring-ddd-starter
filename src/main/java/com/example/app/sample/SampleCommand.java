@@ -38,4 +38,14 @@ public sealed interface SampleCommand extends Command {
         }
     }
 
+    /**
+     * Internal command, not exposed through the REST API: carries the new owner name when the owning
+     * person is renamed (see the {@code SampleOwnerNameSynchronizer} application listener).
+     */
+    record UpdateOwnerName(String ownerName) implements SampleCommand {
+        public static UpdateOwnerName of(String ownerName) {
+            return new UpdateOwnerName(ownerName);
+        }
+    }
+
 }
