@@ -365,6 +365,11 @@ does not derive link visibility from Spring Security on its own. `SecuredAggrega
 `AggregateCommands`, which resolves the command relations, keeping the role logic separate from the relation
 metadata.
 
+Because only `@Secured` feeds this mechanism, an ArchUnit rule in `ArchitectureTests` forbids any other security
+annotation (`@PreAuthorize`, `@RolesAllowed`, ...) on operations controllers: such an annotation would still be
+enforced when the operation is invoked, but the link layer could not see it — the link would be offered to every
+user and the call would then be rejected.
+
 Projections of the aggregate (see above) do not automatically pick up the links generated for the aggregate. The 
 `ProjectionLinks` helper class can be used to declare a link generator for the projection which delegates to the link 
 generator for the aggregate:
