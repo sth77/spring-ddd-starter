@@ -69,6 +69,11 @@ If you want to make your aggregate available through the REST API, type:
 
 > $ hygen controller new Todo --feature=todo
 
+Reference (master) data — entities with their own lifecycle that aggregates copy relevant fields from rather than
+associate with (see [Master data handling](#master-data-handling)) — has its own generator:
+
+> $ hygen referencedata new Country
+
 ## Running Tests
 
 Run unit tests:
@@ -119,9 +124,9 @@ unconventional prefix "_":
       [Aggregate1]ApiConfiguration.java     Configuration for link generation for projections
       ...
   common/                               Root package for common functionality
-    exception/                            Basic exception types
     logging/                              Helpers to work with log prefixes
-    model/                                Basic types that can be used everywhere
+    model/                                Basic domain types (Command, AbstractAggregate, exceptions, ...)
+    web/                                  Shared web helpers (SecuredAggregateCommands, ...)
   [feature1]/                           Root package of a feature
     [Aggregate1].java                     An aggregate, here with name "Sample"
     [Aggregate1]Command.java              Commands to change the aggregate
@@ -242,7 +247,7 @@ fetched from the database. See the documentation [here](https://docs.spring.io/s
 
 A projection can be fetched by appending a `projection` query parameter in the call to the aggregate resource, e.g.
 ```bash
-GET /api/samples?project=summary
+GET /api/samples?projection=summary
 ```
 
 Spring allows adding arbitrary data to a projection through the use of Spring's `@Value` annotation and a Spring
@@ -344,7 +349,7 @@ public class SampleLinks implements RepresentationModelProcessor<EntityModel<Sam
            Class<? extends SampleCommand> commandType) {
       val rel = aggregateCommands.getRel(commandType);
       model.addIf(sample.can(commandType), () -> entityLinks
-              .linkFor(Sample.class).slash(rel)
+              .linkForItemResource(Sample.class, sample.getId()).slash(rel)
               .withRel(rel));
    }
 }
@@ -495,7 +500,7 @@ Either way, the build gate is the authority: if the IDE and Spotless ever disagr
 
 ## Support for AI coding agents
 
-THe repository declares a generic INSTRUCTIONS.md which can be fed to AI coding agents such as Github Copilot,
+The repository declares a generic INSTRUCTIONS.md which can be fed to AI coding agents such as Github Copilot,
 Cursor, Claude Code, etc. The folder .claude/ contains further instructions specific for Claude Code. 
 
 The AI is instructed to bootstrap new feature packages, aggregates, and REST APIs using the scaffolding with hygen,

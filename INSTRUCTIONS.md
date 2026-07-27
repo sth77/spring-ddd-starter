@@ -81,8 +81,8 @@ To add a business operation to an aggregate, the following steps are necessary:
 * Extend the ´can´ method in the aggregate to define rules when the new command can be executed or not, depending on the state of the aggregate.
 * Declare a new method (returning `void`) on the aggregate which takes the command as input parameter named 'data', checks whether the command can be executed (`assertCan(<CommandType>.class)`) and updates the fields of the aggregate accordingly.
 * If needed, register one or more domain events on the aggregate after having updated the fields, which are published by Spring on saving the aggregate to the DB.
-* If the aggregate has a REST controller, add a method to the controller with the name of the command, taking the command as input and invoking with it the ´doWith<AggregateType> method´.
-* the new methods in aggregate and controller should be covered by a new unit test
+* If the aggregate has a REST controller, add a method to the controller with the name of the command, taking the command as input (`@Valid @RequestBody`) and invoking with it the `doWith<AggregateType>` method.
+* The new aggregate method should be covered by a unit test. If the aggregate has a controller, also add an integration test that follows the operation's HAL link from the response (`_links.<rel>.href`) and POSTs to that exact URL — this catches link/route mismatches that reconstructing the URL by hand would hide.
 
 
 
