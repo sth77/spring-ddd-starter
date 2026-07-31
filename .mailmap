@@ -1,0 +1,20 @@
+# Canonical identity for this repository's history.
+#
+# Commits were made from several machines and accounts over the years, so the same person
+# appears under a handful of names and addresses. Rewriting published history to fix that
+# would invalidate every existing clone and commit reference; a mailmap normalizes how the
+# identities are displayed instead, without touching a single commit object. It is honored
+# by `git log`, `git shortlog -sne`, `git blame` and by the GitHub UI.
+#
+# Format: Canonical Name <canonical@email> <address to map>
+# Matching on the address alone also covers the differing spellings of the name.
+
+Stefan Heinzer <stefan@heinzer.io>
+Stefan Heinzer <stefan@heinzer.io> <stefan.heinzer@elca.ch>
+Stefan Heinzer <stefan@heinzer.io> <stefan.heinzer@bazg.admin.ch>
+Stefan Heinzer <stefan@heinzer.io> <stefan.heinzer+nivel@bazg.admin.ch>
+Stefan Heinzer <stefan@heinzer.io> <stefan.heinzer@alumni.ethz.ch>
+
+# The "Initial commit" was created through the GitHub web UI, which records GitHub itself as
+# the committer of a commit authored by Stefan Heinzer.
+Stefan Heinzer <stefan@heinzer.io> <noreply@github.com>
