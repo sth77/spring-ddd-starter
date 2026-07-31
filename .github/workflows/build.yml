@@ -6,6 +6,15 @@ on:
   pull_request:
     branches: [main]
 
+# The build only reads the repository; the default token grants considerably more than that.
+permissions:
+  contents: read
+
+# A newer push to the same branch makes the run in progress obsolete.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
