@@ -1,6 +1,8 @@
 application:
   name: Spring DDD Starter
-  version: 0.0.1-SNAPSHOT
+  # Filled in from the pom at build time (spring-boot-starter-parent filters application.yml with @ delimiters),
+  # so the version reported by the OpenAPI document cannot drift from the built artifact.
+  version: @project.version@
 security:
   frontend-success: /api
   # No users are defined by default: any profile other than `dev` must supply its own, e.g. through
