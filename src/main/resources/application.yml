@@ -3,11 +3,16 @@ application:
   version: 0.0.1-SNAPSHOT
 security:
   frontend-success: /api
+  # No users are defined by default: any profile other than `dev` must supply its own, e.g. through
+  # SECURITY_USERS_0_NAME / SECURITY_USERS_0_PASSWORD / SECURITY_USERS_0_ROLES environment variables.
   users:
-  # define users through env variables, giving name, password, roles
 spring:
   application:
     name: Spring DDD Starter
+  profiles:
+    # `dev` applies only when no profile is set explicitly, so the demo users below stay a local-development
+    # convenience. Starting with SPRING_PROFILES_ACTIVE=prod (or any other profile) drops them entirely.
+    default: dev
   jpa:
     hibernate:
       # Fail fast if the JPA mapping (column names derived by ValueObjectAwareImplicitNamingStrategy)
@@ -20,20 +25,23 @@ spring:
       republish-outstanding-events-on-restart: true
 springdoc:
   swagger-ui:
+    # CSRF is disabled in SecurityConfiguration (stateless API, HTTP Basic), so Swagger UI must not send a
+    # CSRF token either - enabling it here would only pretend to a protection the server does not apply.
     csrf:
-      enabled: true
-      use-local-storage: true
+      enabled: false
 management:
   endpoints:
     web:
       exposure:
-        include: [health,actuator,info]
+        include: [health,info]
 ---
+# Local development only. Active by default via `spring.profiles.default` above; never active once an explicit
+# profile is set. These are demo credentials - they must not be the way any deployed instance authenticates.
 spring:
-  profiles:
-    active: dev
+  config:
+    activate:
+      on-profile: dev
 security:
-  frontend-success: /api
   users:
     - name: user
       password: 1234

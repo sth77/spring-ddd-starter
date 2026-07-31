@@ -35,14 +35,16 @@ public class SecurityConfiguration {
                 // deployment behind an identity provider would configure CSRF (or token auth) accordingly.
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth.requestMatchers(
-                        "/actuator/**",
+                        // Only the two endpoints a load balancer or probe needs are anonymous. Opening
+                        // /actuator/** would expose every endpoint that is exposed later on, by default.
+                        "/actuator/health",
+                        "/actuator/info",
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html",
                         "/index.html",
                         "/login",
-                        "/logout",
-                        "/h2-console/**")
+                        "/logout")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
