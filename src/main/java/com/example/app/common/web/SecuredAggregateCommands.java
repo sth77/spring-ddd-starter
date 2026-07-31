@@ -89,18 +89,35 @@ public final class SecuredAggregateCommands<A extends AggregateRoot<?, ?>, C ext
         return requiredRoles.stream().anyMatch(heldAuthorities::contains);
     }
 
+    /**
+     * Resolves the roles required for a command from the {@code @Secured} annotation of the handler method.
+     * {@code Class#getDeclaredMethods()} returns methods in no particular order, so picking any one of several
+     * annotated handlers would make link visibility depend on JVM internals. Disagreeing handlers are a
+     * configuration error and fail fast at construction, i.e. at application startup.
+     */
     private Set<String> resolveRequiredRoles(Class<?> operationsControllerType, Class<? extends C> commandType) {
-        return Arrays.stream(operationsControllerType.getDeclaredMethods())
+        val roleSets = Arrays.stream(operationsControllerType.getDeclaredMethods())
                 .filter(method -> handles(method, commandType))
                 .map(method -> method.getAnnotation(Secured.class))
                 .filter(Objects::nonNull)
-                .findFirst()
-                .map(secured -> Set.of(secured.value()))
-                .orElseGet(Set::of);
+                // Set.copyOf, not Set.of: the latter rejects a repeated role in @Secured({"ROLE_A", "ROLE_A"})
+                .map(secured -> Set.copyOf(Arrays.asList(secured.value())))
+                .distinct()
+                .toList();
+        if (roleSets.size() > 1) {
+            throw new IllegalStateException(("%s declares handlers for %s requiring different roles (%s);"
+                    + " the roles a command requires must be unambiguous")
+                    .formatted(operationsControllerType.getName(), commandType.getSimpleName(), roleSets));
+        }
+        return roleSets.isEmpty() ? Set.of() : roleSets.getFirst();
     }
 
+    /**
+     * A method handles a command when it declares exactly that command as a parameter. The match is on the
+     * exact type, not assignability: a parameter typed as the sealed command interface (or as {@code Object})
+     * would otherwise claim every command of the aggregate and impose its role on all of them.
+     */
     private boolean handles(Method method, Class<? extends C> commandType) {
-        return Arrays.stream(method.getParameterTypes())
-                .anyMatch(parameterType -> parameterType.isAssignableFrom(commandType));
+        return Arrays.stream(method.getParameterTypes()).anyMatch(parameterType -> parameterType.equals(commandType));
     }
 }

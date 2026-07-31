@@ -28,10 +28,15 @@ import org.jmolecules.archunit.JMoleculesDddRules;
 import org.jmolecules.ddd.types.AggregateRoot;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.access.prepost.PreFilter;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 
 /**
  * Executes the architecture rules against the production code. The {@link AnalyzeClasses} annotation is what
@@ -77,6 +82,28 @@ class ArchitectureTests {
             .orShould().beAnnotatedWith(DenyAll.class)
             .because("operations controllers must declare roles exclusively via @Secured, the single"
                     + " source SecuredAggregateCommands reads to decide HAL command-link visibility");
+
+    /**
+     * The rule above forbids the wrong annotation but says nothing about none at all, and an unannotated
+     * operation is the more dangerous case: it is reachable by every authenticated user, and
+     * {@code SecuredAggregateCommands} treats "no required role" as "allowed", so its HAL link is offered to
+     * everyone as well. Read mappings are exempt - only state changes must name the role they require.
+     */
+    @ArchTest
+    static final ArchRule stateChangingOperationsAreSecured = methods()
+            .that().areDeclaredInClassesThat().areAnnotatedWith(RepositoryRestController.class)
+            .and().arePublic()
+            .and(aStateChangingMapping())
+            .should().beAnnotatedWith(Secured.class)
+            .because("an operation without @Secured is silently open to every authenticated user and its HAL"
+                    + " command link is shown to all of them");
+
+    private static DescribedPredicate<JavaMethod> aStateChangingMapping() {
+        return DescribedPredicate.describe(
+                "annotated with a state-changing request mapping",
+                method -> Stream.of(PostMapping.class, PutMapping.class, PatchMapping.class, DeleteMapping.class)
+                        .anyMatch(method::isAnnotatedWith));
+    }
 
     /**
      * Aggregates change state exclusively through business operations that take a command: no setters, no
