@@ -55,14 +55,14 @@ class ArchitectureTests {
     @ArchTest
     static final ArchRule noEnumeratedFields = noFields()
             .should().beAnnotatedWith(Enumerated.class)
-            .because("enums are persisted through an AttributeConverter (extend common.persistence.EnumConverter);"
-                    + " @Enumerated either breaks on constant reordering (ordinal default) or scatters persistence"
-                    + " annotations over the domain model");
+            .because("enums are mapped by name globally by StringEnumTypeContributor, so no attribute needs"
+                    + " @Enumerated - which would either break on constant reordering (ordinal default) or"
+                    + " scatter persistence annotations over the domain model");
 
     @ArchTest
     static final ArchRule noEnumeratedMethods = noMethods()
             .should().beAnnotatedWith(Enumerated.class)
-            .because("enums are persisted through an AttributeConverter (extend common.persistence.EnumConverter)");
+            .because("enums are mapped by name globally by StringEnumTypeContributor");
 
     /**
      * {@code SecuredAggregateCommands} derives HAL command-link visibility from the {@code @Secured}

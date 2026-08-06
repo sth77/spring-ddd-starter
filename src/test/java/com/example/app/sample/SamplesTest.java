@@ -10,6 +10,7 @@ import com.example.app.referencedata.Cities;
 import com.example.app.referencedata.City;
 import com.example.app.sample.Sample.SampleState;
 import com.example.app.sample.SampleCommand.CreateSample;
+import jakarta.persistence.EntityManager;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,26 @@ class SamplesTest {
 
     @Autowired
     Cities cities;
+
+    @Autowired
+    EntityManager entityManager;
+
+    @Test
+    void save_validSampleGiven_stateStoredAsEnumName() {
+        // arrange: no converter and no @Enumerated anywhere - StringEnumTypeContributor maps every enum by name
+        val sample = sample(people.save(person()), cities.save(city()));
+        samples.save(sample);
+        entityManager.flush();
+
+        // act
+        val stored = entityManager
+                .createNativeQuery("SELECT state FROM sample WHERE id = ?1")
+                .setParameter(1, sample.getId().uuidValue())
+                .getSingleResult();
+
+        // assert: the name, not the ordinal - reordering the constants must not change stored data
+        assertThat(stored).isEqualTo("DRAFT");
+    }
 
     @Test
     void save_validSampleGiven_savedToDb() {

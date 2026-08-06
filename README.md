@@ -174,12 +174,19 @@ As a result, aggregates carry no persistence annotations: the schema follows fro
 
 #### Enum mapping
 
-Enums are mapped through a JPA `AttributeConverter` (one `@Converter(autoApply = true)` class per enum, extending
-the generic `common.persistence.EnumConverter`, see `SampleStateConverter`), persisting the enum by name to match
-the `VARCHAR` schema columns. Do **not** fall back to `@Enumerated`: the default ordinal mapping breaks as soon as
-enum constants are reordered, and annotating the domain model would reintroduce exactly the persistence details the
-byte-buddy approach keeps out of it — an ArchUnit rule in `ArchitectureTests` fails the build on any `@Enumerated`
-usage. The `hygen aggregate` generator creates the converter for the aggregate's state enum automatically.
+Enums are persisted by name to match the `VARCHAR` schema columns, and that is declared **once for the whole
+model** by `_infrastructure/persistence/StringEnumTypeContributor`: a new enum needs no mapping code at all.
+Do **not** fall back to `@Enumerated`: the default ordinal mapping breaks as soon as enum constants are
+reordered, and annotating the domain model would reintroduce exactly the persistence details the byte-buddy
+approach keeps out of it — an ArchUnit rule in `ArchitectureTests` fails the build on any `@Enumerated` usage.
+
+Hibernate has no global "enums as string" switch (`hibernate.type.prefer_native_enum_types` only picks a
+*native* enum SQL type once the style is already `STRING`), which is why this goes through the
+`TypeContributor` SPI: it runs before any entity is bound, and the `EnumJavaType` it registers is what
+`InferredBasicValueResolver` then asks for the recommended JDBC type. Setting the style later — from an
+`AdditionalMappingContributor`, say — is silently ignored, because entity binding has already resolved the
+`BasicValue` by then. Registration is via `META-INF/services`, so it also applies in the narrowed context of
+an `@ApplicationModuleTest`, which never scans that package for beans.
 
 #### Master data handling
 

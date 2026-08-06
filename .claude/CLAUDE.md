@@ -34,13 +34,16 @@ version numbers here; they only go stale.
 - **Events**: Sealed interfaces in `<Aggregate>Event.java`
 - **Repositories**: Named as plural of aggregate (e.g., `Samples` for `Sample`)
 - **Controllers**: In `web/` subpackage, expose operations via commands
-- **Enums**: Persist via `AttributeConverter` extending `common.persistence.EnumConverter` — never `@Enumerated` (ArchUnit-enforced)
+- **Enums**: Persisted by name for the whole model by `_infrastructure/persistence/StringEnumTypeContributor` —
+  a new enum needs no declaration at all, and never `@Enumerated` (ArchUnit-enforced)
 
 ## Framework behavioral notes (correct common knowledge-cutoff errors)
 
 - Uses native `@Retryable` from `org.springframework.resilience.annotation`
 - Jackson 3: Package changed from `com.fasterxml.jackson` to `tools.jackson`
 - Test annotations moved: `@DataJpaTest` in `org.springframework.boot.data.jpa.test.autoconfigure`
+- Hibernate 7 has **no** global "enums as string" setting (`hibernate.type.prefer_native_enum_types` only picks a
+  *native* enum SQL type once the style is already `STRING`), hence the `TypeContributor`
 - Starter renames: `spring-boot-starter-webmvc`, `spring-boot-starter-security-oauth2-client`
 
 ## Architecture Rules
