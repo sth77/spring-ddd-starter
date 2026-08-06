@@ -22,7 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
  * Run with: mvn verify -Phygen-it
  *
  * This test:
- * 1. Requires hygen to generate fleet/Airplane code (pre-integration-test phase)
+ * 1. Requires hygen to generate world/Human code (pre-integration-test phase)
  * 2. Tests the full aggregate lifecycle via REST API
  * 3. Verifies HAL links change based on state
  */
@@ -34,21 +34,21 @@ class HygenTemplatesIT {
     @Autowired
     private MockMvc mockMvc;
 
-    private static String airplaneLocation;
+    private static String humanLocation;
     private static String updateLink;
     private static String publishLink;
 
     @Test
     @Order(1)
-    void createAirplane_shouldReturnDraftWithUpdateAndPublishLinks() throws Exception {
-        String response = mockMvc.perform(post("/api/airplanes")
+    void createHuman_shouldReturnDraftWithUpdateAndPublishLinks() throws Exception {
+        String response = mockMvc.perform(post("/api/humans")
                 .with(user("testuser").roles("USER", "ADMIN"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                        {"name": "P1"}
+                        {"name": "H1"}
                         """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("P1"))
+                .andExpect(jsonPath("$.name").value("H1"))
                 .andExpect(jsonPath("$.state").value("DRAFT"))
                 .andExpect(jsonPath("$._links.self.href").exists())
                 .andExpect(jsonPath("$._links.update.href").exists())
@@ -58,22 +58,22 @@ class HygenTemplatesIT {
                 .getContentAsString();
 
         // Extract links for subsequent tests
-        airplaneLocation = JsonPath.read(response, "$._links.self.href");
+        humanLocation = JsonPath.read(response, "$._links.self.href");
         updateLink = JsonPath.read(response, "$._links.update.href");
         publishLink = JsonPath.read(response, "$._links.publish.href");
     }
 
     @Test
     @Order(2)
-    void updateAirplane_shouldReturnUpdatedNameWithLinks() throws Exception {
+    void updateHuman_shouldReturnUpdatedNameWithLinks() throws Exception {
         mockMvc.perform(post(updateLink)
                 .with(user("testuser").roles("USER", "ADMIN"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                        {"name": "P1'"}
+                        {"name": "H1'"}
                         """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("P1'"))
+                .andExpect(jsonPath("$.name").value("H1'"))
                 .andExpect(jsonPath("$.state").value("DRAFT"))
                 .andExpect(jsonPath("$._links.update.href").exists())
                 .andExpect(jsonPath("$._links.publish.href").exists());
@@ -81,7 +81,7 @@ class HygenTemplatesIT {
 
     @Test
     @Order(3)
-    void publishAirplane_shouldReturnPublishedWithOnlySelfLink() throws Exception {
+    void publishHuman_shouldReturnPublishedWithOnlySelfLink() throws Exception {
         mockMvc.perform(post(publishLink)
                 .with(user("testuser").roles("USER", "ADMIN"))
                 .contentType(MediaType.APPLICATION_JSON)

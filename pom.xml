@@ -410,8 +410,14 @@
                                     </arguments>
                                 </configuration>
                             </execution>
+                            <!--
+                                world/Human is a deliberately domain-neutral throwaway: it is generated into src/ and
+                                reverted again, so its name must not collide with a feature or aggregate of the project
+                                built on this starter - otherwise the git cleanup below would delete hand-written code,
+                                and the generated Flyway migration would clash with an existing table.
+                            -->
                             <execution>
-                                <id>generate-fleet-feature</id>
+                                <id>generate-world-feature</id>
                                 <phase>pre-integration-test</phase>
                                 <goals><goal>exec</goal></goals>
                                 <configuration>
@@ -419,12 +425,12 @@
                                     <arguments>
                                         <argument>feature</argument>
                                         <argument>new</argument>
-                                        <argument>fleet</argument>
+                                        <argument>world</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>generate-airplane-aggregate</id>
+                                <id>generate-human-aggregate</id>
                                 <phase>pre-integration-test</phase>
                                 <goals><goal>exec</goal></goals>
                                 <configuration>
@@ -432,13 +438,13 @@
                                     <arguments>
                                         <argument>aggregate</argument>
                                         <argument>new</argument>
-                                        <argument>Airplane</argument>
-                                        <argument>--feature=fleet</argument>
+                                        <argument>Human</argument>
+                                        <argument>--feature=world</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>generate-airplane-controller</id>
+                                <id>generate-human-controller</id>
                                 <phase>pre-integration-test</phase>
                                 <goals><goal>exec</goal></goals>
                                 <configuration>
@@ -446,8 +452,8 @@
                                     <arguments>
                                         <argument>controller</argument>
                                         <argument>new</argument>
-                                        <argument>Airplane</argument>
-                                        <argument>--feature=fleet</argument>
+                                        <argument>Human</argument>
+                                        <argument>--feature=world</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
@@ -494,6 +500,7 @@
                             </execution>
                         </executions>
                     </plugin>
+
 
                     <!-- Integration test execution - runs ALL IT tests including HygenTemplatesIT -->
                     <plugin>
