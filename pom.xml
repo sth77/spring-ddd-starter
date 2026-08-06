@@ -501,6 +501,33 @@
                         </executions>
                     </plugin>
 
+                    <!--
+                        Reverting src/ is not enough: the generated sources were compiled and their Flyway migration
+                        was copied into target/classes, and nothing there is tracked by git. Left behind, the next
+                        build starts Flyway with two create_human migrations ("Table HUMAN already exists") and lets
+                        ArchUnit and Modulith analyse classes whose sources no longer exist. Discarding the whole
+                        output directory is the cheap and complete answer - the next build recompiles from the
+                        restored src/, so no run can inherit anything from this one.
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>discard-compiled-generated-code</id>
+                                <phase>post-integration-test</phase>
+                                <goals><goal>clean</goal></goals>
+                                <configuration>
+                                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                                    <filesets>
+                                        <fileset>
+                                            <directory>${project.build.outputDirectory}</directory>
+                                        </fileset>
+                                    </filesets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
 
                     <!-- Integration test execution - runs ALL IT tests including HygenTemplatesIT -->
                     <plugin>
