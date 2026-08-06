@@ -8,8 +8,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.example.app.common.model.Command;
 import com.tngtech.archunit.base.DescribedPredicate;
+import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.domain.JavaMethod;
+import com.tngtech.archunit.core.domain.properties.HasAnnotations;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
@@ -20,11 +22,35 @@ import com.tngtech.archunit.lang.SimpleConditionEvent;
 import jakarta.annotation.security.DenyAll;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
+import jakarta.persistence.AssociationOverride;
+import jakarta.persistence.AssociationOverrides;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinColumns;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.MapKeyColumn;
+import jakarta.persistence.MapKeyJoinColumn;
+import jakarta.persistence.MapKeyJoinColumns;
+import jakarta.persistence.OrderColumn;
+import jakarta.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.PrimaryKeyJoinColumns;
+import jakarta.persistence.SecondaryTable;
+import jakarta.persistence.SecondaryTables;
+import jakarta.persistence.Table;
+import java.lang.annotation.Annotation;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.val;
 import org.jmolecules.archunit.JMoleculesArchitectureRules;
 import org.jmolecules.archunit.JMoleculesDddRules;
+import org.jmolecules.architecture.onion.simplified.ApplicationRing;
+import org.jmolecules.architecture.onion.simplified.DomainRing;
+import org.jmolecules.architecture.onion.simplified.InfrastructureRing;
 import org.jmolecules.ddd.types.AggregateRoot;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
@@ -147,6 +173,68 @@ class ArchitectureTests {
                                         : " must take its command as the only parameter")));
             }
         };
+    }
+
+    /**
+     * Annotations that pin a domain type to a physical schema name. The jMolecules byte-buddy transform adds the
+     * structural JPA annotations ({@code @Entity}, {@code @Embeddable}, {@code @EmbeddedId}, ...) to the compiled
+     * classes, so a blanket ban on {@code jakarta.persistence} would fail against the transformed bytecode; these
+     * are the ones only a developer writes.
+     *
+     * <p>
+     * The {@code @...Overrides} containers have to be listed next to the repeatable annotations they wrap: two
+     * {@code @AttributeOverride}s on one attribute compile to a single {@code @AttributeOverrides}, which is not
+     * annotated with the member type. {@code @AttributeOverride} matters most of all here - it is the one way to
+     * rename the column of an embedded value object, so it is the escape hatch this rule exists to close.
+     */
+    private static final List<Class<? extends Annotation>> PHYSICAL_MAPPING_ANNOTATIONS = List.of(
+            Table.class, SecondaryTable.class, SecondaryTables.class,
+            Column.class, OrderColumn.class,
+            JoinColumn.class, JoinColumns.class, JoinTable.class,
+            CollectionTable.class,
+            MapKeyColumn.class, MapKeyJoinColumn.class, MapKeyJoinColumns.class,
+            AttributeOverride.class, AttributeOverrides.class,
+            AssociationOverride.class, AssociationOverrides.class,
+            PrimaryKeyJoinColumn.class, PrimaryKeyJoinColumns.class);
+
+    /**
+     * The physical schema is none of the domain's business: a column or table name belongs to the naming
+     * strategies, which are also the one place where the mapping and the hand-written Flyway schema can be kept
+     * in agreement. The usual reason to reach for {@code @Table} or {@code @Column} is a name that collides with
+     * a SQL keyword ("order"); see the rule's message for the ways to solve that without annotating the model.
+     */
+    @ArchTest
+    static void domainRingShouldNotNameSchemaObjects(JavaClasses classes) {
+        val violations = classes.stream()
+                .filter(ArchitectureTests::residesInDomainRing)
+                .flatMap(c -> Stream.<HasAnnotations<?>>concat(Stream.of(c), c.getMembers().stream()))
+                .flatMap(annotated -> PHYSICAL_MAPPING_ANNOTATIONS.stream()
+                        .filter(annotated::isAnnotatedWith)
+                        .map(annotation -> "%s is annotated with @%s - a physical schema name in the domain ring."
+                                .formatted(annotated.getDescription(), annotation.getSimpleName())))
+                .toList();
+        assertThat(violations).as("violations - resolve a keyword collision by overriding Spring Boot's default"
+                + " PhysicalNamingStrategy (CamelCaseToUnderscoresNamingStrategy), by enabling"
+                + " hibernate.auto_quote_keyword, or in META-INF/orm.xml instead").isEmpty();
+    }
+
+    /**
+     * A ring annotation on a package covers its subpackages too - that is why {@code sample.web} has to declare
+     * {@code @InfrastructureRing} to escape the {@code @DomainRing} of {@code sample}. Testing the class's own
+     * package alone would therefore exempt every future domain subpackage from the rule above, so walk outwards
+     * until some ring claims the class.
+     */
+    private static boolean residesInDomainRing(JavaClass type) {
+        for (var pkg = Optional.of(type.getPackage()); pkg.isPresent(); pkg = pkg.get().getParent()) {
+            if (pkg.get().isAnnotatedWith(DomainRing.class)) {
+                return true;
+            }
+            if (pkg.get().isAnnotatedWith(ApplicationRing.class)
+                    || pkg.get().isAnnotatedWith(InfrastructureRing.class)) {
+                return false;
+            }
+        }
+        return false;
     }
 
     @ArchTest

@@ -36,6 +36,9 @@ version numbers here; they only go stale.
 - **Controllers**: In `web/` subpackage, expose operations via commands
 - **Enums**: Persisted by name for the whole model by `_infrastructure/persistence/StringEnumTypeContributor` —
   a new enum needs no declaration at all, and never `@Enumerated` (ArchUnit-enforced)
+- **Physical names**: never `@Table`/`@Column`/`@JoinColumn`/`@AttributeOverride` in the domain ring — column names
+  come from `_infrastructure/persistence/ValueObjectAwareImplicitNamingStrategy` plus Spring Boot's default
+  physical strategy (`CamelCaseToUnderscoresNamingStrategy`), which snake-cases them (ArchUnit-enforced)
 
 ## Framework behavioral notes (correct common knowledge-cutoff errors)
 

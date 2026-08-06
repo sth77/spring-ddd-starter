@@ -170,7 +170,13 @@ Single- and multi-valued value objects are embedded directly into the owning agg
 - **`@ElementCollection` elements** live in their own table, so the collection prefix is dropped and columns are
   named by the path within the element.
 
-As a result, aggregates carry no persistence annotations: the schema follows from the value objects' shape.
+As a result, aggregates carry no persistence annotations: the schema follows from the value objects' shape. The
+`domainRingShouldNotNameSchemaObjects` rule in `ArchitectureTests` keeps it that way — it fails the build if a type
+in the domain ring names a table or column (`@Table`, `@Column`, `@JoinColumn`, `@AttributeOverride`, ...), in that
+package or any below it. The usual temptation is a SQL keyword collision such as an `order` attribute; solve that by
+overriding Spring Boot's default physical naming strategy (`CamelCaseToUnderscoresNamingStrategy`, which is what
+snake-cases the names the implicit strategy above produces), by enabling `hibernate.auto_quote_keyword`, or in
+`META-INF/orm.xml` — not by annotating the model.
 
 #### Enum mapping
 
