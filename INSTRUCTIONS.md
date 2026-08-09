@@ -4,15 +4,15 @@ This file contains instructions how to implement different parts of the architec
 
 ## Value objects
 
-Value objects should be implemented using Java records. Nullable fields should be annotated with an @Nullable annotation, required fields with Lombok's @NonNull (to have runtime null-checks generated).
+Value objects should be implemented using Java records. Every package is `@NullMarked` (JSpecify) and NullAway fails the build on a potential null dereference, so fields are non-null by default and only nullable ones are annotated with `@Nullable`. Do not add defensive null checks; do validate business invariants in the compact constructor, failing with a `DomainException`.
 
-Value objects with no fields should implement a static factory "create", value objects with exactly one field a static factory with name "of", taking the single value as input.
+Value objects with no fields should implement a static factory `create`. With exactly one field, `of` is right for a technical wrapper (`SampleId.of(uuid)`, `Birthdate.of(date)`), but where the domain has a word for the value, use it: `Weight.ofKg(2.5)`, `TakeOutOfService.forReason("...")`.
 
-Value objects with more than one field should be annotated with Lombok's @Builder annotation, including the toBuilder option set to true.
+Value objects with more than one field should be annotated with Lombok's @Builder annotation, so that arguments are named at the call site. Add the `toBuilder` option where a modified copy is actually needed.
 
 ## Entities
 
-ID types of entities and aggregate roots should be implemented as value objects with the name of the entity and suffix "Id". The record should contain a single field `uuidValue`, as well as static factories `of(UUID uuidValue)` (see above) and `random()` which returns an ID instance initialized to a random UUID value.
+ID types of entities and aggregate roots should be implemented as value objects with the name of the entity and suffix "Id". The record should contain a single field `uuidValue`, static factories `of(UUID uuidValue)` (see above) and `random()` which returns an ID instance initialized to a random UUID value, and a `toString()` returning the bare value, which is what Spring Data REST builds resource URIs from.
 
 Entities should implement jMolecules Entity interface, taking the Aggregate they belong to as first template parameter, the ID type as second template parameter, e.g. `Child implements Entity<Parent, ChildId>`.
 
@@ -38,7 +38,7 @@ Domain services should be implemented as classes in the toplevel directory of th
 
 ## Application services
 
-Application services closely related to a specific domain should be in a subpackage `app` of the feature package the service relates to. App services should declare Transactions and may listen to domain events. Domain events from other modules should be consumed using Spring Modulith @ApplicationModuleListener annotation, processing the event in a separate thread and using a database transaction.
+Application services closely related to a specific domain should be in a subpackage `app` of the feature package the service relates to. App services should declare Transactions and may listen to domain events. Domain events from other modules should be consumed using `@RetryableApplicationModuleListener`, which processes the event in a separate thread and transaction and retries the failures a concurrent writer causes. Handlers must be idempotent: the event publication registry redelivers on restart.
 
 # Infrastructure layer
 
@@ -53,8 +53,8 @@ Each API implemented by the application should reside in a subpackage of the `_i
 ## Database migrations
 
 The schema is managed by Flyway. Never edit a migration that has already been applied (`V0001__initial_schema.sql`
-and anything shipped). Every schema change is a **new** versioned file named `V<timestamp>__<description>.sql`; the
-`hygen` scaffolding creates one automatically for new tables. Because `ddl-auto` is `validate`, a migration that does
+and anything shipped). Every schema change is a **new** versioned file; the `hygen` scaffolding creates one automatically for new tables,
+named `V<timestamp>__create_<table>.sql`. Hand-written migrations continue the `V000n__<description>.sql` sequence. Because `ddl-auto` is `validate`, a migration that does
 not match the mapped entity fails the build at startup.
 
 # Code conventions
@@ -71,7 +71,7 @@ val people = IntStream.range(1, 3)
 ```
 
 The formatter (Spotless with the Eclipse profile in `eclipse-formatter.xml`) enforces indentation and line length
-but never joins wrapped lines, so these intentional breaks are preserved. Run `mvn spotless:apply` before
+but never joins wrapped lines, so these intentional breaks are preserved. Run `./mvnw spotless:apply` before
 committing.
 
 # Adding business operations
@@ -83,8 +83,3 @@ To add a business operation to an aggregate, the following steps are necessary:
 * If needed, register one or more domain events on the aggregate after having updated the fields, which are published by Spring on saving the aggregate to the DB.
 * If the aggregate has a REST controller, add a method to the controller with the name of the command, taking the command as input (`@Valid @RequestBody`) and invoking with it the `doWith<AggregateType>` method.
 * The new aggregate method should be covered by a unit test. If the aggregate has a controller, also add an integration test that follows the operation's HAL link from the response (`_links.<rel>.href`) and POSTs to that exact URL — this catches link/route mismatches that reconstructing the URL by hand would hide.
-
-
-
-
-
