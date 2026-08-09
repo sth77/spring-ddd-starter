@@ -1,5 +1,6 @@
 package com.example.app._application;
 
+import com.example.app.common.events.RetryableApplicationModuleListener;
 import com.example.app.person.Person;
 import com.example.app.person.Person.PersonId;
 import com.example.app.person.PersonEvent.PersonUpdated;
@@ -7,7 +8,6 @@ import com.example.app.sample.SampleCommand.UpdateOwnerName;
 import com.example.app.sample.Samples;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.ddd.types.Association;
-import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
 /**
@@ -21,7 +21,7 @@ class SampleOwnerNameSynchronizer {
 
     private final Samples samples;
 
-    @ApplicationModuleListener
+    @RetryableApplicationModuleListener
     void on(PersonUpdated event) {
         Association<Person, PersonId> owner = Association.forId(event.personId());
         samples.findByOwner(owner).forEach(sample -> {
