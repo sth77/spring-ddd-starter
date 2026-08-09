@@ -3,6 +3,7 @@ package com.example.app;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.example.app.common.model.Principal;
+import com.example.app.referencedata.City.CityId;
 import com.example.app.sample.Sample.SampleId;
 import java.util.UUID;
 import lombok.val;
@@ -28,6 +29,15 @@ class WrapperSerializationTest {
         assertThat(objectMapper.writeValueAsString(id)).isEqualTo("\"11111111-1111-1111-1111-111111111111\"");
         assertThat(objectMapper.readValue("\"11111111-1111-1111-1111-111111111111\"", SampleId.class))
                 .isEqualTo(id);
+    }
+
+    /** Spring Data REST builds an item's URI from {@code toString()} of its identifier. */
+    @Test
+    void identifier_rendersAsBareValue() {
+        val uuid = UUID.fromString("11111111-1111-1111-1111-111111111111");
+
+        assertThat(SampleId.of(uuid)).hasToString(uuid.toString());
+        assertThat(CityId.of(uuid)).hasToString(uuid.toString());
     }
 
     @Test

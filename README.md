@@ -213,8 +213,9 @@ the city as it was at the time of creation, rather than following a live referen
 column annotations.
 
 The master-data repository is exported as a REST resource (`@RepositoryRestResource`), so the frontend can list and
-select reference data (e.g. `GET /api/cities`). Full CRUD is acceptable here, because reference data has no business
-rules to enforce and registers no domain events, so it need not go through an aggregate's operation controller. A
+select reference data (e.g. `GET /api/cities`). It is read-only for clients: `WebConfiguration` disables the write
+methods of every exported repository. An aggregate is changed through the operations of its root, and the generic
+CRUD API of a reference-data repository would sit outside the `@Secured` annotations that authorize those. A
 command then references the chosen entity **by its URI**: the
 `CreateSample` command declares `City city`, and the request passes a link, which Spring Data REST resolves to the
 entity before the command is handled:

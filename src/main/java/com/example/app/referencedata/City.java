@@ -25,8 +25,18 @@ public class City {
     }
 
     public record CityId(UUID uuidValue) implements Identifier {
-        static CityId random() {
-            return new CityId(UUID.randomUUID());
+
+        public static CityId random() {
+            return CityId.of(UUID.randomUUID());
+        }
+
+        public static CityId of(UUID uuidValue) {
+            return new CityId(uuidValue);
+        }
+
+        @Override
+        public String toString() {
+            return uuidValue.toString();
         }
     }
 

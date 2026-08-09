@@ -28,8 +28,18 @@ public class <%= ReferenceDataType %> {
     }
 
     public record <%= IdType %>(UUID uuidValue) implements Identifier {
-        static <%= IdType %> random() {
-            return new <%= IdType %>(UUID.randomUUID());
+
+        public static <%= IdType %> random() {
+            return <%= IdType %>.of(UUID.randomUUID());
+        }
+
+        public static <%= IdType %> of(UUID uuidValue) {
+            return new <%= IdType %>(uuidValue);
+        }
+
+        @Override
+        public String toString() {
+            return uuidValue.toString();
         }
     }
 

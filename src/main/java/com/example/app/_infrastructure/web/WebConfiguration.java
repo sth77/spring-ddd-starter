@@ -5,7 +5,6 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityScheme;
-import org.jmolecules.ddd.types.AggregateRoot;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
@@ -18,20 +17,18 @@ public class WebConfiguration implements RepositoryRestConfigurer {
 
     public static final String BASE_PATH = "/api";
 
+    private static final HttpMethod[] WRITE_METHODS = {
+            HttpMethod.POST, HttpMethod.PATCH, HttpMethod.PUT, HttpMethod.DELETE
+    };
+
     @Override
     public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config, CorsRegistry cors) {
-        // for aggregates, force modifying operations to go through the aggregate operation controller instead of using
-        // the Spring Data REST CRUD API.
+        // Nothing is written through the generic CRUD API: an aggregate changes through the operations of its
+        // root, which the operations controller exposes and secures per role; reference data is master data,
+        // offered to clients for selection only.
         config.getExposureConfiguration()
-                .withCollectionExposure(
-                        (metadata, httpMethods) -> AggregateRoot.class.isAssignableFrom(metadata.getDomainType())
-                                ? httpMethods.disable(HttpMethod.POST, HttpMethod.PATCH, HttpMethod.PUT)
-                                : httpMethods);
-        config.getExposureConfiguration()
-                .withItemExposure(
-                        (metadata, httpMethods) -> AggregateRoot.class.isAssignableFrom(metadata.getDomainType())
-                                ? httpMethods.disable(HttpMethod.POST, HttpMethod.PATCH, HttpMethod.PUT)
-                                : httpMethods);
+                .withCollectionExposure((metadata, httpMethods) -> httpMethods.disable(WRITE_METHODS))
+                .withItemExposure((metadata, httpMethods) -> httpMethods.disable(WRITE_METHODS));
         config.setBasePath(BASE_PATH);
     }
 
