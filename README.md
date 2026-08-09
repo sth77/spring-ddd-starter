@@ -85,9 +85,10 @@ Run integration tests:
 > $ mvn verify
 
 Run hygen template integration tests. This is useful to ensure that changed hygen templates still work correctly
-after changing it to your needs. Generates a throwaway `world/Human` feature via hygen and tests the full aggregate
-lifecycle through the REST API. The name is deliberately domain-neutral so it cannot collide with a feature of your
-own project. 
+after changing it to your needs. Generates a throwaway `world/Human` feature and a `Country` reference data entity
+via hygen, wires the latter into the former as its citizenship, and tests the full aggregate lifecycle through the
+REST API. Rename both in the `hygen-it` profile if your own project uses either name, so that the cleanup below
+cannot touch your code. 
 Executes a git clean of the /src folder after execution. Test execution will be aborted if there are uncommitted changes 
 in /src.
 

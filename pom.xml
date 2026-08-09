@@ -457,6 +457,31 @@
                                     </arguments>
                                 </configuration>
                             </execution>
+                            <execution>
+                                <id>generate-country-referencedata</id>
+                                <phase>pre-integration-test</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>hygen</executable>
+                                    <arguments>
+                                        <argument>referencedata</argument>
+                                        <argument>new</argument>
+                                        <argument>Country</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <!-- Reference data is only worth generating if an aggregate then refers to it -->
+                            <execution>
+                                <id>wire-country-into-human</id>
+                                <phase>pre-integration-test</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>bash</executable>
+                                    <arguments>
+                                        <argument>src/test/resources/hygen-it/wire-country-into-human.sh</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
                             <!-- Recompile and transform after hygen generation -->
                             <execution>
                                 <id>compile-and-transform-generated</id>

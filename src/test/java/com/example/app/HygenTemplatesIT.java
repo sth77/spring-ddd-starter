@@ -1,11 +1,14 @@
 package com.example.app;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
+import java.net.URI;
+import java.util.UUID;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -14,7 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 /**
  * Integration test that validates hygen-generated code.
@@ -22,8 +27,9 @@ import org.springframework.test.web.servlet.MockMvc;
  * Run with: mvn verify -Phygen-it
  *
  * This test:
- * 1. Requires hygen to generate world/Human code (pre-integration-test phase)
- * 2. Tests the full aggregate lifecycle via REST API
+ * 1. Requires hygen to generate the world/Human aggregate and the Country reference data
+ * (pre-integration-test phase, where Country is also wired into Human as its citizenship)
+ * 2. Tests the full aggregate lifecycle via REST API, including the master data it refers to
  * 3. Verifies HAL links change based on state
  */
 @SpringBootTest
@@ -31,25 +37,56 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class HygenTemplatesIT {
 
+    private static final RequestPostProcessor USER = user("testuser").roles("USER", "ADMIN");
+
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    private static String countryLocation;
     private static String humanLocation;
     private static String updateLink;
     private static String publishLink;
 
+    /**
+     * Master data is served read-only, so the row is seeded through the schema the generated migration
+     * created rather than over the API.
+     */
     @Test
     @Order(1)
+    void listCountries_shouldServeSeededCountryUnderAFollowableSelfLink() throws Exception {
+        jdbcTemplate.update("INSERT INTO country (id, name_en, name_de) VALUES (?, ?, ?)",
+                UUID.randomUUID(), "Switzerland", "Schweiz");
+
+        String collection = mockMvc.perform(get("/api/countries").with(USER))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$._embedded.countries[0].name.en").value("Switzerland"))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        countryLocation = JsonPath.read(collection, "$._embedded.countries[0]._links.self.href");
+
+        mockMvc.perform(get(URI.create(countryLocation)).with(USER))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name.de").value("Schweiz"));
+    }
+
+    @Test
+    @Order(2)
     void createHuman_shouldReturnDraftWithUpdateAndPublishLinks() throws Exception {
         String response = mockMvc.perform(post("/api/humans")
-                .with(user("testuser").roles("USER", "ADMIN"))
+                .with(USER)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                        {"name": "H1"}
-                        """))
+                        {"name": "H1", "country": "%s"}
+                        """.formatted(URI.create(countryLocation).getPath())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("H1"))
                 .andExpect(jsonPath("$.state").value("DRAFT"))
+                // the aggregate embeds a copy of the referenced master data
+                .andExpect(jsonPath("$.citizenship.en").value("Switzerland"))
                 .andExpect(jsonPath("$._links.self.href").exists())
                 .andExpect(jsonPath("$._links.update.href").exists())
                 .andExpect(jsonPath("$._links.publish.href").exists())
@@ -64,10 +101,10 @@ class HygenTemplatesIT {
     }
 
     @Test
-    @Order(2)
+    @Order(3)
     void updateHuman_shouldReturnUpdatedNameWithLinks() throws Exception {
         mockMvc.perform(post(updateLink)
-                .with(user("testuser").roles("USER", "ADMIN"))
+                .with(USER)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                         {"name": "H1'"}
@@ -80,10 +117,10 @@ class HygenTemplatesIT {
     }
 
     @Test
-    @Order(3)
+    @Order(4)
     void publishHuman_shouldReturnPublishedWithOnlySelfLink() throws Exception {
         mockMvc.perform(post(publishLink)
-                .with(user("testuser").roles("USER", "ADMIN"))
+                .with(USER)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
                 .andExpect(status().isOk())
