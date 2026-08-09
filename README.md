@@ -147,7 +147,8 @@ unconventional prefix "_":
 
 Aggregates are directly persisted to a relational database through JPA / Hibernate. To avoid jeopardizing the domain 
 model with persistence logic, Aggregates rely on jMolecules `byte-buddy` plugin to generated required annotations.
-The initial schema is created through Flyway.
+The one exception is their base class `AbstractAggregate`, which carries the `@MappedSuperclass` and version field
+that optimistic locking needs, so that no aggregate has to. The initial schema is created through Flyway.
 
 Schema changes follow a **migration-per-change** convention: the initial schema lives in `V0001__initial_schema.sql`,
 and every subsequent change is a *new* versioned file, never an edit to an already-applied one. Accordingly, the

@@ -30,7 +30,7 @@ public class ProjectionLinks<T extends AggregateRoot<?, ?>>
         if (model.getContent() instanceof TargetAware targetAware
                 && aggregateType.isInstance(targetAware.getTarget())) {
             val target = aggregateType.cast(targetAware.getTarget());
-            log.info("Creating links for " + target + " with input " + model.getContent());
+            log.trace("Creating links for {}", target);
             model.add(delegate.process(EntityModel.of(target)).getLinks());
         }
         return model;

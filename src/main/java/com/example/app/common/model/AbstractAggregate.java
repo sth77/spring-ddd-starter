@@ -21,8 +21,10 @@ public abstract class AbstractAggregate<T extends AbstractAggregate<T, ID>, ID e
             AggregateRoot<T, ID> {
 
     /**
-     * The version field is used by Spring Data JDBC for optimistic locking
-     * and to determine whether an entity is new or not.
+     * Carries optimistic locking for every aggregate, and tells Spring Data whether an instance is new.
+     * Together with {@code @MappedSuperclass} and {@code registerEvent(..)} of the superclass, this is the one
+     * place where persistence and event publication reach into the model - the aggregates themselves stay free
+     * of both.
      */
     @JsonIgnore
     @Getter(AccessLevel.NONE)
