@@ -123,12 +123,11 @@ unconventional prefix "_":
     persistence/                          Persistence configuration
     security/                             Security configuration
     web/                                  Global REST API configuration
-      [Aggregate1]ApiConfiguration.java     Configuration for link generation for projections
-      ...
   common/                               Root package for common functionality
     logging/                              Helpers to work with log prefixes
     model/                                Basic domain types (Command, AbstractAggregate, exceptions, ...)
-    web/                                  Shared web helpers (SecuredAggregateCommands, ...)
+    web/                                  Shared web helpers (SecuredAggregateCommands, ProjectionLinks, ...)
+    events/                               Helpers to work with domain events (@RetryableApplicationModuleListener)
   [feature1]/                           Root package of a feature
     [Aggregate1].java                     An aggregate, here with name "Sample"
     [Aggregate1]Command.java              Commands to change the aggregate
@@ -139,6 +138,7 @@ unconventional prefix "_":
       [Aggregate1]Summary.java              Projection with reduced data suitable to render lists
       [Aggregate1]Detail.java               Projection with detailed data to render detail views
       [Aggregate1]Links.java                Factory for HAL links of the aggregate
+      [Aggregate1]ApiConfiguration.java     Link generation for the aggregate's projections
   [feature2]/                            Root package of another feature
     ...
 </pre>

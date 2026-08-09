@@ -1,4 +1,4 @@
-package com.example.app._infrastructure.web;
+package com.example.app.common.web;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,7 +1,7 @@
-package com.example.app._infrastructure.web;
+package com.example.app.sample.web;
 
+import com.example.app.common.web.ProjectionLinks;
 import com.example.app.sample.Sample;
-import com.example.app.sample.web.SampleLinks;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

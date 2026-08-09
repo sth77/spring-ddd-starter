@@ -1,13 +1,13 @@
 ---
-to: src/main/java/com/example/app/_infrastructure/web/<%= Name %>ApiConfiguration.java
+to: src/main/java/com/example/app/<%= h.changeCase.lower(feature) %>/web/<%= Name %>ApiConfiguration.java
 ---
 <%
    include(`${templates}/variables.ejs`)
 -%>
-package com.example.app._infrastructure.web;
+package <%= FeatureWebPackage %>;
 
+import <%= CommonPackage %>.web.ProjectionLinks;
 import <%= FeaturePackage %>.<%= AggregateType %>;
-import <%= FeatureWebPackage %>.<%= AggregateType %>Links;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
