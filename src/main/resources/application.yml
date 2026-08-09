@@ -4,7 +4,6 @@ application:
   # so the version reported by the OpenAPI document cannot drift from the built artifact.
   version: @project.version@
 security:
-  frontend-success: /api
   # No users are defined by default: any profile other than `dev` must supply its own, e.g. through
   # SECURITY_USERS_0_NAME / SECURITY_USERS_0_PASSWORD / SECURITY_USERS_0_ROLES environment variables.
   users:

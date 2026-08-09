@@ -8,7 +8,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "security")
 public class SecurityProperties {
 
-    String frontendSuccess = "";
     List<User> users = List.of();
 
     @Data
