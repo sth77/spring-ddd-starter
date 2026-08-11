@@ -12,6 +12,8 @@ set -euo pipefail
 HUMAN=src/main/java/com/example/app/world/Human.java
 COMMAND=src/main/java/com/example/app/world/HumanCommand.java
 MIGRATION=$(ls src/main/resources/db/migration/*__create_human.sql)
+TEST_DATA=src/test/java/com/example/app/world/WorldTestData.java
+AGGREGATE_TEST=src/test/java/com/example/app/world/HumanTest.java
 
 patch() {
     local file=$1
@@ -60,3 +62,46 @@ patch "$MIGRATION" \
     citizenship_en VARCHAR(255) NOT NULL,
     citizenship_de VARCHAR(255) NOT NULL
     );'
+
+# The generated tests are part of what the templates produce, so they have to keep passing once the command
+# requires a country - a developer adding a mandatory field fixes the test data in the same breath. Without
+# this, every test built on WorldTestData.human() dies on a null country.
+
+patch "$TEST_DATA" \
+    'import com.example.app.world.HumanCommand.CreateHuman;' \
+    'import com.example.app.common.model.I18nText;
+import com.example.app.referencedata.Country;
+import com.example.app.world.HumanCommand.CreateHuman;'
+
+patch "$TEST_DATA" \
+    '        val result = Human.create(CreateHuman.builder()
+                .name(name)
+                .build());' \
+    '        val result = Human.create(CreateHuman.builder()
+                .name(name)
+                .country(Country.of(I18nText.en("Country X")))
+                .build());'
+
+patch "$AGGREGATE_TEST" \
+    'import com.example.app.common.model.DomainException;' \
+    'import com.example.app.common.model.DomainException;
+import com.example.app.common.model.I18nText;
+import com.example.app.referencedata.Country;'
+
+patch "$AGGREGATE_TEST" \
+    '        val human = Human.create(CreateHuman.builder()
+                .name(name)
+                .build());' \
+    '        val human = Human.create(CreateHuman.builder()
+                .name(name)
+                .country(Country.of(I18nText.en("Country 1")))
+                .build());'
+
+# Assert the wiring itself, so the reference-data round trip is covered and not merely compiled. The name
+# assertion is part of the anchor because the update test repeats the state assertion verbatim.
+patch "$AGGREGATE_TEST" \
+    '        assertThat(human.getName()).isEqualTo(name);
+        assertThat(human.getState()).isEqualTo(DRAFT);' \
+    '        assertThat(human.getName()).isEqualTo(name);
+        assertThat(human.getState()).isEqualTo(DRAFT);
+        assertThat(human.getCitizenship()).isEqualTo(I18nText.en("Country 1"));'

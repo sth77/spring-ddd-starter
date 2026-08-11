@@ -411,88 +411,59 @@
                                 </configuration>
                             </execution>
                             <!--
-                                world/Human is a deliberately domain-neutral throwaway: it is generated into src/ and
-                                reverted again, so its name must not collide with a feature or aggregate of the project
-                                built on this starter - otherwise the git cleanup below would delete hand-written code,
-                                and the generated Flyway migration would clash with an existing table.
+                                world/Human and Country are deliberately domain-neutral throwaways: they are
+                                generated into src/ and reverted again, so their names must not collide with a
+                                feature, aggregate or reference data entity of the project built on this starter -
+                                otherwise the git cleanup below would delete hand-written code, and the generated
+                                Flyway migration would clash with an existing table. Reference data is only worth
+                                generating if an aggregate then refers to it, hence the wiring step.
+
+                                Generation and the build over it are one shell step so that the tree is restored
+                                even when they fail - which is the interesting case, since a template emitting code
+                                that does not compile is exactly what this profile exists to catch. The cleanups
+                                below sit in post-integration-test, which Maven never reaches once a mojo has
+                                failed, and the leftovers would then trip the guard above on the next run. Restoring
+                                src/ is only half of it - the output directories have to go the same way as in the
+                                clean execution below, or the next build still finds two create_human migrations.
+                                The subshell carries the errexit: an ERR trap here does not fire on a failing nested
+                                `mvn`, and `if ! generate...` would suppress errexit inside the sequence, so a
+                                broken early step would run on into the build instead of stopping.
+
+                                The nested build runs `mvn test`, not just `compile`: the outer build compiled and
+                                tested before hygen had generated anything, so this is the only place where the
+                                generated aggregate test, repository test and feature test data are compiled and run
+                                at all, and the only place where ArchUnit and Modulith see the generated main code.
+                                byte-buddy's transform-extended defaults to process-classes, so `test` picks it up
+                                without naming the goal. The nested build does not inherit -Phygen-it and so cannot
+                                recurse into itself.
                             -->
                             <execution>
-                                <id>generate-world-feature</id>
-                                <phase>pre-integration-test</phase>
-                                <goals><goal>exec</goal></goals>
-                                <configuration>
-                                    <executable>hygen</executable>
-                                    <arguments>
-                                        <argument>feature</argument>
-                                        <argument>new</argument>
-                                        <argument>world</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>generate-human-aggregate</id>
-                                <phase>pre-integration-test</phase>
-                                <goals><goal>exec</goal></goals>
-                                <configuration>
-                                    <executable>hygen</executable>
-                                    <arguments>
-                                        <argument>aggregate</argument>
-                                        <argument>new</argument>
-                                        <argument>Human</argument>
-                                        <argument>--feature=world</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>generate-human-controller</id>
-                                <phase>pre-integration-test</phase>
-                                <goals><goal>exec</goal></goals>
-                                <configuration>
-                                    <executable>hygen</executable>
-                                    <arguments>
-                                        <argument>controller</argument>
-                                        <argument>new</argument>
-                                        <argument>Human</argument>
-                                        <argument>--feature=world</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>generate-country-referencedata</id>
-                                <phase>pre-integration-test</phase>
-                                <goals><goal>exec</goal></goals>
-                                <configuration>
-                                    <executable>hygen</executable>
-                                    <arguments>
-                                        <argument>referencedata</argument>
-                                        <argument>new</argument>
-                                        <argument>Country</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                            <!-- Reference data is only worth generating if an aggregate then refers to it -->
-                            <execution>
-                                <id>wire-country-into-human</id>
+                                <id>generate-and-build-throwaway-feature</id>
                                 <phase>pre-integration-test</phase>
                                 <goals><goal>exec</goal></goals>
                                 <configuration>
                                     <executable>bash</executable>
                                     <arguments>
-                                        <argument>src/test/resources/hygen-it/wire-country-into-human.sh</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                            <!-- Recompile and transform after hygen generation -->
-                            <execution>
-                                <id>compile-and-transform-generated</id>
-                                <phase>pre-integration-test</phase>
-                                <goals><goal>exec</goal></goals>
-                                <configuration>
-                                    <executable>mvn</executable>
-                                    <arguments>
-                                        <argument>compile</argument>
-                                        <argument>byte-buddy:transform-extended</argument>
-                                        <argument>-o</argument>
+                                        <argument>-c</argument>
+                                        <argument><![CDATA[
+set -uo pipefail
+(
+    set -e
+    hygen feature new world
+    hygen aggregate new Human --feature=world
+    hygen controller new Human --feature=world
+    hygen referencedata new Country
+    src/test/resources/hygen-it/wire-country-into-human.sh
+    mvn test -o
+)
+status=$?
+if [ $status -ne 0 ]; then
+    git checkout -- src/
+    git clean -fdq src/
+    rm -rf '${project.build.outputDirectory}' '${project.build.testOutputDirectory}'
+fi
+exit $status
+]]></argument>
                                     </arguments>
                                 </configuration>
                             </execution>
@@ -530,9 +501,11 @@
                         Reverting src/ is not enough: the generated sources were compiled and their Flyway migration
                         was copied into target/classes, and nothing there is tracked by git. Left behind, the next
                         build starts Flyway with two create_human migrations ("Table HUMAN already exists") and lets
-                        ArchUnit and Modulith analyse classes whose sources no longer exist. Discarding the whole
-                        output directory is the cheap and complete answer - the next build recompiles from the
-                        restored src/, so no run can inherit anything from this one.
+                        ArchUnit and Modulith analyse classes whose sources no longer exist. Discarding both output
+                        directories is the cheap and complete answer - the next build recompiles from the restored
+                        src/, so no run can inherit anything from this one. test-classes matters as much as classes:
+                        the nested build above compiles the generated HumanTest and HumansTest, and surefire would
+                        pick those up in the next build even though their sources are long gone.
                     -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -547,6 +520,9 @@
                                     <filesets>
                                         <fileset>
                                             <directory>${project.build.outputDirectory}</directory>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>${project.build.testOutputDirectory}</directory>
                                         </fileset>
                                     </filesets>
                                 </configuration>

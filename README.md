@@ -89,7 +89,13 @@ after changing it to your needs. Generates a throwaway `world/Human` feature and
 via hygen, wires the latter into the former as its citizenship, and tests the full aggregate lifecycle through the
 REST API. Rename both in the `hygen-it` profile if your own project uses either name, so that the cleanup below
 cannot touch your code. 
-Executes a git clean of the /src folder after execution. Test execution will be aborted if there are uncommitted changes 
+The generated code is then put through a nested `mvn test`, which is what compiles and runs the *generated* unit
+tests (`HumanTest`, `HumansTest`, `CountriesTest`) and lets ArchUnit and Modulith analyse the generated main code —
+the outer build's `test` phase runs before hygen has produced anything. That doubles the test run, which is why this
+lives in an opt-in profile. 
+Executes a git clean of the /src folder afterwards, on the failure path too, and discards `target/classes` and
+`target/test-classes` so that a following build cannot inherit generated classes or a duplicate Flyway migration.
+Test execution will be aborted if there are uncommitted changes 
 in /src.
 
 > $ mvn verify -Phygen-it

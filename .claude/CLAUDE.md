@@ -13,7 +13,9 @@ version numbers here; they only go stale.
 ```bash
 ./mvnw test -Dtest=SampleTest   # fast inner loop: domain-only unit test, seconds
 ./mvnw verify                   # full build incl. ArchUnit + NullAway + IT, ~15s
-./mvnw verify -Phygen-it        # regenerate a feature from the templates and test it (needs a clean src/ tree)
+./mvnw verify -Phygen-it        # regenerate a feature from the templates and test it (needs a clean src/ tree);
+                                # runs the generated unit tests too, via a nested `mvn test`, so it takes ~2x
+                                # as long and wipes target/classes + target/test-classes when done
 ./mvnw spotless:apply           # auto-format sources to satisfy the spotless:check gate
 ```
 
@@ -76,9 +78,15 @@ version numbers here; they only go stale.
 hygen feature new <name>
 hygen aggregate new <Name> --feature=<feature>
 hygen controller new <Name> --feature=<feature>
+hygen referencedata new <Name>
 ```
 
 The `sample` module must stay structurally identical to the scaffolding output (plus clearly-marked enrichments).
 Change a pattern in the templates first, then bring `sample` in line; `mvn verify -Phygen-it` enforces it.
+
+The templates also emit **tests** (`<Name>Test`, `<Plural>Test`, `<Feature>TestData`), and `-Phygen-it` compiles and
+runs them. A template change that alters a command's fields must therefore keep the generated tests passing —
+`src/test/resources/hygen-it/wire-country-into-human.sh` patches the generated test data for the mandatory `country`
+field it adds, and every one of its `patch` calls fails loudly if its anchor has moved.
 
 See INSTRUCTIONS.md for detailed implementation guidelines.
