@@ -63,6 +63,11 @@ version numbers here; they only go stale.
 
 - `Not a managed type: class ...Sample` → the jMolecules byte-buddy transform did not run. Build through the
   full lifecycle (`./mvnw compile`), or register the byte-buddy `transform-extended` goal in the IDE (see README).
+  In IntelliJ it can also mean the module got split: IntelliJ splits a Maven module in two as soon as the
+  `default-compile` and `default-testCompile` executions of `maven-compiler-plugin` differ in any way, and the
+  after-build byte-buddy task then no longer covers the test side. Keep the compiler plugin's Error Prone /
+  NullAway setup in the single plugin-level `<configuration>` (Error Prone is scoped to main via
+  `-XepExcludedPaths`) - never move it into a per-execution block.
 - Hibernate `Schema-validation` / `wrong column type` / `missing table` at startup → the mapped entity and the
   Flyway schema disagree (`ddl-auto: validate`). Check the `<type>Value` component-naming convention for value
   objects and add a **new** migration (never edit an applied one).

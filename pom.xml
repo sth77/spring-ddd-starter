@@ -230,6 +230,22 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <!--
+                Enforce null-safety on the main sources with NullAway (running on Error Prone).
+                The whole code base is @NullMarked (JSpecify), so NullAway fails the build on any
+                potential null-pointer dereference. All other Error Prone checks are disabled to keep
+                the build focused on nullness. Requires a forked compiler with the jdk.compiler
+                exports/opens (Error Prone accesses internal javac APIs).
+
+                Everything lives in a single plugin-level <configuration> without per-execution blocks:
+                IntelliJ splits the Maven module in two as soon as the `default-compile` and
+                `default-testCompile` executions differ in their configuration, and in the resulting split
+                module the byte-buddy `transform-extended` after-build task no longer runs for the test
+                side (see README) - aggregates then lack their JPA annotations in IDE-run tests. Both
+                executions therefore inherit one identical configuration, and Error Prone is kept off the
+                test sources by -XepExcludedPaths (tests use deliberate nulls and AssertJ patterns)
+                instead of by a per-execution block.
+            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -238,69 +254,47 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                     <encoding>UTF-8</encoding>
-                    <!-- Test compilation only needs Lombok; NullAway is enforced on main sources only. -->
+                    <fork>true</fork>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                             <version>${lombok.version}</version>
                         </path>
+                        <path>
+                            <groupId>com.google.errorprone</groupId>
+                            <artifactId>error_prone_core</artifactId>
+                            <version>${errorprone.version}</version>
+                        </path>
+                        <path>
+                            <groupId>com.uber.nullaway</groupId>
+                            <artifactId>nullaway</artifactId>
+                            <version>${nullaway.version}</version>
+                        </path>
+                        <!-- Compile-time DDD verification (jMolecules): fails compilation on
+                             violations such as an aggregate referencing another directly instead
+                             of via Association. Version is managed by the jmolecules BOM. -->
+                        <path>
+                            <groupId>org.jmolecules.integrations</groupId>
+                            <artifactId>jmolecules-apt</artifactId>
+                        </path>
                     </annotationProcessorPaths>
+                    <compilerArgs>
+                        <arg>-XDcompilePolicy=simple</arg>
+                        <arg>--should-stop=ifError=FLOW</arg>
+                        <arg>-Xplugin:ErrorProne -XepDisableAllChecks -XepExcludedPaths:.*/src/test/.* -Xep:NullAway:ERROR -XepOpt:NullAway:AnnotatedPackages=com.example.app</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+                    </compilerArgs>
                 </configuration>
-                <executions>
-                    <!--
-                        Enforce null-safety on the main sources with NullAway (running on Error Prone).
-                        The whole code base is @NullMarked (JSpecify), so NullAway fails the build on any
-                        potential null-pointer dereference. All other Error Prone checks are disabled to keep
-                        the build focused on nullness. Requires a forked compiler with the jdk.compiler
-                        exports/opens (Error Prone accesses internal javac APIs).
-                    -->
-                    <execution>
-                        <id>default-compile</id>
-                        <configuration>
-                            <fork>true</fork>
-                            <annotationProcessorPaths combine.self="override">
-                                <path>
-                                    <groupId>org.projectlombok</groupId>
-                                    <artifactId>lombok</artifactId>
-                                    <version>${lombok.version}</version>
-                                </path>
-                                <path>
-                                    <groupId>com.google.errorprone</groupId>
-                                    <artifactId>error_prone_core</artifactId>
-                                    <version>${errorprone.version}</version>
-                                </path>
-                                <path>
-                                    <groupId>com.uber.nullaway</groupId>
-                                    <artifactId>nullaway</artifactId>
-                                    <version>${nullaway.version}</version>
-                                </path>
-                                <!-- Compile-time DDD verification (jMolecules): fails compilation on
-                                     violations such as an aggregate referencing another directly instead
-                                     of via Association. Version is managed by the jmolecules BOM. -->
-                                <path>
-                                    <groupId>org.jmolecules.integrations</groupId>
-                                    <artifactId>jmolecules-apt</artifactId>
-                                </path>
-                            </annotationProcessorPaths>
-                            <compilerArgs>
-                                <arg>-XDcompilePolicy=simple</arg>
-                                <arg>--should-stop=ifError=FLOW</arg>
-                                <arg>-Xplugin:ErrorProne -XepDisableAllChecks -Xep:NullAway:ERROR -XepOpt:NullAway:AnnotatedPackages=com.example.app</arg>
-                                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
-                                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
-                                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
-                                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
-                                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
-                                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
-                                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
-                                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
-                                <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
-                                <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
-                            </compilerArgs>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
