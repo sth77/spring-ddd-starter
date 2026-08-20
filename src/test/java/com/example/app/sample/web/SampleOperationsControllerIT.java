@@ -294,6 +294,36 @@ class SampleOperationsControllerIT {
     }
 
     @Nested
+    @DisplayName("Projection Tests")
+    class ProjectionTests {
+
+        @Test
+        @DisplayName("GET /samples/{id}?projection=summary renders the aggregate's own field types")
+        void getSample_summaryProjection_returnsNameAndOwnerName() throws Exception {
+            Sample sample = createDraftSample();
+
+            mockMvc.perform(get("/api/samples/" + sample.getId().uuidValue() + "?projection=summary")
+                    .with(user("testuser").roles("USER")))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.name.en").value("Test Sample"))
+                    .andExpect(jsonPath("$.ownerName").value(testOwner.getName()));
+        }
+
+        @Test
+        @DisplayName("GET /samples/{id}?projection=detail resolves the owner behind the association")
+        void getSample_detailProjection_returnsNameDescriptionAndOwner() throws Exception {
+            Sample sample = createDraftSample();
+
+            mockMvc.perform(get("/api/samples/" + sample.getId().uuidValue() + "?projection=detail")
+                    .with(user("testuser").roles("USER")))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.name.en").value("Test Sample"))
+                    .andExpect(jsonPath("$.description").value("Test description"))
+                    .andExpect(jsonPath("$.owner.name").value(testOwner.getName()));
+        }
+    }
+
+    @Nested
     @DisplayName("HAL Command Link Tests")
     class CommandLinkTests {
 

@@ -65,6 +65,29 @@ public class SampleTest {
     }
 
     @Test
+    void update_onlyCityChanged_cityUpdatedAndEventRegistered() {
+        // arrange
+        val sample = sample();
+        val otherCity = City.ofPostalCodeAndName(
+                8000, I18nText.builder().en("Zurich").de("Zuerich").build());
+
+        // act: name and description stay as they are, only the city changes
+        sample.update(UpdateSample.builder()
+                .name(sample.getName())
+                .description(sample.getDescription())
+                .city(otherCity)
+                .build());
+
+        // assert
+        assertThat(sample.getCity()).isEqualTo(com.example.app.sample.City.of(otherCity));
+        assertThat(getEvents(sample)).containsExactly(SampleUpdated.builder()
+                .sampleId(sample.getId())
+                .name(sample.getName())
+                .description(sample.getDescription())
+                .build());
+    }
+
+    @Test
     void publish_inDraftState_published() {
         // arrange
         val sample = sample();
