@@ -54,10 +54,15 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
 
     public void update(UpdateSample data) {
         assertCan(UpdateSample.class);
-        if (!(Objects.equals(name, data.name()) && Objects.equals(description, data.description()))) {
+        val updatedCity = City.of(data.city());
+        // every updatable field takes part in the comparison - a field left out here would be silently
+        // dropped whenever it is the only one that changed
+        if (!(Objects.equals(name, data.name())
+                && Objects.equals(description, data.description())
+                && Objects.equals(city, updatedCity))) {
             name = data.name();
             description = data.description();
-            city = City.of(data.city());
+            city = updatedCity;
             registerEvent(SampleUpdated.builder()
                     .sampleId(id)
                     .name(name)
