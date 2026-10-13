@@ -34,3 +34,6 @@ build/
 
 ### Frontend workspace (not part of this backend starter) ###
 /app/
+
+### Claude Code (personal permissions) ###
+.claude/settings.local.json

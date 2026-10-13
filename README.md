@@ -470,8 +470,8 @@ Dependencies are only allowed in this direction: infrastructure -> application -
 
 jMolecules also ensures that the elements of tactical domain-driven design are used correctly. This is enforced
 twice: the `ArchitectureTests` run the jMolecules ArchUnit rules (`JMoleculesDddRules` and the simplified onion
-rules) as part of `mvn verify`, and the jMolecules annotation processor (`jmolecules-apt`, wired into the
-`default-compile` annotation-processor path) detects breaches already at compile time.
+rules) as part of `mvn verify`, and the jMolecules annotation processor (`jmolecules-apt`, on the compiler's
+annotation-processor path) detects breaches already at compile time.
 
 A project-specific rule additionally enforces the command pattern itself: every public state-changing method on an
 aggregate root must take its command as the only parameter — accessors, the `can(...)` guard and `Object` methods
@@ -490,15 +490,18 @@ dereference — a `@Nullable` value dereferenced without a check, a `@NonNull` f
 the nullness contract from documentation into a guarantee, which is especially valuable when new contributors or AI
 coding agents extend the code.
 
-The check is wired into the `maven-compiler-plugin`'s `default-compile` execution:
+The check is wired into the `maven-compiler-plugin`'s single plugin-level configuration:
 
 - `error_prone_core` and `nullaway` are added to the annotation-processor path (alongside Lombok);
-- `-Xplugin:ErrorProne -XepDisableAllChecks -Xep:NullAway:ERROR -XepOpt:NullAway:AnnotatedPackages=com.example.app`
-  runs NullAway — and only NullAway — as an error;
+- `-Xplugin:ErrorProne -XepDisableAllChecks -XepExcludedPaths:.*/src/test/.* -Xep:NullAway:ERROR
+  -XepOpt:NullAway:AnnotatedPackages=com.example.app` runs NullAway — and only NullAway — as an error;
 - the compiler is forked with the `jdk.compiler` `--add-exports`/`--add-opens` that Error Prone needs on current JDKs.
 
-Only the main sources are checked; test compilation keeps just Lombok, so test idioms (mocks, autowired fields,
-fluent assertions) don't have to satisfy the analyzer. Adjust the enforced scope via `AnnotatedPackages`, or drop
+Only the main sources are checked: `-XepExcludedPaths` keeps Error Prone off `src/test`, so test idioms (mocks,
+autowired fields, fluent assertions, deliberate nulls) don't have to satisfy the analyzer. The exclusion does that
+job rather than a separate configuration for the test-compile execution, because IntelliJ splits the Maven module
+in two as soon as the two compiler executions differ — and in a split module the byte-buddy `transform-extended`
+after-build task no longer covers the test side. Adjust the enforced scope via `AnnotatedPackages`, or drop
 `-XepDisableAllChecks` to additionally enable Error Prone's own bug-pattern checks.
 
 ### Validation
