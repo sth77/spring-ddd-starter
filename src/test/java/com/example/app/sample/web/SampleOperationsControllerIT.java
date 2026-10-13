@@ -39,7 +39,7 @@ import org.springframework.test.web.servlet.ResultActions;
  * Integration tests for {@link SampleOperationsController}.
  *
  * Tests cover:
- * - Security validation (authentication required for all endpoints)
+ * - Security validation (authentication required for all endpoints, role separation of links and endpoints)
  * - Publish operation with proper authentication
  * - State machine constraints
  * - Error handling for non-existent resources
@@ -224,6 +224,56 @@ class SampleOperationsControllerIT {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                     .andExpect(status().isNotFound());
+        }
+    }
+
+    /**
+     * Links and authorization are derived from the same {@code @Secured} annotation (see
+     * {@code SecuredAggregateCommands}), so a user lacking a command's role must neither be offered its link nor be
+     * able to execute it.
+     */
+    @Nested
+    @DisplayName("Role Separation Tests")
+    class RoleSeparationTests {
+
+        @Test
+        @DisplayName("a ROLE_USER-only user is not offered the publish link, which requires ROLE_ADMIN")
+        void get_asUserWithoutAdminRole_noPublishLink() throws Exception {
+            Sample sample = createDraftSample();
+
+            mockMvc.perform(get("/api/samples/" + sample.getId().uuidValue())
+                    .with(user("user").roles("USER")))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$._links.update.href").exists())
+                    .andExpect(jsonPath("$._links.publish").doesNotExist());
+        }
+
+        @Test
+        @DisplayName("an admin is offered the publish link in the same state")
+        void get_asAdmin_publishLink() throws Exception {
+            Sample sample = createDraftSample();
+
+            mockMvc.perform(get("/api/samples/" + sample.getId().uuidValue())
+                    .with(user("admin").roles("USER", "ADMIN")))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$._links.update.href").exists())
+                    .andExpect(jsonPath("$._links.publish.href").exists());
+        }
+
+        @Test
+        @DisplayName("POST /samples/{id}/publish as a ROLE_USER-only user is rejected with 403 Forbidden")
+        void publish_asUserWithoutAdminRole_returnsForbidden() throws Exception {
+            Sample sample = createDraftSample();
+
+            mockMvc.perform(post("/api/samples/" + sample.getId().uuidValue() + "/publish")
+                    .with(user("user").roles("USER"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{}"))
+                    .andExpect(status().isForbidden());
+
+            assertThat(samples.findById(sample.getId())).get()
+                    .extracting(Sample::getState)
+                    .isEqualTo(Sample.SampleState.DRAFT);
         }
     }
 

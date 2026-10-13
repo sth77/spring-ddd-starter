@@ -11,6 +11,7 @@ import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.handler.MappedInterceptor;
 
 @Configuration
 public class WebConfiguration implements RepositoryRestConfigurer {
@@ -30,6 +31,15 @@ public class WebConfiguration implements RepositoryRestConfigurer {
                 .withCollectionExposure((metadata, httpMethods) -> httpMethods.disable(WRITE_METHODS))
                 .withItemExposure((metadata, httpMethods) -> httpMethods.disable(WRITE_METHODS));
         config.setBasePath(BASE_PATH);
+    }
+
+    /**
+     * Enforces the write lockdown above before Spring Data REST binds a request body, see
+     * {@link GenericCrudWriteInterceptor}. Spring Data REST's handler mappings pick up mapped interceptor beans.
+     */
+    @Bean
+    public MappedInterceptor genericCrudWriteInterceptor() {
+        return new MappedInterceptor(new String[]{BASE_PATH + "/**"}, new GenericCrudWriteInterceptor());
     }
 
     @Bean
