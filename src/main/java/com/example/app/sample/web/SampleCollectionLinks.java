@@ -14,6 +14,10 @@ import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.stereotype.Component;
 
+/**
+ * Offers the creation of a {@link Sample} on the collection resource: a link with the HAL-FORMS template of
+ * {@link CreateSample}, provided the current user's role permits it.
+ */
 @Component
 @RequiredArgsConstructor
 public class SampleCollectionLinks implements RepresentationModelProcessor<CollectionModel<EntityModel<Sample>>> {

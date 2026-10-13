@@ -13,6 +13,12 @@ import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.stereotype.Component;
 
+/**
+ * Renders the operations of a {@link Sample} as HAL links: one link per command that the aggregate allows in its
+ * current
+ * state ({@code can}) and the current user's role permits ({@code @Secured} on the operations controller), each
+ * carrying the HAL-FORMS template of its command.
+ */
 @Component
 @RequiredArgsConstructor
 public class SampleLinks implements RepresentationModelProcessor<EntityModel<Sample>> {

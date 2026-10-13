@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
+/**
+ * The repository of the {@link City} reference data, exported read-only by Spring Data REST.
+ */
 @RepositoryRestResource(collectionResourceRel = "cities", path = "cities")
 public interface Cities extends ReferenceDataRepository<City, CityId> {
 

@@ -12,6 +12,14 @@ import lombok.Builder;
 import org.jspecify.annotations.Nullable;
 import org.springframework.hateoas.server.core.Relation;
 
+/**
+ * The commands of the {@link Sample} aggregate, one record per operation. A command is pure payload: the aggregate it
+ * applies to is addressed by the URI. The operations controller exposes each command under a rel derived from the
+ * record name without the aggregate name ({@code UpdateSample} becomes {@code update}), unless {@code @Relation}
+ * overrides it.
+ * The Bean Validation constraints of the components are validated on the request and describe the fields of the
+ * operation's HAL-FORMS template.
+ */
 public sealed interface SampleCommand extends Command {
 
     @Builder

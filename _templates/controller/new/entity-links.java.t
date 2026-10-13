@@ -20,6 +20,11 @@ import org.springframework.stereotype.Component;
 import static <%= CommonPackage %>.web.CommandLinks.afford;
 import static org.springframework.hateoas.IanaLinkRelations.SELF;
 
+/**
+ * Renders the operations of a {@link <%= AggregateType %>} as HAL links: one link per command that the aggregate allows in its current
+ * state ({@code can}) and the current user's role permits ({@code @Secured} on the operations controller), each
+ * carrying the HAL-FORMS template of its command.
+ */
 @Component
 @RequiredArgsConstructor
 public class <%= AggregateType %>Links implements RepresentationModelProcessor<EntityModel<<%= AggregateType %>>> {

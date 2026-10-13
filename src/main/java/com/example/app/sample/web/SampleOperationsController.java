@@ -26,7 +26,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 /**
- * Extends the REST controller provided by Spring Data REST with aggregate specific operations.
+ * Extends the REST controller provided by Spring Data REST with aggregate specific operations. Each operation is a
+ * {@code POST} to {@code /samples/{id}/<rel>}, taking one command as its body, and answers with the changed aggregate.
+ * The
+ * {@code @Secured} role of a method also decides whether the operation's link is offered to the current user.
  */
 @RequiredArgsConstructor
 @RepositoryRestController

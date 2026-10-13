@@ -6,6 +6,11 @@ import com.example.app.sample.SampleItem.SampleItemId;
 import lombok.Builder;
 import org.jmolecules.event.types.DomainEvent;
 
+/**
+ * The domain events of the {@link Sample} aggregate. They are registered by its operations and published by Spring once
+ * the aggregate is saved; another module reacts to them with a {@code @RetryableApplicationModuleListener} instead of
+ * being called by this one.
+ */
 public sealed interface SampleEvent extends DomainEvent {
 
     SampleId sampleId();

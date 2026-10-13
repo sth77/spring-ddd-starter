@@ -21,6 +21,10 @@ import org.springframework.stereotype.Component;
 
 import static <%= CommonPackage %>.web.CommandLinks.afford;
 
+/**
+ * Offers the creation of a {@link <%= AggregateType %>} on the collection resource: a link with the HAL-FORMS template of
+ * {@link <%= CreateCommandType %>}, provided the current user's role permits it.
+ */
 @Component
 @RequiredArgsConstructor
 public class <%= AggregateType %>CollectionLinks implements RepresentationModelProcessor<CollectionModel<EntityModel<<%= AggregateType %>>>> {

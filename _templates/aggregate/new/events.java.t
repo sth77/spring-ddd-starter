@@ -10,6 +10,11 @@ import <%= FeaturePackage %>.<%= AggregateType %>.<%= IdType %>;
 import lombok.Builder;
 import org.jmolecules.event.types.DomainEvent;
 
+/**
+ * The domain events of the {@link <%= AggregateType %>} aggregate. They are registered by its operations and published by Spring once
+ * the aggregate is saved; another module reacts to them with a {@code @RetryableApplicationModuleListener} instead of
+ * being called by this one.
+ */
 public sealed interface <%= EventType %> extends DomainEvent {
 
     <%= IdType %> <%= idName %>();
