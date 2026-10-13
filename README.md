@@ -634,6 +634,12 @@ The Onion architecture is verified through jMolecules, using the simplified onio
 
 Dependencies are only allowed in this direction: infrastructure -> application -> domain
 
+Each package declares its ring in its `package-info.java` (`@DomainRing`, `@ApplicationRing`, `@InfrastructureRing`),
+and a declaration covers the subpackages too. The shared kernel is split up the same way: `common.model` (basic domain
+types and exceptions) is domain, `common.events` application and `common.web` infrastructure. The jMolecules rules only
+check the dependencies between the application's own rings; `ArchitectureTests` adds that the domain ring must not use
+Spring Web or `org.springframework.http` either, so that no HTTP status (`@ResponseStatus`) creeps into the domain.
+
 #### DDD architecture
 
 jMolecules also ensures that the elements of tactical domain-driven design are used correctly. This is enforced
@@ -679,7 +685,11 @@ Command parameters use Jakarta Bean Validation (`@Valid`, `@NotNull`) for input 
 
 ### Domain Exception Handling
 
-Domain exceptions extending `DomainException` are automatically mapped to appropriate HTTP responses by `DomainExceptionHandler`. This provides consistent error handling for domain rule violations.
+Domain exceptions extending `DomainException` are mapped to HTTP responses by `DomainExceptionHandler` in the
+infrastructure ring, as an RFC 9457 problem detail: a violated business rule is a `400 Bad Request`, and
+`AggregateNotFoundException` and `ReferenceDataNotFoundException` (thrown by `getRequired(id)` of the repositories)
+are a `404 Not Found`. The domain itself knows no HTTP status, which `ArchitectureTests` enforces (see
+[Onion architecture](#onion-architecture)).
 
 ### Code formatting
 

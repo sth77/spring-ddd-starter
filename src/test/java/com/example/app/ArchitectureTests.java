@@ -1,6 +1,7 @@
 package com.example.app;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noFields;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noMethods;
 import static java.util.function.Predicate.not;
@@ -226,6 +227,20 @@ class ArchitectureTests {
                 + " PhysicalNamingStrategy (CamelCaseToUnderscoresNamingStrategy), by enabling"
                 + " hibernate.auto_quote_keyword, or in META-INF/orm.xml instead").isEmpty();
     }
+
+    /**
+     * The domain does not know it is served over HTTP: a status code is the infrastructure ring's translation of a
+     * domain exception (see {@code DomainExceptionHandler}). Without this rule, a {@code @ResponseStatus} on a domain
+     * exception - which imports Spring Web into the domain - would pass the onion rules, since those only check the
+     * dependencies between the application's own rings.
+     */
+    @ArchTest
+    static final ArchRule domainRingShouldNotDependOnTheWeb = noClasses()
+            .that(DescribedPredicate.describe("reside in the domain ring", ArchitectureTests::residesInDomainRing))
+            .should().dependOnClassesThat()
+            .resideInAnyPackage("org.springframework.web..", "org.springframework.http..")
+            .because("HTTP concerns belong to the infrastructure ring; map a domain exception to a status in"
+                    + " DomainExceptionHandler instead");
 
     /**
      * The jMolecules byte-buddy transform maps an aggregate's collection of child entities as a unidirectional
