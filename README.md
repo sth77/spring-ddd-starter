@@ -87,8 +87,8 @@ Run integration tests:
 Run hygen template integration tests. This is useful to ensure that changed hygen templates still work correctly
 after changing it to your needs. Generates a throwaway `world/Human` feature and a `Country` reference data entity
 via hygen, wires the latter into the former as its citizenship, and tests the full aggregate lifecycle through the
-REST API. Rename both in the `hygen-it` profile if your own project uses either name, so that the cleanup below
-cannot touch your code. 
+REST API. Rename both in `src/test/resources/hygen-it/` (`generate-and-build.sh` and `wire-country-into-human.sh`)
+if your own project uses either name, so that the cleanup below cannot touch your code. 
 The generated code is then put through a nested `mvn test`, which is what compiles and runs the *generated* unit
 tests (`HumanTest`, `HumansTest`, `CountriesTest`) and lets ArchUnit and Modulith analyse the generated main code —
 the outer build's `test` phase runs before hygen has produced anything. That doubles the test run, which is why this
@@ -99,6 +99,11 @@ Test execution will be aborted if there are uncommitted changes
 in /src.
 
 > $ mvn verify -Phygen-it
+
+The profile's steps are bash scripts in `src/test/resources/hygen-it/`. On Windows, run it from Git Bash: launched
+from PowerShell or cmd, `bash` usually resolves to the WSL launcher, which runs the scripts in a Linux environment
+without your Windows toolchain. Line endings need no care — `.gitattributes` keeps the scripts LF, and the wiring
+script copes with templates checked out as CRLF.
 
 ## Continuous Integration
 
