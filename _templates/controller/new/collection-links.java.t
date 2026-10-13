@@ -19,6 +19,12 @@ import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.stereotype.Component;
 
+import static <%= CommonPackage %>.web.CommandLinks.afford;
+
+/**
+ * Offers the creation of a {@link <%= AggregateType %>} on the collection resource: a link with the HAL-FORMS template of
+ * {@link <%= CreateCommandType %>}, provided the current user's role permits it.
+ */
 @Component
 @RequiredArgsConstructor
 public class <%= AggregateType %>CollectionLinks implements RepresentationModelProcessor<CollectionModel<EntityModel<<%= AggregateType %>>>> {
@@ -31,7 +37,9 @@ public class <%= AggregateType %>CollectionLinks implements RepresentationModelP
     public CollectionModel<EntityModel<<%= AggregateType %>>> process(CollectionModel<EntityModel<<%= AggregateType %>>> model) {
         return model.addIf(
                 aggregateCommands.isAllowedForCurrentUser(<%= CreateCommandType %>.class),
-                () -> entityLinks.linkFor(<%= AggregateType %>.class).withRel(aggregateCommands.getRel(<%= CreateCommandType %>.class)));
+                () -> afford(
+                        entityLinks.linkFor(<%= AggregateType %>.class).withRel(aggregateCommands.getRel(<%= CreateCommandType %>.class)),
+                        <%= CreateCommandType %>.class));
     }
 
 }

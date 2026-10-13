@@ -40,16 +40,10 @@ public class DemoDataInitializer {
 
     @Async
     @EventListener(ApplicationReadyEvent.class)
-    void initData() throws InterruptedException {
-        Thread.sleep(2);
+    void initData() {
         initCities();
 
         log.info(LogPrefix.APPLICATION.withText("Initializing sample data"));
-        /*
-         * TODO:
-         * 1) declare dependencies to your repositories as final fields
-         * 2) create some test data useful for developing the application
-         */
         val personData = IntStream.range(1, 3)
                 .mapToObj(i -> Person.create(CreatePerson.builder()
                         .name("Person " + i)

@@ -349,6 +349,8 @@
                     </argLine>
                     <excludes>
                         <exclude>**/*IT.java</exclude>
+                        <!-- the @Nested classes of an IT, which the pattern above does not match -->
+                        <exclude>**/*IT$*.java</exclude>
                     </excludes>
                 </configuration>
             </plugin>

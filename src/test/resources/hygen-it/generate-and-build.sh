@@ -9,6 +9,9 @@
 # clash with an existing table. Reference data is only worth generating if an aggregate then refers to it, hence the
 # wiring step.
 #
+# The operation generator injects into the files the aggregate and controller generators produced; an injection
+# whose anchor has moved inserts nothing or lands at the top of the file, which the build then fails on.
+#
 # Generation and the build over it are one step so that the tree is restored even when they fail - which is the
 # interesting case, since a template emitting code that does not compile is exactly what this profile exists to
 # catch. The profile's cleanups sit in post-integration-test, which Maven never reaches once a mojo has failed, and
@@ -34,6 +37,7 @@ test_output_directory=$2
     hygen feature new world
     hygen aggregate new Human --feature=world
     hygen controller new Human --feature=world
+    hygen operation new Archive --aggregate=Human --feature=world
     hygen referencedata new Country
     bash src/test/resources/hygen-it/wire-country-into-human.sh
     mvn test -o

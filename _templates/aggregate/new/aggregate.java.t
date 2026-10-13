@@ -26,6 +26,16 @@ import org.jmolecules.ddd.types.Identifier;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * The <%= AggregateType %> aggregate root, the consistency boundary of its feature. Its state changes only through the methods taking
+ * one of the {@link <%= CommandType %>} records: each first checks {@link #can(Class)}, then changes the state and registers a
+ * {@link <%= EventType %>}, which Spring publishes once the aggregate is saved through {@link <%= RepositoryType %>}. Add an operation with
+ * {@code hygen operation new <Name> --aggregate=<%= AggregateType %> --feature=<feature>}.
+ *
+ * <p>
+ * The class carries no JPA annotations: the jMolecules byte-buddy plugin adds the mapping at build time, and the
+ * column names follow from the field names (see the README, "Persistence").
+ */
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class <%= AggregateType %> extends AbstractAggregate<<%= Name %>, <%= IdType %>> implements AggregateRoot<<%= AggregateType %>, <%= IdType %>> {
@@ -64,6 +74,10 @@ public class <%= AggregateType %> extends AbstractAggregate<<%= Name %>, <%= IdT
         }
     }
 
+    /**
+     * Whether the command is allowed in the aggregate's current state. Besides guarding the operations, it decides
+     * whether the operation's HAL link is rendered (see {@code <%= AggregateType %>Links}).
+     */
     public boolean can(Class<? extends <%= CommandType %>> operation) {
         if (operation.equals(<%= CreateCommandType %>.class)) {
             return false;

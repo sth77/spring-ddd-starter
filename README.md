@@ -74,6 +74,30 @@ associate with (see [Master data handling](#master-data-handling)) — has its o
 
 > $ hygen referencedata new Country
 
+An aggregate grows by one business operation at a time. The operation generator adds an operation together with its
+command and event to an aggregate generated before (and to its controller, which therefore has to exist):
+
+> $ hygen operation new Complete --aggregate=Todo --feature=todo
+
+This injects
+* the command `CompleteTodo` into `TodoCommand` - a record without components, to which you add the data the
+  operation needs,
+* the event `TodoCompleted` into `TodoEvent` (pass `--event=TodoDone` for a name the naive past tense gets wrong),
+* the method `complete(CompleteTodo data)` into `Todo`, guarded by `can(...)` and registering the event - the state
+  change itself is up to you,
+* the endpoint `POST /todos/{todoId}/complete` into `TodoOperationsController`, secured with `ROLE_USER` (pass
+  `--role=admin` for `ROLE_ADMIN`), and
+* two unit tests into `TodoTest`.
+
+The rel of the operation's link, `complete`, follows from the command name, so the operation is offered as a HAL link
+(and HAL-FORMS template) right away, whenever `can(...)` allows it. Running the generator a second time for the same
+operation changes nothing. The injection anchors on the shape of the generated files - the imports of the create
+command and event, the closing brace of the command, event and test types, `assertCan` and `doWith<Aggregate>` - so
+keep those when you edit the generated code.
+
+The generated domain, repository and web classes carry Javadoc comments explaining their role in the pattern, and the
+generated migration a comment on how it relates to the mapping; the sample module carries the same comments.
+
 ## Running Tests
 
 Run unit tests:
@@ -178,7 +202,7 @@ Single- and multi-valued value objects are embedded directly into the owning agg
   recognized by the `<type>Value` naming convention of its sole component, so no list of field names has to be
   maintained:
   - `SampleId(UUID uuidValue)` mapped as `id` → column `id`
-  - `Principal(String stringValue)` mapped as `principal` → column `principal`
+  - a value object such as `EmailAddress(String stringValue)` mapped as `email` → column `email`
 - **Multi-field value objects** keep the owning-attribute prefix, which disambiguates sibling embeddables:
   - `I18nText(String en, String de)` mapped as `name` → columns `name_en`, `name_de`
   - nested: `City(int postalCode, I18nText name)` mapped as `city` → `city_postal_code`, `city_name_en`, `city_name_de`
@@ -381,12 +405,15 @@ public class SampleLinks implements RepresentationModelProcessor<EntityModel<Sam
            Sample sample,
            Class<? extends SampleCommand> commandType) {
       val rel = aggregateCommands.getRel(commandType);
-      model.addIf(sample.can(commandType), () -> entityLinks
+      model.addIf(sample.can(commandType), () -> afford(entityLinks
               .linkForItemResource(Sample.class, sample.getId()).slash(rel)
-              .withRel(rel));
+              .withRel(rel), commandType));
    }
 }
 ```
+(`afford`, from `common.web.CommandLinks`, attaches the HAL-FORMS template of the command to the link and leaves
+plain HAL unchanged, see [Forms with HAL-FORMS](#forms-with-hal-forms).)
+
 A command link appears only when **both** conditions hold: the aggregate permits the operation in its current
 state (`sample.can(commandType)`) **and** the current user is authorized to invoke it. The authorization part is
 handled by `SecuredAggregateCommands` (in `common.web`): at construction it reads, for each command, the `@Secured`
@@ -492,6 +519,87 @@ scaffolding generates them. Since `common` now contributes beans, it is declared
 Child links are not rendered inside projections (`?projection=detail`): a projection getter returning entities is
 serialized as a plain bean, without the processors.
 
+#### Forms with HAL-FORMS
+
+A link tells a client *that* it may execute a command, not *what* to send. For that, every command link also carries
+a form in [HAL-FORMS](https://rwcbook.github.io/hal-forms/), the form extension of HAL. A client opts in through the
+`Accept` header; listing plain HAL as well lets the server fall back to it when a resource has no form to offer:
+
+```bash
+$ curl -u "user:1234" -H "Accept: application/prs.hal-forms+json, application/hal+json"        localhost:8080/api/samples/ced7bb56-…
+```
+
+The response holds the same `_links` as before, plus a `_templates` object, on the aggregate and on each item:
+
+```json
+{
+  "state" : "DRAFT",
+  "items" : [ {
+    "label" : "Open item",
+    "checked" : false,
+    "_links" : {
+      "renameItem" : { "href" : "http://localhost:8080/api/samples/ced7bb56-…/items/f42b5566-…/renameItem" },
+      …
+    },
+    "_templates" : {
+      "renameItem" : {
+        "method" : "POST",
+        "target" : "http://localhost:8080/api/samples/ced7bb56-…/items/f42b5566-…/renameItem",
+        "properties" : [ {
+          "name" : "label", "required" : true, "maxLength" : 255, "regex" : "^(?=\s*\S).*$", "type" : "text"
+        } ]
+      },
+      …
+    }
+  } ],
+  "_links" : {
+    "update" : { "href" : "http://localhost:8080/api/samples/ced7bb56-…/update" },
+    …
+  },
+  "_templates" : {
+    "update" : {
+      "method" : "POST",
+      "target" : "http://localhost:8080/api/samples/ced7bb56-…/update",
+      "properties" : [
+        { "name" : "city" },
+        { "name" : "description", "maxLength" : 1000, "type" : "text" },
+        { "name" : "name", "required" : true }
+      ]
+    },
+    …
+  }
+}
+```
+
+- **Keys.** A template is keyed by the rel of its link, so `_links.update` and `_templates.update` belong together
+  (Spring HATEOAS 3 no longer renames a single template to `default`). Templates follow the links exactly: the
+  aggregate state, the item state and the user's role decide about both at once, and a resource without any command —
+  a published sample, a checked item — has no `_templates` at all. In that case the response falls back to
+  `application/hal+json`.
+- **Target and method.** The `target` is the link's `href`, the `method` always `POST`. On the collection the
+  `target` is omitted, as HAL-FORMS allows, because the create command is posted to the collection's own `self`
+  URI.
+- **Properties.** They are derived from the components of the command record and their Bean Validation constraints:
+  `@NotNull`/`@NotBlank` make a property `required` (`@NotBlank` adds a `regex` for a non-blank text), `@Size` on a
+  text gives `minLength`/`maxLength`, `@Min`/`@Max` give `min`/`max`, `@Pattern` a `regex`, and `@Email` the type
+  `email`. A field-less command such as `PublishSample` has an empty property list.
+
+The forms come from a single helper, `CommandLinks.afford(link, commandType)` in `common.web`. It takes the finished
+link, so the root (`SampleLinks`), the collection (`SampleCollectionLinks`) and the items (`SampleItemLinks`) all use
+it the same way, and the hygen templates generate it into every new aggregate. It also corrects how Spring HATEOAS
+reads a command record: Spring HATEOAS inspects JavaBean properties, so a record component — which has no setter,
+Jackson binds it through the canonical constructor — would be marked `readOnly`, and `@Size` on a text would come out
+as a numeric `min`/`max` of type `range`.
+
+Two kinds of properties are described only by their name: `name`, an `I18nText` holding one text per language —
+HAL-FORMS has no notion of a nested object — and `owner` and `city`, which reference another resource by URI.
+HAL-FORMS could list the choices for the latter as remote `options`, but such an options link must answer with a plain
+array of values, while the Spring Data REST collections (`/api/people`, `/api/cities`) answer with HAL documents. A
+client therefore picks the referenced resource from those collections and sends its `self` href. If an application
+needs options, it customizes the forms through a `HalFormsConfiguration` bean (`withOptions`, `withPattern`): Spring
+Data REST builds a `HalFormsConfiguration` of its own for its object mapper, but the templates are rendered by Spring
+HATEOAS's template builder, which does pick up the bean.
+
 ### Loosely coupled modules with domain events
 
 Feature modules stay loosely coupled by three general concepts:
@@ -550,6 +658,12 @@ The Onion architecture is verified through jMolecules, using the simplified onio
 
 Dependencies are only allowed in this direction: infrastructure -> application -> domain
 
+Each package declares its ring in its `package-info.java` (`@DomainRing`, `@ApplicationRing`, `@InfrastructureRing`),
+and a declaration covers the subpackages too. The shared kernel is split up the same way: `common.model` (basic domain
+types and exceptions) is domain, `common.events` application and `common.web` infrastructure. The jMolecules rules only
+check the dependencies between the application's own rings; `ArchitectureTests` adds that the domain ring must not use
+Spring Web or `org.springframework.http` either, so that no HTTP status (`@ResponseStatus`) creeps into the domain.
+
 #### DDD architecture
 
 jMolecules also ensures that the elements of tactical domain-driven design are used correctly. This is enforced
@@ -595,7 +709,11 @@ Command parameters use Jakarta Bean Validation (`@Valid`, `@NotNull`) for input 
 
 ### Domain Exception Handling
 
-Domain exceptions extending `DomainException` are automatically mapped to appropriate HTTP responses by `DomainExceptionHandler`. This provides consistent error handling for domain rule violations.
+Domain exceptions extending `DomainException` are mapped to HTTP responses by `DomainExceptionHandler` in the
+infrastructure ring, as an RFC 9457 problem detail: a violated business rule is a `400 Bad Request`, and
+`AggregateNotFoundException` and `ReferenceDataNotFoundException` (thrown by `getRequired(id)` of the repositories)
+are a `404 Not Found`. The domain itself knows no HTTP status, which `ArchitectureTests` enforces (see
+[Onion architecture](#onion-architecture)).
 
 ### Code formatting
 
@@ -636,11 +754,6 @@ change is human-reviewed and must pass the full build gate — NullAway null-saf
 architecture rules, Spring Modulith module verification, the formatting check, and the test suite — before it is
 accepted. Responsibility for every change remains with the human author; the trailer discloses tool usage, it does
 not shift accountability.
-
-## Open Issues
-
-* Add documentation to generated artifacts
-* Allow adding operations with related commands and events one by one
 
 ## References
 

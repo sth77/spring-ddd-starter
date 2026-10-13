@@ -11,6 +11,9 @@ import <%= FeaturePackage %>.<%= AggregateType %>;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * The REST API configuration of the {@link <%= AggregateType %>} aggregate.
+ */
 @Configuration
 public class <%= Name %>ApiConfiguration {
 

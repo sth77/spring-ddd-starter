@@ -38,6 +38,18 @@ import org.jmolecules.ddd.types.Association;
 import org.jmolecules.ddd.types.Identifier;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * The Sample aggregate root, the consistency boundary of its feature. Its state changes only through the methods taking
+ * one of the {@link SampleCommand} records: each first checks {@link #can(Class)}, then changes the state and registers
+ * a
+ * {@link SampleEvent}, which Spring publishes once the aggregate is saved through {@link Samples}. Add an operation
+ * with
+ * {@code hygen operation new <Name> --aggregate=Sample --feature=<feature>}.
+ *
+ * <p>
+ * The class carries no JPA annotations: the jMolecules byte-buddy plugin adds the mapping at build time, and the
+ * column names follow from the field names (see the README, "Persistence").
+ */
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Sample extends AbstractAggregate<Sample, SampleId> implements AggregateRoot<Sample, SampleId> {
@@ -186,6 +198,10 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
         }
     }
 
+    /**
+     * Whether the command is allowed in the aggregate's current state. Besides guarding the operations, it decides
+     * whether the operation's HAL link is rendered (see {@code SampleLinks}).
+     */
     public boolean can(Class<? extends SampleCommand> operation) {
         if (operation.equals(CreateSample.class)) {
             return false;

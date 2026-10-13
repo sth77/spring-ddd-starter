@@ -12,6 +12,9 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 import java.util.List;
 
+/**
+ * The repository of the {@link <%= ReferenceDataType %>} reference data, exported read-only by Spring Data REST.
+ */
 @RepositoryRestResource(collectionResourceRel = "<%= h.changeCase.lower(RepositoryType) %>", path = "<%= h.changeCase.lower(RepositoryType) %>")
 public interface <%= RepositoryType %> extends ReferenceDataRepository<<%= ReferenceDataType %>, <%= IdType %>> {
 
