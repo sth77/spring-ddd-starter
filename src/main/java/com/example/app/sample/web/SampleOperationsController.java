@@ -2,9 +2,14 @@ package com.example.app.sample.web;
 
 import com.example.app.sample.Sample;
 import com.example.app.sample.Sample.SampleId;
+import com.example.app.sample.SampleCommand.AddSampleItem;
+import com.example.app.sample.SampleCommand.CheckSampleItem;
 import com.example.app.sample.SampleCommand.CreateSample;
 import com.example.app.sample.SampleCommand.PublishSample;
+import com.example.app.sample.SampleCommand.RemoveSampleItem;
+import com.example.app.sample.SampleCommand.RenameSampleItem;
 import com.example.app.sample.SampleCommand.UpdateSample;
+import com.example.app.sample.SampleItem.SampleItemId;
 import com.example.app.sample.Samples;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -50,6 +55,40 @@ public class SampleOperationsController {
     public ResponseEntity<EntityModel<Sample>> publish(
             @PathVariable SampleId sampleId, @Valid @RequestBody PublishSample data) {
         return doWithSample(sampleId, it -> it.publish(data));
+    }
+
+    // sample enrichment: operations on the SampleItem child entity. An item operation answers with the whole
+    // aggregate, since the links of the root and of every other item may change along with it.
+
+    @Secured("ROLE_USER")
+    @PostMapping(path = "/samples/{sampleId}/addItem")
+    public ResponseEntity<EntityModel<Sample>> addItem(
+            @PathVariable SampleId sampleId, @Valid @RequestBody AddSampleItem data) {
+        return doWithSample(sampleId, it -> it.addItem(data));
+    }
+
+    @Secured("ROLE_USER")
+    @PostMapping(path = "/samples/{sampleId}/items/{itemId}/renameItem")
+    public ResponseEntity<EntityModel<Sample>> renameItem(
+            @PathVariable SampleId sampleId, @PathVariable SampleItemId itemId,
+            @Valid @RequestBody RenameSampleItem data) {
+        return doWithSample(sampleId, it -> it.renameItem(itemId, data));
+    }
+
+    @Secured("ROLE_USER")
+    @PostMapping(path = "/samples/{sampleId}/items/{itemId}/checkItem")
+    public ResponseEntity<EntityModel<Sample>> checkItem(
+            @PathVariable SampleId sampleId, @PathVariable SampleItemId itemId,
+            @Valid @RequestBody CheckSampleItem data) {
+        return doWithSample(sampleId, it -> it.checkItem(itemId, data));
+    }
+
+    @Secured("ROLE_USER")
+    @PostMapping(path = "/samples/{sampleId}/items/{itemId}/removeItem")
+    public ResponseEntity<EntityModel<Sample>> removeItem(
+            @PathVariable SampleId sampleId, @PathVariable SampleItemId itemId,
+            @Valid @RequestBody RemoveSampleItem data) {
+        return doWithSample(sampleId, it -> it.removeItem(itemId, data));
     }
 
     private ResponseEntity<EntityModel<Sample>> doWithSample(SampleId sampleId, Consumer<Sample> action) {

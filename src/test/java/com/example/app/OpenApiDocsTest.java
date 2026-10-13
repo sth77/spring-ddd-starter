@@ -28,6 +28,8 @@ class OpenApiDocsTest {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.paths['/api/samples']").exists())
-                .andExpect(jsonPath("$.paths['/api/cities']").exists());
+                .andExpect(jsonPath("$.paths['/api/cities']").exists())
+                // a child entity operation, addressed by the item id in the path
+                .andExpect(jsonPath("$.paths['/api/samples/{sampleId}/items/{itemId}/checkItem'].post").exists());
     }
 }
