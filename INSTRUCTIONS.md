@@ -83,3 +83,13 @@ To add a business operation to an aggregate, the following steps are necessary:
 * If needed, register one or more domain events on the aggregate after having updated the fields, which are published by Spring on saving the aggregate to the DB.
 * If the aggregate has a REST controller, add a method to the controller with the name of the command, taking the command as input (`@Valid @RequestBody`) and invoking with it the `doWith<AggregateType>` method.
 * The new aggregate method should be covered by a unit test. If the aggregate has a controller, also add an integration test that follows the operation's HAL link from the response (`_links.<rel>.href`) and POSTs to that exact URL — this catches link/route mismatches that reconstructing the URL by hand would hide.
+
+## Operations on child entities
+
+An operation on a single child entity of an aggregate (see `SampleItem` in the sample module) follows the same steps, with these differences:
+* Declare the commands on a child under a nested sealed interface `<Child>Command extends <AggregateName>Command` (e.g. `SampleItemCommand`). Adding a child stays a command of the root.
+* The child is addressed by the URI, not by the command: the aggregate method takes the child's id followed by the command, e.g. `checkItem(SampleItemId itemId, CheckSampleItem data)`, and first invokes `assertCan(<CommandType>.class, itemId)`. Children are changed through their aggregate root only, so their own methods are package-private.
+* Answer "is this allowed for this child" on the root, with `can(Class<? extends <Child>Command>, <Child>Id)`: combine the aggregate's state with the child's own (package-private) `can`, and allow nothing for an unknown id. The type-level `can(Class)` returns `false` for child commands.
+* The controller method maps to `/<aggregates>/{<aggregate>Id}/<children>/{<child>Id}/<rel>`, takes the child id as `@PathVariable` and answers with the whole aggregate.
+* The links of the children are produced by a `<Child>Links` processor in the feature's `web` package (see `SampleItemLinks`), which hands them to `ChildEntityLinks`. Do not change the generated `<AggregateName>Links`.
+* The integration test follows the child's link (`$.items[?(@.label == 'A')]._links.<rel>.href`), selecting the child by a business field, never by position: an entity collection has no defined order.

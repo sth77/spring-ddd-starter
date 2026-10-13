@@ -183,7 +183,10 @@ Single- and multi-valued value objects are embedded directly into the owning agg
 As a result, aggregates carry no persistence annotations: the schema follows from the value objects' shape. The
 `domainRingShouldNotNameSchemaObjects` rule in `ArchitectureTests` keeps it that way — it fails the build if a type
 in the domain ring names a table or column (`@Table`, `@Column`, `@JoinColumn`, `@AttributeOverride`, ...), in that
-package or any below it. The usual temptation is a SQL keyword collision such as an `order` attribute; solve that by
+package or any below it. The one exception is the bare `@JoinColumn` (without a `name`) that the byte-buddy
+transform itself writes on a collection of child entities, mapping it as a unidirectional one-to-many with a join
+column in the child table: it names nothing, the column name (`items_id` for `Sample.items`) is still derived by the
+naming strategies. The usual temptation is a SQL keyword collision such as an `order` attribute; solve that by
 overriding Spring Boot's default physical naming strategy (`CamelCaseToUnderscoresNamingStrategy`, which is what
 snake-cases the names the implicit strategy above produces), by enabling `hibernate.auto_quote_keyword`, or in
 `META-INF/orm.xml` — not by annotating the model.
@@ -411,6 +414,79 @@ public class SampleApiConfiguration {
 ```
 With this, projections have now exactly the same links as the raw aggregate.
 
+#### Command links on child entities
+
+The same mechanism extends to the entities inside an aggregate. The sample module demonstrates it with a clearly
+marked enrichment: a `Sample` holds a list of `SampleItem` child entities, each with a `label` and a `checked` flag.
+Every item carries its own command links, so a client can treat `sample.items[i]` exactly like the aggregate
+itself: offer an operation when its link is present and POST to the link's `href`.
+
+```json
+{
+  "description" : "Description of sample 1",
+  "state" : "DRAFT",
+  "items" : [ {
+    "label" : "Open item",
+    "checked" : false,
+    "_links" : {
+      "renameItem" : { "href" : "http://localhost:8080/api/samples/ced7bb56-…/items/f42b5566-…/renameItem" },
+      "checkItem" : { "href" : "http://localhost:8080/api/samples/ced7bb56-…/items/f42b5566-…/checkItem" },
+      "removeItem" : { "href" : "http://localhost:8080/api/samples/ced7bb56-…/items/f42b5566-…/removeItem" }
+    }
+  }, {
+    "label" : "Checked item",
+    "checked" : true
+  } ],
+  "_links" : {
+    "self" : { "href" : "http://localhost:8080/api/samples/ced7bb56-…" },
+    "update" : { "href" : "http://localhost:8080/api/samples/ced7bb56-…/update" },
+    "addItem" : { "href" : "http://localhost:8080/api/samples/ced7bb56-…/addItem" }
+  }
+}
+```
+
+The building blocks:
+
+- **Commands.** Adding an item is an operation of the root (`AddSampleItem`, rel `addItem`). The commands on a
+  single item are grouped under a nested sealed interface, `SampleItemCommand extends SampleCommand`, holding
+  `RenameSampleItem`, `CheckSampleItem` and `RemoveSampleItem`. Since only that interface, not its records, is a
+  permitted subclass of `SampleCommand`, the root's `SampleLinks` skips the item commands without any change.
+- **Addressing.** The item is addressed by the URI, like the aggregate itself
+  (`POST /api/samples/{sampleId}/items/{itemId}/<rel>`), so the commands stay pure payload. The aggregate methods
+  take the item id followed by the command, e.g. `checkItem(SampleItemId itemId, CheckSampleItem data)`; the
+  `aggregateOperationsTakeCommands` ArchUnit rule accepts exactly this form next to the single command parameter.
+  Item ids are not part of the JSON — Spring Data REST only exposes ids configured through `exposeIdsFor`. A client
+  needs nothing but the hrefs.
+- **Guard.** Whether an item allows a command is an instance-level question. It is answered by the root, which
+  stays the single entry point: `Sample.can(Class<? extends SampleItemCommand>, SampleItemId)` combines the
+  aggregate's rule (nothing once published) with the item's own (nothing once checked), and allows nothing for an
+  id the sample does not contain. A command on such an id is rejected with a `DomainException`, i.e. HTTP 400.
+  The type-level `can(Class)` answers `false` for every item command.
+- **Responses.** Item operations answer with the whole aggregate: an item operation may change the links of the
+  root and of every other item.
+
+Rendering the links takes a small detour. Spring Data REST serializes a child entity inline and does invoke the
+representation model processors on it — but such a processor only sees the item, not the aggregate whose state
+decides what the item allows. The links are therefore computed while the aggregate is processed and handed over
+through a request-scoped registry:
+
+1. Before message conversion, the return value handler invokes the processors of the root `EntityModel<Sample>`
+   (for a collection, of each element). `SampleItemLinks` computes each item's allowed links — the commands the
+   current user's role permits (`SecuredAggregateCommands`) and `sample.can(command, itemId)` allows — and stores
+   them in `ChildEntityLinks`, keyed by object identity.
+2. Jackson serializes the root. For every item, Spring Data REST's `NestedEntitySerializer` wraps the item in an
+   entity model and invokes the processors again.
+3. The generic `ChildEntityLinksProcessor`, a processor for any jMolecules `Entity`, looks the item up and adds its
+   links. Aggregate roots match as well (`AggregateRoot` extends `Entity`) and simply get nothing from it.
+
+`ChildEntityLinks` and `ChildEntityLinksProcessor` live in `common.web` and serve every aggregate. Only
+`SampleItemLinks` is specific to the aggregate; `SampleLinks` and `SampleCollectionLinks` stay exactly as the
+scaffolding generates them. Since `common` now contributes beans, it is declared a shared module
+(`@Modulith(sharedModules = "common")`), so that an `@ApplicationModuleTest` bootstraps it for any module under test.
+
+Child links are not rendered inside projections (`?projection=detail`): a projection getter returning entities is
+serialized as a plain bean, without the processors.
+
 ### Loosely coupled modules with domain events
 
 Feature modules stay loosely coupled by three general concepts:
@@ -457,6 +533,9 @@ The setup comes with several architecture verifications which ensure that new co
 
 The module architecture is verified through Spring Modulith. It ensures that modules do not form cycles and that only allowed dependencies are present.
 
+`common` is declared a shared module (`@Modulith(sharedModules = "common")`): it is the shared kernel every feature
+builds on, so an `@ApplicationModuleTest` always bootstraps its beans, whichever module it tests.
+
 #### Onion architecture
 
 The Onion architecture is verified through jMolecules, using the simplified onion architecture as a basis, having the three rings
@@ -474,8 +553,9 @@ rules) as part of `mvn verify`, and the jMolecules annotation processor (`jmolec
 annotation-processor path) detects breaches already at compile time.
 
 A project-specific rule additionally enforces the command pattern itself: every public state-changing method on an
-aggregate root must take its command as the only parameter — accessors, the `can(...)` guard and `Object` methods
-are exempt. A setter or a loose parameter list fails the build.
+aggregate root must take its command as the only parameter — or, for an operation on a child entity, the child's
+identifier followed by the command (see [Command links on child entities](#command-links-on-child-entities)).
+Accessors, the `can(...)` guard and `Object` methods are exempt. A setter or a loose parameter list fails the build.
 
 ### Nullability
 
