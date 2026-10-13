@@ -1,0 +1,4 @@
+# Shell scripts run under bash on every platform, including Git Bash and WSL on Windows: keep them LF even
+# where core.autocrlf would check them out with CRLF line endings.
+*.sh text eol=lf
+mvnw text eol=lf

@@ -6,15 +6,28 @@ import com.example.app.common.model.I18nText;
 import com.example.app.person.Person;
 import com.example.app.person.Person.PersonId;
 import com.example.app.sample.Sample.SampleId;
+import com.example.app.sample.SampleCommand.AddSampleItem;
+import com.example.app.sample.SampleCommand.CheckSampleItem;
 import com.example.app.sample.SampleCommand.CreateSample;
 import com.example.app.sample.SampleCommand.PublishSample;
+import com.example.app.sample.SampleCommand.RemoveSampleItem;
+import com.example.app.sample.SampleCommand.RenameSampleItem;
+import com.example.app.sample.SampleCommand.SampleItemCommand;
 import com.example.app.sample.SampleCommand.UpdateOwnerName;
 import com.example.app.sample.SampleCommand.UpdateSample;
 import com.example.app.sample.SampleEvent.SampleCreated;
+import com.example.app.sample.SampleEvent.SampleItemAdded;
+import com.example.app.sample.SampleEvent.SampleItemChanged;
+import com.example.app.sample.SampleEvent.SampleItemRemoved;
 import com.example.app.sample.SampleEvent.SampleOwnerNameChanged;
 import com.example.app.sample.SampleEvent.SamplePublished;
 import com.example.app.sample.SampleEvent.SampleUpdated;
+import com.example.app.sample.SampleItem.SampleItemId;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -38,6 +51,9 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
     private SampleState state;
     // denormalized copy of the owner's name, kept in sync via a PersonUpdated listener
     private String ownerName;
+    // sample enrichment: a child entity collection, see the item operations below
+    @Getter(AccessLevel.NONE)
+    private final List<SampleItem> items;
 
     public static Sample create(CreateSample data) {
         val result = new Sample(
@@ -47,7 +63,8 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
                 data.description(),
                 City.of(data.city()),
                 SampleState.DRAFT,
-                data.owner().getName());
+                data.owner().getName(),
+                new ArrayList<>());
         result.registerEvent(SampleCreated.of(result.getId()));
         return result;
     }
@@ -92,6 +109,76 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
         registerEvent(SamplePublished.of(id));
     }
 
+    // sample enrichment: operations on the SampleItem child entity
+
+    public List<SampleItem> getItems() {
+        return Collections.unmodifiableList(items);
+    }
+
+    public void addItem(AddSampleItem data) {
+        assertCan(AddSampleItem.class);
+        val item = SampleItem.create(data);
+        items.add(item);
+        registerEvent(SampleItemAdded.builder()
+                .sampleId(id)
+                .itemId(item.getId())
+                .build());
+    }
+
+    public void renameItem(SampleItemId itemId, RenameSampleItem data) {
+        assertCan(RenameSampleItem.class, itemId);
+        requiredItem(itemId).rename(data.label());
+        registerEvent(SampleItemChanged.builder()
+                .sampleId(id)
+                .itemId(itemId)
+                .build());
+    }
+
+    public void checkItem(SampleItemId itemId, CheckSampleItem data) {
+        assertCan(CheckSampleItem.class, itemId);
+        requiredItem(itemId).check();
+        registerEvent(SampleItemChanged.builder()
+                .sampleId(id)
+                .itemId(itemId)
+                .build());
+    }
+
+    public void removeItem(SampleItemId itemId, RemoveSampleItem data) {
+        assertCan(RemoveSampleItem.class, itemId);
+        items.remove(requiredItem(itemId));
+        registerEvent(SampleItemRemoved.builder()
+                .sampleId(id)
+                .itemId(itemId)
+                .build());
+    }
+
+    private Optional<SampleItem> findItem(SampleItemId itemId) {
+        return items.stream()
+                .filter(item -> item.getId().equals(itemId))
+                .findFirst();
+    }
+
+    private SampleItem requiredItem(SampleItemId itemId) {
+        // assertCan has already rejected an unknown id
+        return findItem(itemId).orElseThrow();
+    }
+
+    private void assertCan(Class<? extends SampleItemCommand> command, SampleItemId itemId) {
+        if (!can(command, itemId)) {
+            throw new DomainException("Operation %s not allowed for item %s of sample in state %s"
+                    .formatted(command.getSimpleName(), itemId, state));
+        }
+    }
+
+    /**
+     * Instance-level guard for the commands on a single item: the aggregate's rule (no change once published)
+     * combined with the item's own. An id the sample does not contain allows nothing.
+     */
+    public boolean can(Class<? extends SampleItemCommand> operation, SampleItemId itemId) {
+        return state != SampleState.PUBLISHED
+                && findItem(itemId).map(item -> item.can(operation)).orElse(false);
+    }
+
     private void assertCan(Class<? extends SampleCommand> command) {
         if (!can(command)) {
             throw new DomainException("Operation %s not allowed for sample in state %s"
@@ -102,6 +189,9 @@ public class Sample extends AbstractAggregate<Sample, SampleId> implements Aggre
     public boolean can(Class<? extends SampleCommand> operation) {
         if (operation.equals(CreateSample.class)) {
             return false;
+        }
+        if (SampleItemCommand.class.isAssignableFrom(operation)) {
+            return false; // item commands need the item: see can(Class, SampleItemId)
         }
         if (operation.equals(UpdateOwnerName.class)) {
             return true; // technical sync, allowed in every state

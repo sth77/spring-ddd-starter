@@ -2,6 +2,7 @@ package com.example.app.sample;
 
 import com.example.app.common.model.I18nText;
 import com.example.app.sample.Sample.SampleId;
+import com.example.app.sample.SampleItem.SampleItemId;
 import lombok.Builder;
 import org.jmolecules.event.types.DomainEvent;
 
@@ -29,5 +30,19 @@ public sealed interface SampleEvent extends DomainEvent {
 
     @Builder
     record SampleOwnerNameChanged(SampleId sampleId, String ownerName) implements SampleEvent {
+    }
+
+    // sample enrichment: events of the SampleItem child entity
+
+    @Builder
+    record SampleItemAdded(SampleId sampleId, SampleItemId itemId) implements SampleEvent {
+    }
+
+    @Builder
+    record SampleItemChanged(SampleId sampleId, SampleItemId itemId) implements SampleEvent {
+    }
+
+    @Builder
+    record SampleItemRemoved(SampleId sampleId, SampleItemId itemId) implements SampleEvent {
     }
 }

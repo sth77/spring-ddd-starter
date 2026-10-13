@@ -52,6 +52,7 @@ import org.jmolecules.architecture.onion.simplified.ApplicationRing;
 import org.jmolecules.architecture.onion.simplified.DomainRing;
 import org.jmolecules.architecture.onion.simplified.InfrastructureRing;
 import org.jmolecules.ddd.types.AggregateRoot;
+import org.jmolecules.ddd.types.Identifier;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.security.access.annotation.Secured;
@@ -133,9 +134,10 @@ class ArchitectureTests {
 
     /**
      * Aggregates change state exclusively through business operations that take a command: no setters, no
-     * loose parameter lists. Read accessors (get/is), the {@code can(...)} guard and the {@code Object}
-     * methods are exempt; static factories are covered by the sealed command pattern itself
-     * ({@code create} takes the Create command).
+     * loose parameter lists. An operation on a child entity takes the child's identifier first, because the
+     * child is addressed like the aggregate itself - by the URI, not by the command payload. Read accessors
+     * (get/is), the {@code can(...)} guard and the {@code Object} methods are exempt; static factories are
+     * covered by the sealed command pattern itself ({@code create} takes the Create command).
      */
     @ArchTest
     static final ArchRule aggregateOperationsTakeCommands = methods()
@@ -143,9 +145,9 @@ class ArchitectureTests {
             .and().arePublic()
             .and().areNotStatic()
             .and(DescribedPredicate.not(accessorGuardOrObjectMethod()))
-            .should(takeExactlyOneCommandParameter())
-            .because("aggregate state changes go through commands only (see INSTRUCTIONS.md,"
-                    + " 'Adding business operations')");
+            .should(takeTheirCommandAsLastParameter())
+            .because("aggregate state changes go through commands only, and a child entity is addressed by its"
+                    + " identifier (see INSTRUCTIONS.md, 'Adding business operations')");
 
     private static DescribedPredicate<JavaMethod> accessorGuardOrObjectMethod() {
         return DescribedPredicate.describe(
@@ -158,19 +160,24 @@ class ArchitectureTests {
                         || method.getName().equals("hashCode"));
     }
 
-    private static ArchCondition<JavaMethod> takeExactlyOneCommandParameter() {
-        return new ArchCondition<>("take the operation's command as their only parameter") {
+    private static ArchCondition<JavaMethod> takeTheirCommandAsLastParameter() {
+        return new ArchCondition<>("take the operation's command as their only parameter, or a child entity's"
+                + " identifier followed by the command") {
             @Override
             public void check(JavaMethod method, ConditionEvents events) {
                 val parameters = method.getRawParameterTypes();
-                val satisfied = parameters.size() == 1 && parameters.get(0).isAssignableTo(Command.class);
+                val satisfied = (parameters.size() == 1 && parameters.get(0).isAssignableTo(Command.class))
+                        || (parameters.size() == 2
+                                && parameters.get(0).isAssignableTo(Identifier.class)
+                                && parameters.get(1).isAssignableTo(Command.class));
                 events.add(new SimpleConditionEvent(
                         method,
                         satisfied,
                         method.getFullName()
                                 + (satisfied
-                                        ? " takes its command as the only parameter"
-                                        : " must take its command as the only parameter")));
+                                        ? " takes its command as the only parameter, or after a child identifier"
+                                        : " must take its command as the only parameter, or after a child"
+                                                + " identifier")));
             }
         };
     }
@@ -179,7 +186,8 @@ class ArchitectureTests {
      * Annotations that pin a domain type to a physical schema name. The jMolecules byte-buddy transform adds the
      * structural JPA annotations ({@code @Entity}, {@code @Embeddable}, {@code @EmbeddedId}, ...) to the compiled
      * classes, so a blanket ban on {@code jakarta.persistence} would fail against the transformed bytecode; these
-     * are the ones only a developer writes.
+     * are the ones only a developer writes - save the bare {@code @JoinColumn} on child entity collections, see
+     * {@link #isUnnamedJoinColumn}.
      *
      * <p>
      * The {@code @...Overrides} containers have to be listed next to the repeatable annotations they wrap: two
@@ -210,12 +218,26 @@ class ArchitectureTests {
                 .flatMap(c -> Stream.<HasAnnotations<?>>concat(Stream.of(c), c.getMembers().stream()))
                 .flatMap(annotated -> PHYSICAL_MAPPING_ANNOTATIONS.stream()
                         .filter(annotated::isAnnotatedWith)
+                        .filter(annotation -> !isUnnamedJoinColumn(annotated, annotation))
                         .map(annotation -> "%s is annotated with @%s - a physical schema name in the domain ring."
                                 .formatted(annotated.getDescription(), annotation.getSimpleName())))
                 .toList();
         assertThat(violations).as("violations - resolve a keyword collision by overriding Spring Boot's default"
                 + " PhysicalNamingStrategy (CamelCaseToUnderscoresNamingStrategy), by enabling"
                 + " hibernate.auto_quote_keyword, or in META-INF/orm.xml instead").isEmpty();
+    }
+
+    /**
+     * The jMolecules byte-buddy transform maps an aggregate's collection of child entities as a unidirectional
+     * one-to-many with a join column in the child table - and says so with a bare {@code @JoinColumn}, without
+     * which JPA would fall back to a join table. That annotation names nothing: the column name is still derived
+     * by the naming strategies.
+     */
+    private static boolean isUnnamedJoinColumn(HasAnnotations<?> annotated, Class<? extends Annotation> annotation) {
+        return annotation.equals(JoinColumn.class)
+                && annotated.getAnnotationOfType(JoinColumn.class.getName()).get("name")
+                        .filter(""::equals)
+                        .isPresent();
     }
 
     /**

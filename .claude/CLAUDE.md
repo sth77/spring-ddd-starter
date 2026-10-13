@@ -40,7 +40,12 @@ version numbers here; they only go stale.
   a new enum needs no declaration at all, and never `@Enumerated` (ArchUnit-enforced)
 - **Physical names**: never `@Table`/`@Column`/`@JoinColumn`/`@AttributeOverride` in the domain ring — column names
   come from `_infrastructure/persistence/ValueObjectAwareImplicitNamingStrategy` plus Spring Boot's default
-  physical strategy (`CamelCaseToUnderscoresNamingStrategy`), which snake-cases them (ArchUnit-enforced)
+  physical strategy (`CamelCaseToUnderscoresNamingStrategy`), which snake-cases them (ArchUnit-enforced). The only
+  `@JoinColumn` allowed is the unnamed one byte-buddy itself writes on a child entity collection (`Sample.items` →
+  join column `items_id` in `sample_item`)
+- **Child entities**: operations take `(<Child>Id, command)`, guarded by the root's `can(command, childId)`; links
+  come from `<feature>/web/<Child>Links` via `common/web/ChildEntityLinks` (see README "Command links on child
+  entities")
 
 ## Framework behavioral notes (correct common knowledge-cutoff errors)
 
@@ -75,6 +80,15 @@ version numbers here; they only go stale.
   `git clean`s `src/` after running.
 - A command link is missing from a HAL response → both conditions must hold: the aggregate allows the operation in
   its state (`can(...)`) **and** the current user has the controller method's `@Secured` role.
+- A command link is missing on a child entity (e.g. `sample.items[i]._links`) → check, in order: the root's
+  `can(command, childId)` allows it (aggregate state **and** the child's own state); the current user has the
+  controller method's `@Secured` role; the command is a record of the nested `<Child>Command` interface and handled
+  by the operations controller (`<Child>Links` builds its `SecuredAggregateCommands` from that interface); and the
+  child is not rendered through a projection (`?projection=...`), where entities are serialized as plain beans
+  without the processors.
+- "required a bean of type 'com.example.app.common.web.ChildEntityLinks' that could not be found" in an
+  `@ApplicationModuleTest` → `common` lost its `@Modulith(sharedModules = "common")` declaration on
+  `SampleApplication`; module tests only bootstrap the dependencies they inject beans from.
 - ArchUnit rules "pass" but never appear as executed tests → the test class is missing `@AnalyzeClasses`.
 
 ## Scaffolding (hygen)

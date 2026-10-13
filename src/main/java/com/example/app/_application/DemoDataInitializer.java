@@ -8,6 +8,8 @@ import com.example.app.person.PersonCommand.CreatePerson;
 import com.example.app.referencedata.Cities;
 import com.example.app.referencedata.City;
 import com.example.app.sample.Sample;
+import com.example.app.sample.SampleCommand.AddSampleItem;
+import com.example.app.sample.SampleCommand.CheckSampleItem;
 import com.example.app.sample.SampleCommand.CreateSample;
 import com.example.app.sample.SampleCommand.PublishSample;
 import com.example.app.sample.SampleCommand.UpdateSample;
@@ -63,6 +65,13 @@ public class DemoDataInitializer {
                         .build()))
                 .map(samples::save)
                 .toList();
+
+        // sample enrichment: a draft sample with one open and one checked item, showing per-item links
+        val sample1 = sampleData.get(0);
+        sample1.addItem(AddSampleItem.of("Open item"));
+        sample1.addItem(AddSampleItem.of("Checked item"));
+        sample1.checkItem(sample1.getItems().getLast().getId(), CheckSampleItem.create());
+        samples.save(sample1);
 
         val sample2 = sampleData.get(1);
         sample2.update(UpdateSample.builder()
