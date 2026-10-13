@@ -9,7 +9,9 @@ import org.springframework.modulith.Modulith;
 import org.springframework.resilience.annotation.EnableResilientMethods;
 import org.springframework.scheduling.annotation.EnableAsync;
 
-@Modulith
+// common is the shared kernel every feature builds on: module tests (@ApplicationModuleTest) bootstrap its beans
+// - such as the request-scoped ChildEntityLinks - no matter which module they test
+@Modulith(sharedModules = "common")
 @EnableAsync
 @EnableResilientMethods
 @EnableHypermediaSupport(type = HAL)

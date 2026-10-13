@@ -1,5 +1,6 @@
 package com.example.app.sample.web;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -19,6 +20,9 @@ import com.example.app.sample.SampleCommand.UpdateSample;
 import com.example.app.sample.Samples;
 import com.jayway.jsonpath.JsonPath;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -29,6 +33,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 /**
  * Integration tests for {@link SampleOperationsController}.
@@ -372,6 +377,196 @@ class SampleOperationsControllerIT {
                     .andExpect(jsonPath("$.state").value("PUBLISHED"));
         }
     }
+
+    @Nested
+    @DisplayName("Child Entity Command Link Tests")
+    class ItemCommandLinkTests {
+
+        private static final String ITEM_A = "$.items[?(@.label == 'A')]";
+        private static final String ITEM_B = "$.items[?(@.label == 'B')]";
+
+        @Test
+        @DisplayName("items added through the addItem link carry their own command links")
+        void addItem_twice_bothItemsCarryAllItemLinks() throws Exception {
+            String json = sampleWithItemsAAndB();
+
+            for (String item : List.of(ITEM_A, ITEM_B)) {
+                for (String rel : ITEM_RELS) {
+                    assertThat(values(json, item + "._links." + rel + ".href")).as("%s of %s", rel, item).hasSize(1);
+                }
+            }
+            // the item commands are offered on the items only, the root keeps its own commands
+            assertThat(JsonPath.<Map<String, Object>>read(json, "$._links"))
+                    .containsKeys("update", "addItem")
+                    .doesNotContainKeys(ITEM_RELS.toArray(String[]::new));
+        }
+
+        @Test
+        @DisplayName("after following an item's checkItem link, that item offers nothing while its sibling still does")
+        void checkItem_followedLink_onlyCheckedItemLosesItsLinks() throws Exception {
+            String json = sampleWithItemsAAndB();
+
+            String checked = postAsUser(single(values(json, ITEM_A + "._links.checkItem.href")), "{}")
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            assertThat(values(checked, ITEM_A + ".checked")).containsExactly(true);
+            assertThat(values(checked, ITEM_A + "._links.*")).isEmpty();
+            for (String rel : ITEM_RELS) {
+                assertThat(values(checked, ITEM_B + "._links." + rel + ".href")).as(rel).hasSize(1);
+            }
+        }
+
+        @Test
+        @DisplayName("renameItem and removeItem links are followable")
+        void renameAndRemoveItem_followedLinks_applied() throws Exception {
+            String json = sampleWithItemsAAndB();
+
+            String renamed = postAsUser(single(values(json, ITEM_A + "._links.renameItem.href")), """
+                    { "label": "A2" }
+                    """)
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+            assertThat(values(renamed, "$.items[*].label")).containsExactlyInAnyOrder("A2", "B");
+
+            String removed = postAsUser(single(values(renamed, ITEM_B + "._links.removeItem.href")), "{}")
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+            assertThat(values(removed, "$.items[*].label")).containsExactly("A2");
+        }
+
+        @Test
+        @DisplayName("GET of the sample and of the samples collection render the same item links")
+        void get_itemAndCollectionResource_renderItemLinks() throws Exception {
+            String json = sampleWithItemsAAndB();
+            String self = JsonPath.read(json, "$._links.self.href");
+            String checkB = single(values(json, ITEM_B + "._links.checkItem.href"));
+
+            String item = mockMvc.perform(get(URI.create(self)).with(user("testuser").roles("USER")))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+            assertThat(values(item, ITEM_B + "._links.checkItem.href")).containsExactly(checkB);
+
+            String collection = mockMvc.perform(get("/api/samples?size=1000").with(user("testuser").roles("USER")))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+            assertThat(values(collection, "$._embedded.samples[*].items[?(@.label == 'B')]._links.checkItem.href"))
+                    .contains(checkB);
+        }
+
+        @Test
+        @DisplayName("a published sample offers no item links")
+        void publish_followedLink_noItemLinksLeft() throws Exception {
+            String self = JsonPath.read(sampleWithItemsAAndB(), "$._links.self.href");
+            // publishing requires the admin role, so only an admin is offered the link
+            String json = mockMvc.perform(get(URI.create(self)).with(user("admin").roles("USER", "ADMIN")))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            String published = mockMvc.perform(post(URI.create(JsonPath.read(json, "$._links.publish.href")))
+                    .with(user("admin").roles("USER", "ADMIN"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{}"))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            assertThat(values(published, "$.items[*].label")).hasSize(2);
+            assertThat(values(published, "$.items[*]._links.*")).isEmpty();
+            assertThat(JsonPath.<Map<String, Object>>read(published, "$._links")).doesNotContainKey("addItem");
+        }
+
+        @Test
+        @DisplayName("items do not expose their id - clients address them through the link hrefs")
+        void get_items_noIdProperty() throws Exception {
+            String json = sampleWithItemsAAndB();
+
+            assertThat(values(json, "$.items[*].label")).containsExactlyInAnyOrder("A", "B");
+            assertThat(values(json, "$.items[*].id")).isEmpty();
+        }
+
+        @Test
+        @DisplayName("a command on an item the sample does not contain is rejected with 400")
+        void checkItem_unknownItem_returnsBadRequest() throws Exception {
+            String json = sampleWithItemsAAndB();
+            String self = JsonPath.read(json, "$._links.self.href");
+
+            postAsUser(self + "/items/" + UUID.randomUUID() + "/checkItem", "{}")
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("item operations require authentication")
+        void itemOperations_withoutAuthentication_returnUnauthorized() throws Exception {
+            String json = sampleWithItemsAAndB();
+            List<String> hrefs = new ArrayList<>(List.of((String) JsonPath.read(json, "$._links.addItem.href")));
+            for (String rel : ITEM_RELS) {
+                hrefs.add(single(values(json, ITEM_A + "._links." + rel + ".href")));
+            }
+
+            for (String href : hrefs) {
+                mockMvc.perform(post(URI.create(href))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "label": "X" }
+                                """))
+                        .andExpect(status().isUnauthorized());
+            }
+        }
+
+        /** Creates a draft sample and adds the items A and B by following its addItem link, as a client would. */
+        private String sampleWithItemsAAndB() throws Exception {
+            Sample sample = createDraftSample();
+            String json = mockMvc.perform(get("/api/samples/" + sample.getId().uuidValue())
+                    .with(user("testuser").roles("USER")))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+            for (String label : List.of("A", "B")) {
+                json = postAsUser(JsonPath.read(json, "$._links.addItem.href"), """
+                        { "label": "%s" }
+                        """.formatted(label))
+                        .andExpect(status().isOk())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+            }
+            return json;
+        }
+
+        private ResultActions postAsUser(String href, String body) throws Exception {
+            return mockMvc.perform(post(URI.create(href))
+                    .with(user("testuser").roles("USER"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body));
+        }
+
+        /** Evaluates a JsonPath that may match any number of nodes - with a filter, it always yields a list. */
+        private static List<Object> values(String json, String path) {
+            return JsonPath.read(json, path);
+        }
+
+        private static String single(List<Object> values) {
+            assertThat(values).hasSize(1);
+            return (String) values.getFirst();
+        }
+    }
+
+    private static final List<String> ITEM_RELS = List.of("renameItem", "checkItem", "removeItem");
 
     private Sample createDraftSample() {
         return samples.save(Sample.create(CreateSample.builder()
