@@ -1,5 +1,7 @@
 package com.example.app.sample.web;
 
+import static com.example.app.common.web.CommandLinks.afford;
+
 import com.example.app.common.web.SecuredAggregateCommands;
 import com.example.app.sample.Sample;
 import com.example.app.sample.SampleCommand;
@@ -25,6 +27,8 @@ public class SampleCollectionLinks implements RepresentationModelProcessor<Colle
     public CollectionModel<EntityModel<Sample>> process(CollectionModel<EntityModel<Sample>> model) {
         return model.addIf(
                 aggregateCommands.isAllowedForCurrentUser(CreateSample.class),
-                () -> entityLinks.linkFor(Sample.class).withRel(aggregateCommands.getRel(CreateSample.class)));
+                () -> afford(
+                        entityLinks.linkFor(Sample.class).withRel(aggregateCommands.getRel(CreateSample.class)),
+                        CreateSample.class));
     }
 }

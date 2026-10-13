@@ -17,6 +17,7 @@ import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.stereotype.Component;
 
+import static <%= CommonPackage %>.web.CommandLinks.afford;
 import static org.springframework.hateoas.IanaLinkRelations.SELF;
 
 @Component
@@ -42,9 +43,9 @@ public class <%= AggregateType %>Links implements RepresentationModelProcessor<E
            <%= AggregateType %> <%= aggregateName %>,
            Class<? extends <%= CommandType %>> commandType) {
       val rel = aggregateCommands.getRel(commandType);
-      model.addIf(<%= aggregateName %>.can(commandType), () -> entityLinks
+      model.addIf(<%= aggregateName %>.can(commandType), () -> afford(entityLinks
               .linkForItemResource(<%= AggregateType %>.class, <%= aggregateName %>.getId()).slash(rel)
-              .withRel(rel));
+              .withRel(rel), commandType));
    }
 
 }

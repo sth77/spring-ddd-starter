@@ -1,5 +1,7 @@
 package com.example.app.sample.web;
 
+import static com.example.app.common.web.CommandLinks.afford;
+
 import com.example.app.common.web.ChildEntityLinks;
 import com.example.app.common.web.SecuredAggregateCommands;
 import com.example.app.sample.Sample;
@@ -40,10 +42,10 @@ public class SampleItemLinks implements RepresentationModelProcessor<EntityModel
 
     private Link itemLink(Sample sample, SampleItem item, Class<? extends SampleItemCommand> command) {
         val rel = itemCommands.getRel(command);
-        return entityLinks.linkForItemResource(Sample.class, sample.getId())
+        return afford(entityLinks.linkForItemResource(Sample.class, sample.getId())
                 .slash("items")
                 .slash(item.getId())
                 .slash(rel)
-                .withRel(rel);
+                .withRel(rel), command);
     }
 }

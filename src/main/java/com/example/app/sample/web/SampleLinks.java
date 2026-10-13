@@ -1,5 +1,7 @@
 package com.example.app.sample.web;
 
+import static com.example.app.common.web.CommandLinks.afford;
+
 import com.example.app.common.web.SecuredAggregateCommands;
 import com.example.app.sample.Sample;
 import com.example.app.sample.SampleCommand;
@@ -36,9 +38,9 @@ public class SampleLinks implements RepresentationModelProcessor<EntityModel<Sam
         val rel = aggregateCommands.getRel(commandType);
         model.addIf(
                 sample.can(commandType),
-                () -> entityLinks
+                () -> afford(entityLinks
                         .linkForItemResource(Sample.class, sample.getId())
                         .slash(rel)
-                        .withRel(rel));
+                        .withRel(rel), commandType));
     }
 }

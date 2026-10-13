@@ -19,6 +19,8 @@ import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.stereotype.Component;
 
+import static <%= CommonPackage %>.web.CommandLinks.afford;
+
 @Component
 @RequiredArgsConstructor
 public class <%= AggregateType %>CollectionLinks implements RepresentationModelProcessor<CollectionModel<EntityModel<<%= AggregateType %>>>> {
@@ -31,7 +33,9 @@ public class <%= AggregateType %>CollectionLinks implements RepresentationModelP
     public CollectionModel<EntityModel<<%= AggregateType %>>> process(CollectionModel<EntityModel<<%= AggregateType %>>> model) {
         return model.addIf(
                 aggregateCommands.isAllowedForCurrentUser(<%= CreateCommandType %>.class),
-                () -> entityLinks.linkFor(<%= AggregateType %>.class).withRel(aggregateCommands.getRel(<%= CreateCommandType %>.class)));
+                () -> afford(
+                        entityLinks.linkFor(<%= AggregateType %>.class).withRel(aggregateCommands.getRel(<%= CreateCommandType %>.class)),
+                        <%= CreateCommandType %>.class));
     }
 
 }

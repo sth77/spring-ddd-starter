@@ -16,6 +16,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
@@ -30,7 +31,7 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
  * 1. Requires hygen to generate the world/Human aggregate and the Country reference data
  * (pre-integration-test phase, where Country is also wired into Human as its citizenship)
  * 2. Tests the full aggregate lifecycle via REST API, including the master data it refers to
- * 3. Verifies HAL links change based on state
+ * 3. Verifies HAL links change based on state, and that HAL-FORMS offers a template per command link
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -100,8 +101,26 @@ class HygenTemplatesIT {
         publishLink = JsonPath.read(response, "$._links.publish.href");
     }
 
+    /**
+     * The generated link processors attach a form to every command link, so a HAL-FORMS client gets a template per
+     * command, keyed by the same rel as the link.
+     */
     @Test
     @Order(3)
+    void getHumanAsHalForms_shouldOfferATemplatePerCommandLink() throws Exception {
+        mockMvc.perform(get(URI.create(humanLocation))
+                .with(USER)
+                .accept(MediaTypes.HAL_FORMS_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$._templates.update.method").value("POST"))
+                .andExpect(jsonPath("$._templates.update.target").value(updateLink))
+                .andExpect(jsonPath("$._templates.update.properties[?(@.name == 'name')].required").value(true))
+                .andExpect(jsonPath("$._templates.publish.method").value("POST"))
+                .andExpect(jsonPath("$._templates.publish.target").value(publishLink));
+    }
+
+    @Test
+    @Order(4)
     void updateHuman_shouldReturnUpdatedNameWithLinks() throws Exception {
         mockMvc.perform(post(updateLink)
                 .with(USER)
@@ -117,7 +136,7 @@ class HygenTemplatesIT {
     }
 
     @Test
-    @Order(4)
+    @Order(5)
     void publishHuman_shouldReturnPublishedWithOnlySelfLink() throws Exception {
         mockMvc.perform(post(publishLink)
                 .with(USER)
