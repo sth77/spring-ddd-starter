@@ -381,12 +381,15 @@ public class SampleLinks implements RepresentationModelProcessor<EntityModel<Sam
            Sample sample,
            Class<? extends SampleCommand> commandType) {
       val rel = aggregateCommands.getRel(commandType);
-      model.addIf(sample.can(commandType), () -> entityLinks
+      model.addIf(sample.can(commandType), () -> afford(entityLinks
               .linkForItemResource(Sample.class, sample.getId()).slash(rel)
-              .withRel(rel));
+              .withRel(rel), commandType));
    }
 }
 ```
+(`afford`, from `common.web.CommandLinks`, attaches the HAL-FORMS template of the command to the link and leaves
+plain HAL unchanged, see [Forms with HAL-FORMS](#forms-with-hal-forms).)
+
 A command link appears only when **both** conditions hold: the aggregate permits the operation in its current
 state (`sample.can(commandType)`) **and** the current user is authorized to invoke it. The authorization part is
 handled by `SecuredAggregateCommands` (in `common.web`): at construction it reads, for each command, the `@Secured`
@@ -491,6 +494,87 @@ scaffolding generates them. Since `common` now contributes beans, it is declared
 
 Child links are not rendered inside projections (`?projection=detail`): a projection getter returning entities is
 serialized as a plain bean, without the processors.
+
+#### Forms with HAL-FORMS
+
+A link tells a client *that* it may execute a command, not *what* to send. For that, every command link also carries
+a form in [HAL-FORMS](https://rwcbook.github.io/hal-forms/), the form extension of HAL. A client opts in through the
+`Accept` header; listing plain HAL as well lets the server fall back to it when a resource has no form to offer:
+
+```bash
+$ curl -u "user:1234" -H "Accept: application/prs.hal-forms+json, application/hal+json"        localhost:8080/api/samples/ced7bb56-…
+```
+
+The response holds the same `_links` as before, plus a `_templates` object, on the aggregate and on each item:
+
+```json
+{
+  "state" : "DRAFT",
+  "items" : [ {
+    "label" : "Open item",
+    "checked" : false,
+    "_links" : {
+      "renameItem" : { "href" : "http://localhost:8080/api/samples/ced7bb56-…/items/f42b5566-…/renameItem" },
+      …
+    },
+    "_templates" : {
+      "renameItem" : {
+        "method" : "POST",
+        "target" : "http://localhost:8080/api/samples/ced7bb56-…/items/f42b5566-…/renameItem",
+        "properties" : [ {
+          "name" : "label", "required" : true, "maxLength" : 255, "regex" : "^(?=\s*\S).*$", "type" : "text"
+        } ]
+      },
+      …
+    }
+  } ],
+  "_links" : {
+    "update" : { "href" : "http://localhost:8080/api/samples/ced7bb56-…/update" },
+    …
+  },
+  "_templates" : {
+    "update" : {
+      "method" : "POST",
+      "target" : "http://localhost:8080/api/samples/ced7bb56-…/update",
+      "properties" : [
+        { "name" : "city" },
+        { "name" : "description", "maxLength" : 1000, "type" : "text" },
+        { "name" : "name", "required" : true }
+      ]
+    },
+    …
+  }
+}
+```
+
+- **Keys.** A template is keyed by the rel of its link, so `_links.update` and `_templates.update` belong together
+  (Spring HATEOAS 3 no longer renames a single template to `default`). Templates follow the links exactly: the
+  aggregate state, the item state and the user's role decide about both at once, and a resource without any command —
+  a published sample, a checked item — has no `_templates` at all. In that case the response falls back to
+  `application/hal+json`.
+- **Target and method.** The `target` is the link's `href`, the `method` always `POST`. On the collection the
+  `target` is omitted, as HAL-FORMS allows, because the create command is posted to the collection's own `self`
+  URI.
+- **Properties.** They are derived from the components of the command record and their Bean Validation constraints:
+  `@NotNull`/`@NotBlank` make a property `required` (`@NotBlank` adds a `regex` for a non-blank text), `@Size` on a
+  text gives `minLength`/`maxLength`, `@Min`/`@Max` give `min`/`max`, `@Pattern` a `regex`, and `@Email` the type
+  `email`. A field-less command such as `PublishSample` has an empty property list.
+
+The forms come from a single helper, `CommandLinks.afford(link, commandType)` in `common.web`. It takes the finished
+link, so the root (`SampleLinks`), the collection (`SampleCollectionLinks`) and the items (`SampleItemLinks`) all use
+it the same way, and the hygen templates generate it into every new aggregate. It also corrects how Spring HATEOAS
+reads a command record: Spring HATEOAS inspects JavaBean properties, so a record component — which has no setter,
+Jackson binds it through the canonical constructor — would be marked `readOnly`, and `@Size` on a text would come out
+as a numeric `min`/`max` of type `range`.
+
+Two kinds of properties are described only by their name: `name`, an `I18nText` holding one text per language —
+HAL-FORMS has no notion of a nested object — and `owner` and `city`, which reference another resource by URI.
+HAL-FORMS could list the choices for the latter as remote `options`, but such an options link must answer with a plain
+array of values, while the Spring Data REST collections (`/api/people`, `/api/cities`) answer with HAL documents. A
+client therefore picks the referenced resource from those collections and sends its `self` href. If an application
+needs options, it customizes the forms through a `HalFormsConfiguration` bean (`withOptions`, `withPattern`): Spring
+Data REST builds a `HalFormsConfiguration` of its own for its object mapper, but the templates are rendered by Spring
+HATEOAS's template builder, which does pick up the bean.
 
 ### Loosely coupled modules with domain events
 

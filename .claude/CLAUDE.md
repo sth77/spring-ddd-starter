@@ -43,6 +43,8 @@ version numbers here; they only go stale.
   physical strategy (`CamelCaseToUnderscoresNamingStrategy`), which snake-cases them (ArchUnit-enforced). The only
   `@JoinColumn` allowed is the unnamed one byte-buddy itself writes on a child entity collection (`Sample.items` →
   join column `items_id` in `sample_item`)
+- **Forms**: every command link is wrapped with `common/web/CommandLinks.afford(link, commandType)`, which adds a
+  HAL-FORMS template keyed by the link's rel (see README "Forms with HAL-FORMS")
 - **Child entities**: operations take `(<Child>Id, command)`, guarded by the root's `can(command, childId)`; links
   come from `<feature>/web/<Child>Links` via `common/web/ChildEntityLinks` (see README "Command links on child
   entities")
@@ -86,6 +88,12 @@ version numbers here; they only go stale.
   by the operations controller (`<Child>Links` builds its `SecuredAggregateCommands` from that interface); and the
   child is not rendered through a projection (`?projection=...`), where entities are serialized as plain beans
   without the processors.
+- `_templates` missing from a response → check, in order: the client sent `Accept: application/prs.hal-forms+json`
+  (plain HAL never renders templates, and a resource without any command link falls back to `application/hal+json`
+  even when HAL-FORMS was asked for); the command link exists at all (templates follow the links, see the two
+  signatures above); and the link was built through `common/web/CommandLinks.afford(link, commandType)` — a link
+  added without it renders in `_links` but has no template. A template whose property is `readOnly` or whose text has
+  `min`/`max` instead of `maxLength` was built with Spring HATEOAS's plain `withInput(...)`, not `afford`.
 - "required a bean of type 'com.example.app.common.web.ChildEntityLinks' that could not be found" in an
   `@ApplicationModuleTest` → `common` lost its `@Modulith(sharedModules = "common")` declaration on
   `SampleApplication`; module tests only bootstrap the dependencies they inject beans from.
