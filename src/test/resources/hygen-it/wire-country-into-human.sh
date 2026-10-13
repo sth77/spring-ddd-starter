@@ -18,6 +18,9 @@ AGGREGATE_TEST=src/test/java/com/example/app/world/HumanTest.java
 patch() {
     local file=$1
     export ANCHOR=$2 REPLACEMENT=$3
+    # hygen copies the line endings of the templates, which a Windows checkout with core.autocrlf has as CRLF;
+    # the anchors are LF, so normalize the file first or no multi-line anchor would ever match
+    perl -i -pe 's/\r$//' "$file"
     perl -0777 -i -pe 'BEGIN { $n = 0 }
                        $n += s/\Q$ENV{ANCHOR}\E/$ENV{REPLACEMENT}/;
                        END { exit 9 unless $n }' "$file" ||
