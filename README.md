@@ -178,7 +178,7 @@ Single- and multi-valued value objects are embedded directly into the owning agg
   recognized by the `<type>Value` naming convention of its sole component, so no list of field names has to be
   maintained:
   - `SampleId(UUID uuidValue)` mapped as `id` → column `id`
-  - `Principal(String stringValue)` mapped as `principal` → column `principal`
+  - a value object such as `EmailAddress(String stringValue)` mapped as `email` → column `email`
 - **Multi-field value objects** keep the owning-attribute prefix, which disambiguates sibling embeddables:
   - `I18nText(String en, String de)` mapped as `name` → columns `name_en`, `name_de`
   - nested: `City(int postalCode, I18nText name)` mapped as `city` → `city_postal_code`, `city_name_en`, `city_name_de`

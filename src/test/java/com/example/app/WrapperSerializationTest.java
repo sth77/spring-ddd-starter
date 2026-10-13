@@ -2,11 +2,12 @@ package com.example.app;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.example.app.common.model.Principal;
 import com.example.app.referencedata.City.CityId;
 import com.example.app.sample.Sample.SampleId;
 import java.util.UUID;
+import lombok.Value;
 import lombok.val;
+import org.jmolecules.ddd.annotation.ValueObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -38,6 +39,14 @@ class WrapperSerializationTest {
 
         assertThat(SampleId.of(uuid)).hasToString(uuid.toString());
         assertThat(CityId.of(uuid)).hasToString(uuid.toString());
+    }
+
+    /** A single-attribute value object, as a domain would declare it: no Jackson annotations. */
+    @ValueObject
+    @Value(staticConstructor = "of")
+    static class Principal {
+
+        String stringValue;
     }
 
     @Test

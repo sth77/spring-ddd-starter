@@ -3,12 +3,10 @@ package com.example.app.referencedata;
 import com.example.app.common.model.I18nText;
 import java.util.UUID;
 import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
 import org.jmolecules.ddd.annotation.Entity;
 import org.jmolecules.ddd.annotation.Identity;
 import org.jmolecules.ddd.types.Identifier;
 
-@Slf4j
 @Value
 @Entity
 public class City {
@@ -21,7 +19,7 @@ public class City {
     private final I18nText name;
 
     public static City ofPostalCodeAndName(int postalCode, I18nText name) {
-        return log(new City(CityId.random(), postalCode, name));
+        return new City(CityId.random(), postalCode, name);
     }
 
     public record CityId(UUID uuidValue) implements Identifier {
@@ -38,10 +36,5 @@ public class City {
         public String toString() {
             return uuidValue.toString();
         }
-    }
-
-    private static City log(City city) {
-        log.info("City: " + city);
-        return city;
     }
 }
