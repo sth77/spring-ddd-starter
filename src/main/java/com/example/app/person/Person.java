@@ -28,24 +28,18 @@ public class Person extends AbstractAggregate<Person, PersonId> implements Aggre
         return result;
     }
 
-    public Person updateName(UpdatePersonName data) {
+    /**
+     * Renames the person. The {@link PersonUpdated} event is registered only on an actual change, since it drives the
+     * denormalized owner name of every sample the person owns (see {@code SampleOwnerNameSynchronizer}).
+     */
+    public void updateName(UpdatePersonName data) {
         if (!Objects.equals(this.name, data.name())) {
             this.name = data.name();
-            registerEvent(PersonUpdated.builder().personId(id).name(name).build());
+            registerEvent(PersonUpdated.builder()
+                    .personId(id)
+                    .name(name)
+                    .build());
         }
-        return this;
-    }
-
-    public boolean can(Operation operation) {
-        return true;
-    }
-
-    @Getter
-    @RequiredArgsConstructor
-    public enum Operation {
-        CREATE("create"), UPDATE_NAME("updateName");
-
-        public final String rel;
     }
 
     public record PersonId(UUID uuidValue) implements Identifier {
