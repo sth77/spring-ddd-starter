@@ -28,8 +28,8 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
  * Run with: mvn verify -Phygen-it
  *
  * This test:
- * 1. Requires hygen to generate the world/Human aggregate and the Country reference data
- * (pre-integration-test phase, where Country is also wired into Human as its citizenship)
+ * 1. Requires hygen to generate the world/Human aggregate with an added Archive operation, and the Country reference
+ * data (pre-integration-test phase, where Country is also wired into Human as its citizenship)
  * 2. Tests the full aggregate lifecycle via REST API, including the master data it refers to
  * 3. Verifies HAL links change based on state, and that HAL-FORMS offers a template per command link
  */
@@ -50,6 +50,7 @@ class HygenTemplatesIT {
     private static String humanLocation;
     private static String updateLink;
     private static String publishLink;
+    private static String archiveLink;
 
     /**
      * Master data is served read-only, so the row is seeded through the schema the generated migration
@@ -91,6 +92,8 @@ class HygenTemplatesIT {
                 .andExpect(jsonPath("$._links.self.href").exists())
                 .andExpect(jsonPath("$._links.update.href").exists())
                 .andExpect(jsonPath("$._links.publish.href").exists())
+                // added by `hygen operation new Archive`
+                .andExpect(jsonPath("$._links.archive.href").exists())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
@@ -99,6 +102,7 @@ class HygenTemplatesIT {
         humanLocation = JsonPath.read(response, "$._links.self.href");
         updateLink = JsonPath.read(response, "$._links.update.href");
         publishLink = JsonPath.read(response, "$._links.publish.href");
+        archiveLink = JsonPath.read(response, "$._links.archive.href");
     }
 
     /**
@@ -116,7 +120,8 @@ class HygenTemplatesIT {
                 .andExpect(jsonPath("$._templates.update.target").value(updateLink))
                 .andExpect(jsonPath("$._templates.update.properties[?(@.name == 'name')].required").value(true))
                 .andExpect(jsonPath("$._templates.publish.method").value("POST"))
-                .andExpect(jsonPath("$._templates.publish.target").value(publishLink));
+                .andExpect(jsonPath("$._templates.publish.target").value(publishLink))
+                .andExpect(jsonPath("$._templates.archive.target").value(archiveLink));
     }
 
     @Test
@@ -135,8 +140,21 @@ class HygenTemplatesIT {
                 .andExpect(jsonPath("$._links.publish.href").exists());
     }
 
+    /** The operation added by the operation generator is routed, guarded and linked like the generated ones. */
     @Test
     @Order(5)
+    void archiveHuman_followedLink_shouldBeExecuted() throws Exception {
+        mockMvc.perform(post(archiveLink)
+                .with(USER)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.state").value("DRAFT"))
+                .andExpect(jsonPath("$._links.archive.href").value(archiveLink));
+    }
+
+    @Test
+    @Order(6)
     void publishHuman_shouldReturnPublishedWithOnlySelfLink() throws Exception {
         mockMvc.perform(post(publishLink)
                 .with(USER)
@@ -146,6 +164,7 @@ class HygenTemplatesIT {
                 .andExpect(jsonPath("$.state").value("PUBLISHED"))
                 .andExpect(jsonPath("$._links.self.href").exists())
                 .andExpect(jsonPath("$._links.update").doesNotExist())
-                .andExpect(jsonPath("$._links.publish").doesNotExist());
+                .andExpect(jsonPath("$._links.publish").doesNotExist())
+                .andExpect(jsonPath("$._links.archive").doesNotExist());
     }
 }

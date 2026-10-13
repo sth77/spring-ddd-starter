@@ -74,6 +74,30 @@ associate with (see [Master data handling](#master-data-handling)) — has its o
 
 > $ hygen referencedata new Country
 
+An aggregate grows by one business operation at a time. The operation generator adds an operation together with its
+command and event to an aggregate generated before (and to its controller, which therefore has to exist):
+
+> $ hygen operation new Complete --aggregate=Todo --feature=todo
+
+This injects
+* the command `CompleteTodo` into `TodoCommand` - a record without components, to which you add the data the
+  operation needs,
+* the event `TodoCompleted` into `TodoEvent` (pass `--event=TodoDone` for a name the naive past tense gets wrong),
+* the method `complete(CompleteTodo data)` into `Todo`, guarded by `can(...)` and registering the event - the state
+  change itself is up to you,
+* the endpoint `POST /todos/{todoId}/complete` into `TodoOperationsController`, secured with `ROLE_USER` (pass
+  `--role=admin` for `ROLE_ADMIN`), and
+* two unit tests into `TodoTest`.
+
+The rel of the operation's link, `complete`, follows from the command name, so the operation is offered as a HAL link
+(and HAL-FORMS template) right away, whenever `can(...)` allows it. Running the generator a second time for the same
+operation changes nothing. The injection anchors on the shape of the generated files - the imports of the create
+command and event, the closing brace of the command, event and test types, `assertCan` and `doWith<Aggregate>` - so
+keep those when you edit the generated code.
+
+The generated domain, repository and web classes carry Javadoc comments explaining their role in the pattern, and the
+generated migration a comment on how it relates to the mapping; the sample module carries the same comments.
+
 ## Running Tests
 
 Run unit tests:
@@ -730,11 +754,6 @@ change is human-reviewed and must pass the full build gate — NullAway null-saf
 architecture rules, Spring Modulith module verification, the formatting check, and the test suite — before it is
 accepted. Responsibility for every change remains with the human author; the trailer discloses tool usage, it does
 not shift accountability.
-
-## Open Issues
-
-* Add documentation to generated artifacts
-* Allow adding operations with related commands and events one by one
 
 ## References
 

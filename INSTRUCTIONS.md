@@ -76,7 +76,9 @@ committing.
 
 # Adding business operations
 
-To add a business operation to an aggregate, the following steps are necessary:
+To add a business operation to an aggregate generated from the templates, start with `hygen operation new <Name> --aggregate=<AggregateName> --feature=<feature>` (see the README, "Scaffolding your DDD artifacts"): it injects the command, the event, the guarded aggregate method, the controller endpoint and two unit tests, following the steps below. Then add the command's data, the state change and the rules in `can`, and the integration test.
+
+To add a business operation by hand, the following steps are necessary:
 * Declare a command with fields representing the data required to execute the operation (if any). 
 * Extend the ´can´ method in the aggregate to define rules when the new command can be executed or not, depending on the state of the aggregate.
 * Declare a new method (returning `void`) on the aggregate which takes the command as input parameter named 'data', checks whether the command can be executed (`assertCan(<CommandType>.class)`) and updates the fields of the aggregate accordingly.

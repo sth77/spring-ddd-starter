@@ -106,7 +106,13 @@ hygen feature new <name>
 hygen aggregate new <Name> --feature=<feature>
 hygen controller new <Name> --feature=<feature>
 hygen referencedata new <Name>
+hygen operation new <Name> --aggregate=<Aggregate> --feature=<feature> [--role=admin] [--event=<EventName>]
 ```
+
+`hygen operation new` injects into the files the aggregate and controller generators produced. hygen does not fail
+when an injection anchor is missing - `before:` then inserts nothing, `after:` inserts at the top of the file - so a
+template change that moves an anchor must keep `-Phygen-it` green, which generates and follows an `Archive` operation
+on the throwaway `Human`.
 
 The `sample` module must stay structurally identical to the scaffolding output (plus clearly-marked enrichments).
 Change a pattern in the templates first, then bring `sample` in line; `mvn verify -Phygen-it` enforces it.

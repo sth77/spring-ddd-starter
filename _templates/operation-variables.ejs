@@ -1,0 +1,23 @@
+<%
+    // variables of the operation generator: `name` is the operation, the aggregate is passed as --aggregate
+    FeaturePackage = "com.example.app." + h.changeCase.lower(feature)
+
+    AggregateType = h.changeCase.pascal(aggregate)
+    aggregateName = h.changeCase.camel(aggregate)
+    IdType = AggregateType + "Id"
+    idName = h.changeCase.camel(IdType)
+    CommandType = AggregateType + "Command"
+    EventType = AggregateType + "Event"
+    PublishCommandType = "Publish" + AggregateType
+    collectionRel = h.inflection.pluralize(aggregateName)
+
+    OperationName = h.changeCase.pascal(name)
+    // the method name, and - derived from the command name by AggregateCommands - the rel and the path segment
+    operationName = h.changeCase.camel(name)
+    OperationCommandType = OperationName + AggregateType
+    // naive past tense (Archive -> Archived, Approve -> Approved); pass --event for anything irregular
+    OperationEventType = locals.event
+        ? h.changeCase.pascal(locals.event)
+        : AggregateType + OperationName + (OperationName.endsWith("e") ? "d" : "ed")
+    RequiredRole = "ROLE_" + (locals.role ? locals.role : "user").toUpperCase()
+-%>
